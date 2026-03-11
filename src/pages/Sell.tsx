@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Upload, DollarSign, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { EditableText } from '../components/Editable';
 
 const sellSchema = z.object({
   productName: z.string().min(3, "Product name is required"),
@@ -49,15 +50,17 @@ export default function Sell() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ maxWidth: 'var(--layout-max-width, 768px)' }}>
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-white mb-4">Sell Your Gear</h1>
+        <h1 className="text-4xl font-bold text-white mb-4">
+          <EditableText pageKey="sell" itemKey="title" defaultText="Sell Your Gear" />
+        </h1>
         <p className="text-gaming-muted">
-          Turn your old consoles and games into cash. Fill out the form below to get started.
+          <EditableText pageKey="sell" itemKey="subtitle" defaultText="Turn your old consoles and games into cash. Fill out the form below to get started." />
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-gaming-card border border-gaming-border rounded-xl p-8 space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-gaming-card border border-gaming-border p-8 space-y-6" style={{ borderRadius: 'var(--layout-border-radius, 0.75rem)' }}>
         <div className="space-y-2">
           <label className="text-sm font-medium text-gaming-muted">Product Name</label>
           <input

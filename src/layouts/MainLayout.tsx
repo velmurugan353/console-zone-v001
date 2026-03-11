@@ -11,11 +11,11 @@ export default function MainLayout({ children, onAuthClick }: MainLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-gaming-bg text-gaming-text font-sans selection:bg-gaming-accent selection:text-black">
       <Navbar onAuthClick={onAuthClick ? onAuthClick : () => { }} />
-      <main className="flex-grow pt-16">
+      <main className="flex-grow pt-16 w-full">
         {children}
       </main>
-      <footer className="bg-gaming-card border-t border-gaming-border mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <footer className="bg-gaming-card border-t border-gaming-border mt-20 w-full">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div className="flex items-center space-x-2">

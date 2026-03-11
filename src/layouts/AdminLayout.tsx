@@ -19,18 +19,25 @@ import {
   Menu,
   X,
   Cpu,
-  FileText
+  FileText,
+  Palette
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
 import { useLayoutMach } from '../services/layoutMachService';
+import { useAdminNotifications } from '../hooks/useAdminNotifications';
+import { format } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bell } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user, isAdmin, loading } = useAuth();
   const { mode, protocol } = useLayoutMach();
+  const { notifications, unreadCount, markRead } = useAdminNotifications();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -67,7 +74,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       links: [
         { name: 'Products', path: '/admin/products', icon: Box },
         { name: 'Rental Inventory', path: '/admin/inventory', icon: RefreshCw },
-        { name: 'Used Consoles', path: '/admin/used-consoles', icon: Gamepad2 },
       ]
     },
     {
@@ -91,6 +97,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     {
       title: 'System',
       links: [
+        { name: 'Customizer', path: '/admin/customizer', icon: Palette },
         { name: 'Content', path: '/admin/content', icon: LayoutDashboard },
         { name: 'Settings', path: '/admin/settings', icon: Settings },
       ]
@@ -113,12 +120,23 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <Gamepad2 className="h-5 w-5 text-gaming-accent" />
           <span className="text-sm font-bold text-white uppercase tracking-tighter italic">Matrix <span className="text-gaming-accent">Admin</span></span>
         </Link>
-        <button 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 text-gaming-muted hover:text-white transition-colors"
-        >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setIsNotifOpen(!isNotifOpen)}
+            className="relative p-2 text-gaming-muted hover:text-white transition-colors"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            )}
+          </button>
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 text-gaming-muted hover:text-white transition-colors"
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Sidebar - Desktop & Tablet */}
@@ -221,6 +239,79 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         "flex-grow p-4 md:p-8 transition-all duration-500 min-w-0",
         mode === 'phone' ? 'ml-0 pt-20' : mode === 'tab' ? 'ml-20' : 'ml-64'
       )}>
+        {/* Desktop Notification Trigger */}
+        <div className="hidden md:flex fixed top-4 right-8 z-50">
+          <div className="relative">
+            <button 
+              onClick={() => setIsNotifOpen(!isNotifOpen)}
+              className="group relative p-3 bg-gaming-card border border-gaming-border rounded-xl hover:border-gaming-accent transition-all shadow-xl"
+            >
+              <Bell size={18} className={cn("transition-colors", unreadCount > 0 ? "text-gaming-accent animate-pulse" : "text-gray-500 group-hover:text-white")} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-[#0a0a0a]">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Signal Dropdown */}
+            <AnimatePresence>
+              {isNotifOpen && (
+                <>
+                  <div className="fixed inset-0 z-[-1]" onClick={() => setIsNotifOpen(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-4 w-80 bg-gaming-card border border-gaming-border rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
+                  >
+                    <div className="p-4 bg-black/20 border-b border-gaming-border flex items-center justify-between">
+                      <h3 className="text-[10px] font-black text-white uppercase tracking-widest italic">Signal_Inbound_Stream</h3>
+                      <span className="text-[8px] font-mono text-gaming-accent bg-gaming-accent/10 px-2 py-0.5 rounded">Live</span>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto scrollbar-hide">
+                      {notifications.length > 0 ? (
+                        notifications.slice(0, 5).map((n) => (
+                          <div 
+                            key={n.id} 
+                            onClick={() => {
+                              if (!n.read) markRead(n.id!);
+                              if (n.actionPath) navigate(n.actionPath);
+                              setIsNotifOpen(false);
+                            }}
+                            className={cn(
+                              "p-4 border-b border-white/5 cursor-pointer transition-all hover:bg-white/[0.02]",
+                              !n.read ? "bg-gaming-accent/[0.02]" : "opacity-60"
+                            )}
+                          >
+                            <div className="flex justify-between items-start mb-1">
+                              <h4 className="text-[10px] font-black text-white uppercase truncate">{n.title}</h4>
+                              <span className="text-[8px] font-mono text-gray-500 whitespace-nowrap">
+                                {n.timestamp?.toDate ? format(n.timestamp.toDate(), 'HH:mm') : 'NOW'}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-gaming-muted line-clamp-2 uppercase font-mono">{n.message}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-8 text-center text-[10px] font-mono text-gaming-muted uppercase tracking-widest">
+                          Zero_Signals_Detected
+                        </div>
+                      )}
+                    </div>
+                    <Link 
+                      to="/admin/operations" 
+                      className="block p-3 bg-black/40 text-[9px] font-black text-center text-gaming-muted hover:text-gaming-accent uppercase tracking-[0.2em] transition-colors"
+                      onClick={() => setIsNotifOpen(false)}
+                    >
+                      View_All_Log_Data
+                    </Link>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
         {children}
       </main>
     </div>

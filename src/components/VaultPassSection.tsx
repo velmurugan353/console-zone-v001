@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Zap, Truck, Clock, Gem, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { EditableText } from './Editable';
 
 export default function VaultPassSection() {
     const benefits = [
@@ -12,10 +13,10 @@ export default function VaultPassSection() {
     ];
 
     return (
-        <section className="py-24 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
-            <div className="relative overflow-hidden rounded-[3.5rem] bg-[#0a0a0a] border border-white/10 group">
+        <section className="py-24 px-4 sm:px-6 lg:px-8 w-full">
+            <div className="relative overflow-hidden bg-[#0a0a0a] border border-white/10 group mx-auto" style={{ borderRadius: 'var(--layout-border-radius, 3.5rem)', maxWidth: 'var(--layout-max-width, 1280px)' }}>
                 {/* Animated Background Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#A855F7]/10 via-transparent to-blue-500/5 opacity-50 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-br from-gaming-accent/10 via-transparent to-gaming-secondary/5 opacity-50 group-hover:opacity-100 transition-opacity" />
 
                 <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2">
                     {/* Left Side: Content */}
@@ -23,14 +24,15 @@ export default function VaultPassSection() {
                         <div className="space-y-4">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full">
                                 <Gem size={12} className="text-amber-500" />
-                                <span className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest">Premium Membership</span>
+                                <span className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest">
+                                    <EditableText pageKey="components" itemKey="vault_pass_badge" defaultText="Premium Membership" />
+                                </span>
                             </div>
                             <h2 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter uppercase leading-[0.9]">
-                                THE <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500">VAULT PASS</span>
+                                <EditableText pageKey="components" itemKey="vault_pass_title" defaultText="THE VAULT PASS" />
                             </h2>
                             <p className="text-gray-400 font-mono text-sm max-w-md uppercase tracking-wider">
-                                Unlock the ultimate hardware ecosystem with our elite subscription tier.
-                                Designed for professional gamers and tech enthusiasts.
+                                <EditableText pageKey="components" itemKey="vault_pass_subtitle" defaultText="Unlock the ultimate hardware ecosystem with our elite subscription tier. Designed for professional gamers and tech enthusiasts." />
                             </p>
                         </div>
 

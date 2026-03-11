@@ -1,13 +1,15 @@
 import { motion } from "framer-motion";
+import { EditableText, EditableImage } from "../Editable";
 
 interface PageHeroProps {
   title: string;
   subtitle?: string;
   images?: string[];
   height?: string;
+  pageKey?: string;
 }
 
-export default function PageHero({ title, subtitle, images = [], height = "60vh" }: PageHeroProps) {
+export default function PageHero({ title, subtitle, images = [], height = "60vh", pageKey = "hero" }: PageHeroProps) {
   const bgImage = images.length > 0 ? images[0] : "https://picsum.photos/seed/gaming/1920/1080?blur=4";
 
   return (
@@ -17,11 +19,12 @@ export default function PageHero({ title, subtitle, images = [], height = "60vh"
     >
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={bgImage} 
-          alt={title} 
+        <EditableImage 
+          pageKey={pageKey}
+          itemKey="hero_image"
+          defaultSrc={bgImage}
+          alt={title}
           className="w-full h-full object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000"
-          referrerPolicy="no-referrer"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
         <div className="absolute inset-0 bg-black/40" />
@@ -35,11 +38,11 @@ export default function PageHero({ title, subtitle, images = [], height = "60vh"
         className="relative z-10 text-center px-4"
       >
         <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 uppercase italic">
-          {title}
+          <EditableText pageKey={pageKey} itemKey="hero_title" defaultText={title} />
         </h1>
         {subtitle && (
-          <p className="text-xl md:text-2xl font-bold text-[#A855F7] tracking-widest uppercase">
-            {subtitle}
+          <p className="text-xl md:text-2xl font-bold text-gaming-accent tracking-widest uppercase">
+            <EditableText pageKey={pageKey} itemKey="hero_subtitle" defaultText={subtitle} />
           </p>
         )}
       </motion.div>

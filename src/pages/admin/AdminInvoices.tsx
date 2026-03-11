@@ -65,6 +65,7 @@ export default function AdminInvoices() {
   // Manual Form State
   const [selectedService, setSelectedService] = useState<ServiceType>('order');
   const [manualInvoice, setManualInvoice] = useState<InvoiceData>({
+    type: 'Order',
     invoiceNumber: `INV-MAN-${Date.now().toString().slice(-6)}`,
     date: new Date().toISOString().split('T')[0],
     customerName: '',
@@ -167,8 +168,15 @@ export default function AdminInvoices() {
   useEffect(() => {
     const subtotal = manualInvoice.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const total = subtotal + (Number(manualInvoice.shipping) || 0) + (Number(manualInvoice.tax) || 0);
-    setManualInvoice(prev => ({ ...prev, subtotal, total }));
-  }, [manualInvoice.items, manualInvoice.shipping, manualInvoice.tax]);
+    
+    // Determine type from selectedService
+    let type: 'Rental' | 'Order' | 'Repair' | 'Buyback' = 'Order';
+    if (selectedService === 'rental') type = 'Rental';
+    else if (selectedService === 'repair') type = 'Repair';
+    else if (selectedService === 'buyback') type = 'Buyback';
+
+    setManualInvoice(prev => ({ ...prev, subtotal, total, type }));
+  }, [manualInvoice.items, manualInvoice.shipping, manualInvoice.tax, selectedService]);
 
   const updateUnifiedTransactions = (newData: UnifiedTransaction[], type: 'order' | 'rental' | 'buyback' | 'manual') => {
     setTransactions(prev => {
@@ -212,6 +220,7 @@ export default function AdminInvoices() {
     if (transaction.type === 'order') data = invoiceService.formatOrderData(transaction.rawData);
     else if (transaction.type === 'rental') data = invoiceService.formatRentalData(transaction.rawData);
     else if (transaction.type === 'buyback') data = invoiceService.formatSellRequestData(transaction.rawData);
+    else if (transaction.serviceType === 'repair') data = invoiceService.formatRepairData(transaction.rawData);
     else data = transaction.rawData;
     setPreviewData(data);
   };
@@ -221,6 +230,7 @@ export default function AdminInvoices() {
     if (transaction.type === 'order') data = invoiceService.formatOrderData(transaction.rawData);
     else if (transaction.type === 'rental') data = invoiceService.formatRentalData(transaction.rawData);
     else if (transaction.type === 'buyback') data = invoiceService.formatSellRequestData(transaction.rawData);
+    else if (transaction.serviceType === 'repair') data = invoiceService.formatRepairData(transaction.rawData);
     else data = transaction.rawData;
     invoiceService.generatePDF(data);
   };

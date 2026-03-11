@@ -6,6 +6,7 @@ import { formatCurrency } from '../lib/utils';
 import { Wrench, Truck, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { EditableText } from '../components/Editable';
 
 const repairSchema = z.object({
   deviceType: z.string().min(1, "Please select the type of device you need repaired."),
@@ -62,18 +63,20 @@ export default function Repair() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-white mb-4">Console Repair Service</h1>
+        <h1 className="text-4xl font-bold text-white mb-4">
+          <EditableText pageKey="repair" itemKey="title" defaultText="Console Repair Service" />
+        </h1>
         <p className="text-gaming-muted max-w-2xl mx-auto">
-          Professional repairs for all major gaming consoles. We pick up, fix, and deliver back to you.
+          <EditableText pageKey="repair" itemKey="subtitle" defaultText="Professional repairs for all major gaming consoles. We pick up, fix, and deliver back to you." />
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3" style={{ gap: 'var(--layout-grid-gap, 2rem)' }}>
         {/* Form */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit(onSubmit)} className="bg-gaming-card border border-gaming-border rounded-xl p-8 space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="bg-gaming-card border border-gaming-border p-8 space-y-6" style={{ borderRadius: 'var(--layout-border-radius, 0.75rem)' }}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gaming-muted">Device Type</label>
@@ -148,7 +151,7 @@ export default function Repair() {
 
         {/* Summary Card */}
         <div className="lg:col-span-1">
-          <div className="bg-gaming-card border border-gaming-border rounded-xl p-6 sticky top-24">
+          <div className="bg-gaming-card border border-gaming-border p-6 sticky top-24" style={{ borderRadius: 'var(--layout-border-radius, 0.75rem)' }}>
             <h3 className="text-xl font-bold text-white mb-6 flex items-center">
               <Wrench className="mr-2 h-5 w-5 text-gaming-accent" /> Service Summary
             </h3>

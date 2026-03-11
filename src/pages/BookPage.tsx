@@ -22,6 +22,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { format, addDays, startOfToday, isSameDay, isBefore, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth } from "date-fns";
+import { EditableText, EditableImage } from "../components/Editable";
 
 interface ConsoleOption {
   id: string;
@@ -156,11 +157,12 @@ export default function BookPage() {
       <div className="md:w-1/2 lg:w-5/12 bg-[#0A0A0A] relative overflow-hidden flex flex-col justify-center p-8 md:p-12 lg:p-20">
         {/* Background */}
         <div className="absolute inset-0 z-0">
-          <img
-            src="https://picsum.photos/seed/gaming/1920/1080?blur=4"
+          <EditableImage
+            pageKey="book"
+            itemKey="hero_bg"
+            defaultSrc="https://picsum.photos/seed/gaming/1920/1080?blur=4"
             alt="Gaming"
             className="w-full h-full object-cover opacity-30 grayscale hover:grayscale-0 transition-all duration-1000"
-            referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-[#050505]" />
           <div className="absolute inset-0 bg-black/40" />
@@ -173,12 +175,11 @@ export default function BookPage() {
           className="relative z-10 space-y-8"
         >
           <div>
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 leading-tight">
-              START YOUR <br />
-              <span className="text-[#A855F7] drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">NEXT ADVENTURE</span>
+            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 leading-tight uppercase italic">
+              <EditableText pageKey="book" itemKey="title" defaultText="START YOUR NEXT ADVENTURE" />
             </h1>
             <p className="text-gray-400 text-lg md:text-xl max-w-md leading-relaxed">
-              Experience premium gaming on your terms. Select your dates and let us handle the rest.
+              <EditableText pageKey="book" itemKey="subtitle" defaultText="Experience premium gaming on your terms. Select your dates and let us handle the rest." />
             </p>
           </div>
 
@@ -211,7 +212,8 @@ export default function BookPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="w-full max-w-2xl mx-auto space-y-8"
+          className="w-full mx-auto space-y-8"
+          style={{ maxWidth: 'var(--layout-max-width, 672px)' }}
         >
           {/* Console Selection */}
           <div className="space-y-4">
@@ -411,9 +413,9 @@ export default function BookPage() {
           </div>
 
           {/* Price Summary */}
-          <div className="bg-[#111] p-6 rounded-2xl border border-white/10 space-y-4">
+          <div className="bg-[#111] p-6 border border-white/10 space-y-4" style={{ borderRadius: 'var(--layout-border-radius, 1rem)' }}>
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <CreditCard size={20} className="text-[#A855F7]" />
+              <CreditCard size={20} className="text-gaming-accent" />
               Price Summary
             </h3>
             

@@ -15,19 +15,21 @@ import {
   Zap,
   Activity,
   FileText,
-  User
+  User,
+  Palette
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
+import { useAdminNotifications } from '../../hooks/useAdminNotifications';
 
 const sidebarItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
   { name: 'Control Center', icon: Zap, path: '/admin/controls' },
+  { name: 'Site Customizer', icon: Palette, path: '/admin/customizer' },
   { name: 'Operations Matrix', icon: Activity, path: '/admin/operations' },
   { name: 'Automation Matrix', icon: Zap, path: '/admin/automation' },
   { name: 'Products', icon: Package, path: '/admin/products' },
   { name: 'Fleet Inventory', icon: Box, path: '/admin/fleet' },
-  { name: 'Used Consoles', icon: RefreshCw, path: '/admin/used-consoles' },
   { name: 'Customers', icon: Users, path: '/admin/customers' },
   { name: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
   { name: 'Invoices', icon: FileText, path: '/admin/invoices' },
@@ -38,6 +40,18 @@ const sidebarItems = [
 
 export default function AdminSidebar() {
   const location = useLocation();
+  const { notifications } = useAdminNotifications();
+
+  const getBadgeCount = (itemName: string) => {
+    switch (itemName) {
+      case 'Operations Matrix':
+        return notifications.filter(n => !n.read && (n.type === 'order' || n.type === 'rental' || n.type === 'reward')).length;
+      case 'KYC Review':
+        return notifications.filter(n => !n.read && n.type === 'kyc').length;
+      default:
+        return 0;
+    }
+  };
 
   return (
     <div className="w-64 bg-[#111] border-r border-white/10 h-screen fixed left-0 top-0 flex flex-col">
@@ -74,7 +88,12 @@ export default function AdminSidebar() {
                 />
               )}
               <item.icon className={cn("h-5 w-5", isActive ? "text-[#A855F7]" : "text-gray-500 group-hover:text-white")} />
-              <span className="font-medium">{item.name}</span>
+              <span className="font-medium flex-1">{item.name}</span>
+              {getBadgeCount(item.name) > 0 && (
+                <span className="bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-[0_0_10px_rgba(239,68,68,0.3)]">
+                  {getBadgeCount(item.name)}
+                </span>
+              )}
             </Link>
           );
         })}

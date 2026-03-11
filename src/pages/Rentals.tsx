@@ -6,6 +6,7 @@ import { formatCurrency } from '../lib/utils';
 import { RENTAL_CONSOLES, RentalConsole } from '../constants/rentals';
 import { db } from '../lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { EditableText } from '../components/Editable';
 
 // Mock data for the rental page specific structure
 const RENTAL_PLANS: Record<string, any[]> = {
@@ -149,7 +150,7 @@ export default function Rentals() {
             {activeStock ? activeStock.name.split(' ').slice(0, 2).join(' ') : "RENTALS"}
           </motion.h1>
           <p className="text-gray-300 text-lg md:text-xl font-mono uppercase tracking-widest max-w-2xl mx-auto">
-            Select from our elite fleet of current-gen and classic consoles
+            <EditableText pageKey="rentals" itemKey="hero_subtitle" defaultText="Select from our elite fleet of current-gen and classic consoles" />
           </p>
 
           <div className="flex md:inline-flex bg-black/40 backdrop-blur-md p-1 rounded-2xl border border-white/10 overflow-x-auto max-w-full mt-8 scrollbar-hide mx-auto">
@@ -169,7 +170,7 @@ export default function Rentals() {
         </div>
       </section>
 
-      <div className="relative z-10 py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
+      <div className="relative z-10 py-20 px-4 sm:px-6 lg:px-8 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
           <AnimatePresence mode="wait">
@@ -246,10 +247,14 @@ export default function Rentals() {
         </div>
 
         {/* Games List */}
-        <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 mx-auto">
+        <div className="w-full px-4 sm:px-6 lg:px-8 mx-auto" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">INCLUDED GAMES LIBRARY</h2>
-            <p className="text-gray-400">All rentals come with access to our massive library of top-tier titles.</p>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              <EditableText pageKey="rentals" itemKey="games_title" defaultText="INCLUDED GAMES LIBRARY" />
+            </h2>
+            <p className="text-gray-400">
+              <EditableText pageKey="rentals" itemKey="games_subtitle" defaultText="All rentals come with access to our massive library of top-tier titles." />
+            </p>
           </div>
 
           <div className="bg-[#0a0a0a] border border-[#8B5CF6]/30 rounded-3xl p-8 relative overflow-hidden">

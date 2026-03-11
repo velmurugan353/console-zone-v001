@@ -22,7 +22,7 @@ export default function InvoiceModal({ data, onClose }: InvoiceModalProps) {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white text-black w-full max-w-4xl min-h-[1000px] p-12 shadow-2xl relative print:p-0 print:shadow-none my-8"
+        className="bg-white text-black w-[210mm] min-h-[297mm] p-[20mm] shadow-2xl relative print:p-[20mm] print:shadow-none my-8 mx-auto overflow-hidden"
         id="invoice-content"
       >
         {/* Invoice Header */}
@@ -34,7 +34,9 @@ export default function InvoiceModal({ data, onClose }: InvoiceModalProps) {
             <p className="text-xs font-bold uppercase tracking-widest text-gray-500">Premium Gaming Marketplace</p>
           </div>
           <div className="text-right">
-            <h2 className="text-2xl font-black uppercase tracking-tight mb-1 text-black">Tax Invoice</h2>
+            <h2 className="text-2xl font-black uppercase tracking-tight mb-1 text-black">
+              {data.type} Invoice
+            </h2>
             <p className="text-sm font-mono font-bold">#{data.invoiceNumber}</p>
             <p className="text-xs text-gray-500 mt-1">{data.date}</p>
           </div>

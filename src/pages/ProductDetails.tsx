@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import { motion } from 'framer-motion';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { EditableText } from '../components/Editable';
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -58,14 +59,15 @@ export default function ProductDetails() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: 'var(--layout-grid-gap, 3rem)' }}>
         {/* Image Gallery */}
         <div className="space-y-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="aspect-square rounded-2xl overflow-hidden bg-gaming-card border border-gaming-border"
+            className="aspect-square overflow-hidden bg-gaming-card border border-gaming-border"
+            style={{ borderRadius: 'var(--layout-border-radius, 1rem)' }}
           >
             <img
               src={product.image}
@@ -105,7 +107,7 @@ export default function ProductDetails() {
           </p>
 
           {/* Purchase Options */}
-          <div className="bg-gaming-card border border-gaming-border rounded-xl p-6 space-y-6">
+          <div className="bg-gaming-card border border-gaming-border p-6 space-y-6" style={{ borderRadius: 'var(--layout-border-radius, 0.75rem)' }}>
             <div className="flex space-x-4 border-b border-gaming-border pb-6">
               <button
                 onClick={() => setRentMode(false)}
@@ -189,12 +191,14 @@ export default function ProductDetails() {
 
           {/* Specs / Details (Placeholder) */}
           <div className="border-t border-gaming-border pt-8">
-            <h3 className="text-lg font-bold text-white mb-4">Product Highlights</h3>
+            <h3 className="text-lg font-bold text-white mb-4">
+              <EditableText pageKey="product_details" itemKey="highlights_title" defaultText="Product Highlights" />
+            </h3>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gaming-muted">
-              <li className="flex items-center"><Check className="h-4 w-4 text-gaming-accent mr-2" /> Official Warranty</li>
-              <li className="flex items-center"><Check className="h-4 w-4 text-gaming-accent mr-2" /> Verified Condition</li>
-              <li className="flex items-center"><Check className="h-4 w-4 text-gaming-accent mr-2" /> Instant Shipping</li>
-              <li className="flex items-center"><Check className="h-4 w-4 text-gaming-accent mr-2" /> 24/7 Support</li>
+              <li className="flex items-center"><Check className="h-4 w-4 text-gaming-accent mr-2" /> <EditableText pageKey="product_details" itemKey="h1" defaultText="Official Warranty" /></li>
+              <li className="flex items-center"><Check className="h-4 w-4 text-gaming-accent mr-2" /> <EditableText pageKey="product_details" itemKey="h2" defaultText="Verified Condition" /></li>
+              <li className="flex items-center"><Check className="h-4 w-4 text-gaming-accent mr-2" /> <EditableText pageKey="product_details" itemKey="h3" defaultText="Instant Shipping" /></li>
+              <li className="flex items-center"><Check className="h-4 w-4 text-gaming-accent mr-2" /> <EditableText pageKey="product_details" itemKey="h4" defaultText="24/7 Support" /></li>
             </ul>
           </div>
         </div>

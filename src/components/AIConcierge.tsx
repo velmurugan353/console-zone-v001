@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowRight, Gamepad2, Zap, Shield, Rocket } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { EditableText } from './Editable';
 
 interface Question {
     id: number;
@@ -83,17 +84,21 @@ export default function AIConcierge() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#A855F7]/5 blur-[150px] rounded-full -z-10 animate-pulse" />
 
             <div className="text-center mb-16 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#A855F7]/10 border border-[#A855F7]/20 rounded-full mb-4">
-                    <Sparkles size={12} className="text-[#A855F7]" />
-                    <span className="text-[10px] font-mono font-bold text-[#A855F7] uppercase tracking-widest text-[#A855F7]">Concierge Alpha-9 v.2.4</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-gaming-accent/10 border border-gaming-accent/20 rounded-full mb-4">
+                    <Sparkles size={12} className="text-gaming-accent" />
+                    <span className="text-[10px] font-mono font-bold text-gaming-accent uppercase tracking-widest text-gaming-accent">
+                        <EditableText pageKey="components" itemKey="concierge_badge" defaultText="Concierge Alpha-9 v.2.4" />
+                    </span>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase">
-                    Matchmaker <span className="text-[#A855F7]">Matrix</span>
+                    <EditableText pageKey="components" itemKey="concierge_title" defaultText="Matchmaker Matrix" />
                 </h2>
-                <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">Our AI agent will determine your optimal hardware configuration</p>
+                <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">
+                    <EditableText pageKey="components" itemKey="concierge_subtitle" defaultText="Our AI agent will determine your optimal hardware configuration" />
+                </p>
             </div>
 
-            <div className="max-w-4xl mx-auto bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-8 md:p-16 min-h-[450px] flex flex-col justify-center relative overflow-hidden shadow-2xl">
+            <div className="max-w-4xl mx-auto bg-[#0a0a0a] border border-white/10 p-8 md:p-16 min-h-[450px] flex flex-col justify-center relative overflow-hidden shadow-2xl" style={{ borderRadius: 'var(--layout-border-radius, 3rem)' }}>
                 <div className="absolute top-0 right-0 p-8 opacity-5">
                     <Zap size={200} className="text-white" />
                 </div>

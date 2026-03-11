@@ -33,9 +33,12 @@ import {
   ArrowRight,
   ChevronRight,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAdminNotifications } from '../../hooks/useAdminNotifications';
+import { motion } from 'framer-motion';
 
 const data = [
   { name: 'Jan', revenue: 4000, rentals: 2400, avgDuration: 3.2 },
@@ -144,8 +147,39 @@ const InventoryRow = ({ id, name, status, health, load, location, lastService, o
 import CommandMatrix from '../../components/admin/CommandMatrix';
 
 export default function AdminDashboard() {
+  const { notifications } = useAdminNotifications();
+  const criticalLogs = notifications.filter(n => !n.read && (n.priority === 'critical' || n.priority === 'high'));
+
   return (
     <div className="space-y-8 pb-20">
+      {/* System Anomalies Alert Bar */}
+      {criticalLogs.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between group overflow-hidden relative mb-8"
+        >
+          <div className="absolute inset-0 bg-red-500/[0.02] animate-pulse" />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="p-2 bg-red-500/20 rounded-lg text-red-500 shrink-0">
+              <AlertCircle size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-mono text-red-500/70 uppercase tracking-widest">System_Anomaly_Detected</p>
+              <p className="text-sm font-bold text-white uppercase italic truncate">
+                {criticalLogs[0].title}: {criticalLogs[0].message}
+              </p>
+            </div>
+          </div>
+          <Link 
+            to="/admin/operations" 
+            className="flex items-center gap-2 px-4 py-2 bg-red-500/20 rounded-lg text-[10px] font-black text-red-500 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest relative z-10 shrink-0"
+          >
+            Resolve_Now <ArrowRight size={14} />
+          </Link>
+        </motion.div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-8">
         <div>
           <div className="flex items-center space-x-2 mb-2">
@@ -264,12 +298,12 @@ export default function AdminDashboard() {
 
             <div className="bg-[#0a0a0a] p-6 rounded-lg border border-white/10">
               <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6">System Controls</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 {[
                   { name: 'Control Center', path: '/admin/controls', icon: Zap },
+                  { name: 'Customizer', path: '/admin/customizer', icon: Palette },
                   { name: 'Rental Status', path: '/admin/rental-status', icon: Activity },
                   { name: 'KYC Review', path: '/admin/kyc', icon: ShieldCheck },
-                  { name: 'Used Consoles', path: '/admin/used-consoles', icon: RefreshCw },
                 ].map((action) => (
                   <Link
                     key={action.name}

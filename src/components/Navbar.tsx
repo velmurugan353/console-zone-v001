@@ -3,13 +3,16 @@ import { ShoppingCart, Menu, X, User, Gamepad2, LayoutDashboard } from 'lucide-r
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useCustomizer } from '../context/CustomizerContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
+import { EditableText, EditableImage } from './Editable';
 
 export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const { cartCount } = useCart();
   const { user, isAdmin } = useAuth();
+  const { layout } = useCustomizer();
   const location = useLocation();
 
   const navLinks = [
@@ -22,15 +25,15 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-gaming-bg/80 backdrop-blur-md border-b border-gaming-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-6 transition-all duration-500">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
             <div className="p-2 bg-gaming-accent/10 rounded-lg group-hover:bg-gaming-accent/20 transition-colors">
               <Gamepad2 className="h-6 w-6 text-gaming-accent" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">
-              Console<span className="text-gaming-accent">Zone</span>
+            <span className="text-xl font-bold tracking-tight text-white italic">
+              <EditableText pageKey="global" itemKey="site_name" defaultText="ConsoleZone" />
             </span>
           </Link>
 
@@ -52,16 +55,6 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
 
           {/* Actions */}
           <div className="hidden md:flex items-center space-x-6">
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className="flex items-center space-x-1 text-sm font-medium transition-colors text-gaming-accent hover:text-gaming-accent/80"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Admin</span>
-              </Link>
-            )}
-
             <Link to="/cart" className="relative text-gaming-text hover:text-gaming-accent transition-colors">
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
@@ -129,16 +122,6 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
                 </Link>
               ))}
               <div className="pt-4 border-t border-gaming-border">
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 text-gaming-accent hover:text-gaming-accent/80"
-                  >
-                    <LayoutDashboard className="h-5 w-5" />
-                    <span>Admin Panel</span>
-                  </Link>
-                )}
                 <Link
                   to="/cart"
                   onClick={() => setIsOpen(false)}

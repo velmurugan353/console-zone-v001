@@ -6,6 +6,7 @@ import { db } from '../lib/firebase';
 import { Product } from '../lib/data';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../lib/utils';
+import { EditableText } from '../components/Editable';
 
 export default function Shop() {
   const [filter, setFilter] = useState('all');
@@ -37,11 +38,15 @@ export default function Shop() {
   const categories = ['all', 'controller', 'game', 'accessory', 'vr'];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Shop Gear</h1>
-          <p className="text-gaming-muted">Browse the latest gaming hardware and accessories.</p>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            <EditableText pageKey="shop" itemKey="title" defaultText="Shop Gear" />
+          </h1>
+          <p className="text-gaming-muted">
+            <EditableText pageKey="shop" itemKey="subtitle" defaultText="Browse the latest gaming hardware and accessories." />
+          </p>
         </div>
 
         <div className="flex items-center space-x-4">
@@ -81,7 +86,7 @@ export default function Shop() {
           </div>
 
           {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 'var(--layout-grid-gap, 1.5rem)' }}>
             {filteredProducts.map((product) => (
               <motion.div
                 key={product.id}
@@ -90,7 +95,7 @@ export default function Shop() {
                 layout
               >
                 <Link to={`/product/${product.id}`} className="group block h-full">
-                  <div className="bg-gaming-card rounded-xl overflow-hidden border border-gaming-border hover:border-gaming-accent transition-all duration-300 h-full flex flex-col">
+                  <div className="bg-gaming-card overflow-hidden border border-gaming-border hover:border-gaming-accent transition-all duration-300 h-full flex flex-col" style={{ borderRadius: 'var(--layout-border-radius, 0.75rem)' }}>
                     <div className="relative aspect-square overflow-hidden bg-white/5">
                       <img
                         src={product.image}

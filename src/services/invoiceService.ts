@@ -8,6 +8,7 @@ interface jsPDFWithAutoTable extends jsPDF {
 }
 
 export interface InvoiceData {
+  type: 'Rental' | 'Order' | 'Repair' | 'Buyback';
   invoiceNumber: string;
   date: string;
   customerName: string;
@@ -61,7 +62,7 @@ class InvoiceService {
     doc.text('PREMIUM GAMING MARKETPLACE', 20, 28);
 
     doc.setFontSize(18);
-    doc.text('INVOICE', 190, 25, { align: 'right' });
+    doc.text(`${data.type.toUpperCase()} INVOICE`, 190, 25, { align: 'right' });
 
     // Invoice Info
     doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
@@ -173,6 +174,7 @@ class InvoiceService {
 
   formatOrderData(order: any): InvoiceData {
     return {
+      type: order.items.some((i: any) => i.type === 'rent') ? 'Rental' : 'Order',
       invoiceNumber: order.id.replace('ORD-', 'INV-'),
       date: order.date,
       customerName: order.customer,
@@ -197,6 +199,7 @@ class InvoiceService {
 
   formatRentalData(rental: any): InvoiceData {
     return {
+      type: 'Rental',
       invoiceNumber: rental.id.replace('R-', 'INV-R-'),
       date: rental.startDate,
       customerName: rental.user,
@@ -231,6 +234,7 @@ class InvoiceService {
   formatSellRequestData(request: any): InvoiceData {
     const finalAmount = request.adminOffer || request.estimatedValue;
     return {
+      type: 'Buyback',
       invoiceNumber: request.id.replace('SELL-', 'INV-S-'),
       date: request.date,
       customerName: request.customer,
@@ -252,6 +256,33 @@ class InvoiceService {
       total: finalAmount,
       paymentMethod: 'Bank Transfer / Store Credit',
       notes: `Asset Acquisition Protocol. Original Condition: ${request.condition}`
+    };
+  }
+
+  formatRepairData(repair: any): InvoiceData {
+    return {
+      type: 'Repair',
+      invoiceNumber: repair.id.replace('REP-', 'INV-RP-'),
+      date: repair.date,
+      customerName: repair.customer,
+      customerEmail: repair.email,
+      customerPhone: 'N/A',
+      customerAddress: 'N/A - Repair Service',
+      items: [
+        {
+          name: `${repair.device} Repair`,
+          description: `Service Issue: ${repair.issue}`,
+          quantity: 1,
+          price: repair.estimatedCost || 0,
+          total: repair.estimatedCost || 0
+        }
+      ],
+      subtotal: repair.estimatedCost || 0,
+      tax: 0,
+      shipping: 0,
+      total: repair.estimatedCost || 0,
+      paymentMethod: 'Post-service / Online',
+      notes: `Technician: ${repair.technician || 'Unassigned'}. Status: ${repair.status}`
     };
   }
 }

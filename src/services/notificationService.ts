@@ -1,5 +1,22 @@
 
-export type NotificationChannel = 'email' | 'sms' | 'whatsapp';
+import { db } from '../lib/firebase';
+import { collection, addDoc, serverTimestamp, query, where, onSnapshot, orderBy, limit, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+
+export type NotificationChannel = 'email' | 'sms' | 'whatsapp' | 'in-app';
+export type NotificationType = 'order' | 'rental' | 'security' | 'reward' | 'system' | 'kyc';
+export type NotificationPriority = 'low' | 'normal' | 'high' | 'critical';
+
+export interface AppNotification {
+  id?: string;
+  userId: string;
+  type: NotificationType;
+  priority: NotificationPriority;
+  title: string;
+  message: string;
+  timestamp: any;
+  read: boolean;
+  actionPath?: string;
+}
 
 export interface NotificationTemplate {
   id: string;
@@ -55,6 +72,51 @@ export const DEFAULT_TEMPLATES: NotificationTemplate[] = [
 
 class NotificationService {
   private templates: NotificationTemplate[] = [...DEFAULT_TEMPLATES];
+
+  // In-App Notification Methods
+  async createInApp(notification: Omit<AppNotification, 'timestamp' | 'read'>) {
+    try {
+      await addDoc(collection(db, 'notifications'), {
+        ...notification,
+        read: false,
+        timestamp: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("[NOTIFICATION_SERVICE] Error creating in-app notification:", error);
+    }
+  }
+
+  subscribe(userId: string, callback: (notifications: AppNotification[]) => void) {
+    const q = query(
+      collection(db, 'notifications'),
+      where('userId', '==', userId),
+      orderBy('timestamp', 'desc'),
+      limit(50)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const notifications = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as AppNotification[];
+      callback(notifications);
+    });
+  }
+
+  async markAsRead(notificationId: string) {
+    const docRef = doc(db, 'notifications', notificationId);
+    await updateDoc(docRef, { read: true });
+  }
+
+  async broadcastToAdmins(title: string, message: string, type: NotificationType = 'system', priority: NotificationPriority = 'normal') {
+    await this.createInApp({
+      userId: 'admin',
+      title,
+      message,
+      type,
+      priority
+    });
+  }
 
   async send(templateId: string, data: Record<string, string>, customerContact: { email?: string, phone?: string }) {
     const template = this.templates.find(t => t.id === templateId);

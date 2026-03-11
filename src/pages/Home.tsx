@@ -3,17 +3,13 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShoppingBag, Gamepad2 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { formatCurrency } from "../lib/utils";
+import { EditableText, EditableImage } from "../components/Editable";
 
 import AIConcierge from "../components/AIConcierge";
 import VaultPassSection from "../components/VaultPassSection";
 
 export default function Home() {
     const { addToCart } = useCart();
-
-    const heroContent = {
-        title: "LEVEL UP YOUR GAMING",
-        subtitle: "Premium Console Rentals Delivered to Your Doorstep",
-    };
 
     const featuredProducts = [
         {
@@ -87,8 +83,10 @@ export default function Home() {
             <section className="relative h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/50 via-[#050505]/80 to-[#050505] z-10" />
-                    <img
-                        src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&q=80&w=2000"
+                    <EditableImage
+                        pageKey="home"
+                        itemKey="hero_bg"
+                        defaultSrc="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&q=80&w=2000"
                         alt="Background"
                         className="w-full h-full object-cover opacity-50"
                     />
@@ -101,7 +99,7 @@ export default function Home() {
                         transition={{ duration: 0.8 }}
                         className="text-5xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.9]"
                     >
-                        {heroContent.title}
+                        <EditableText pageKey="home" itemKey="hero_title" defaultText="LEVEL UP YOUR GAMING" />
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
@@ -109,7 +107,7 @@ export default function Home() {
                         transition={{ delay: 0.4, duration: 0.8 }}
                         className="text-gray-300 text-lg md:text-xl font-mono uppercase tracking-widest max-w-2xl mx-auto"
                     >
-                        {heroContent.subtitle}
+                        <EditableText pageKey="home" itemKey="hero_subtitle" defaultText="Premium Console Rentals Delivered to Your Doorstep" />
                     </motion.p>
 
                     <motion.div
@@ -135,33 +133,34 @@ export default function Home() {
             </section>
 
             {/* Flash Sale Banner */}
-            <section className="px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto mb-24 -mt-20 relative z-30">
-                <div className="relative group overflow-hidden rounded-[3rem] bg-gradient-to-r from-[#A855F7] to-[#601cc9] p-1">
-                    <div className="relative bg-[#0A0A0A] rounded-[2.9rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden">
+            <section className="px-4 sm:px-6 lg:px-8 w-full mx-auto mb-24 -mt-20 relative z-30" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+                <div className="relative group overflow-hidden rounded-[3rem] bg-gradient-to-r from-gaming-accent to-gaming-secondary p-1" style={{ borderRadius: 'var(--layout-border-radius, 3rem)' }}>
+                    <div className="relative bg-[#0A0A0A] rounded-[2.9rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden" style={{ borderRadius: 'calc(var(--layout-border-radius, 3rem) - 0.1rem)' }}>
                         {/* Decorative Background Element */}
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-[#A855F7]/10 blur-[100px] -translate-y-1/2 translate-x-1/2" />
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-gaming-accent/10 blur-[100px] -translate-y-1/2 translate-x-1/2" />
 
                         <div className="relative z-10 space-y-6 text-center md:text-left">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#A855F7]/20 border border-[#A855F7]/30 rounded-full">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gaming-accent/20 border border-gaming-accent/30 rounded-full">
                                 <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A855F7] opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A855F7]"></span>
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gaming-accent opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-gaming-accent"></span>
                                 </span>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A855F7]">Weekend Flash Sale</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gaming-accent">
+                                    <EditableText pageKey="home" itemKey="flash_sale_badge" defaultText="Weekend Flash Sale" />
+                                </span>
                             </div>
                             <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase leading-[0.9]">
-                                GET <span className="text-[#A855F7]">20% OFF</span> ON <br />YOUR FIRST RENTAL
+                                <EditableText pageKey="home" itemKey="flash_sale_title" defaultText="GET 20% OFF ON YOUR FIRST RENTAL" />
                             </h2>
                             <p className="text-gray-400 font-mono text-sm uppercase tracking-widest max-w-md">
-                                Use code <span className="text-white font-bold underline decoration-[#A855F7] decoration-2">GAMER20</span> at checkout.
-                                Mission ends in 48 hours.
+                                <EditableText pageKey="home" itemKey="flash_sale_subtitle" defaultText="Use code GAMER20 at checkout. Mission ends in 48 hours." />
                             </p>
                         </div>
 
                         <div className="relative z-10 w-full md:w-auto">
                             <Link to="/rentals">
-                                <button className="w-full md:w-auto px-12 py-6 bg-white text-black font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-[#A855F7] hover:text-white transition-all shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_50px_rgba(168,85,247,0.3)]">
-                                    CLAIM DISCOUNT
+                                <button className="w-full md:w-auto px-12 py-6 bg-white text-black font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-gaming-accent hover:text-white transition-all shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_50px_rgba(168,85,247,0.3)]" style={{ borderRadius: 'var(--layout-border-radius, 1rem)' }}>
+                                    <EditableText pageKey="home" itemKey="flash_sale_btn" defaultText="CLAIM DISCOUNT" />
                                 </button>
                             </Link>
                         </div>
@@ -173,19 +172,19 @@ export default function Home() {
             <VaultPassSection />
 
             {/* Featured Products Section ("Slay Style") */}
-            <section className="py-24 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto border-t border-white/5">
-                <div className="text-center mb-16">
+            <section className="py-24 px-4 sm:px-6 lg:px-8 w-full mx-auto border-t border-white/5" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+                <div className="text-center mb-16 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
                     <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4">
-                        START SHOPPING
+                        <EditableText pageKey="home" itemKey="featured_title" defaultText="START SHOPPING" />
                     </h2>
-                    <div className="h-1 w-20 bg-[#A855F7] mx-auto rounded-full" />
+                    <div className="h-1 w-20 bg-gaming-accent mx-auto rounded-full" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+                <div className="grid grid-cols-1 md:grid-cols-3 mb-24 mx-auto w-full" style={{ gap: 'var(--layout-grid-gap, 2rem)', maxWidth: 'var(--layout-max-width, 1280px)' }}>
                     {featuredProducts.map((item) => (
-                        <div key={item.id} className="group bg-[#0A0A0A] border border-white/5 rounded-[2.5rem] overflow-hidden flex flex-col p-6 space-y-6 hover:border-[#A855F7]/50 transition-colors">
-                            <div className="relative aspect-square w-full bg-[#121212] rounded-[2rem] overflow-hidden flex items-center justify-center p-8">
-                                <span className="absolute top-4 left-4 bg-[#A855F7] text-white text-[8px] font-black px-3 py-1 rounded uppercase tracking-[0.2em] z-10">
+                        <div key={item.id} className="group bg-[#0A0A0A] border border-white/5 overflow-hidden flex flex-col p-6 space-y-6 hover:border-gaming-accent/50 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
+                            <div className="relative aspect-square w-full bg-[#121212] overflow-hidden flex items-center justify-center p-8" style={{ borderRadius: 'calc(var(--layout-border-radius, 2.5rem) - 0.5rem)' }}>
+                                <span className="absolute top-4 left-4 bg-gaming-accent text-white text-[8px] font-black px-3 py-1 rounded uppercase tracking-[0.2em] z-10">
                                     FEATURED
                                 </span>
                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -222,17 +221,17 @@ export default function Home() {
                     ))}
                 </div>
 
-                <div className="text-center mb-16">
+                <div className="text-center mb-16 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
                     <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4">
-                        RENTAL PRODUCTS
+                        <EditableText pageKey="home" itemKey="rentals_title" defaultText="RENTAL PRODUCTS" />
                     </h2>
-                    <div className="h-1 w-20 bg-[#A855F7] mx-auto rounded-full" />
+                    <div className="h-1 w-20 bg-gaming-accent mx-auto rounded-full" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+                <div className="grid grid-cols-1 md:grid-cols-3 mb-24 mx-auto w-full" style={{ gap: 'var(--layout-grid-gap, 2rem)', maxWidth: 'var(--layout-max-width, 1280px)' }}>
                     {rentalProducts.map((item) => (
-                        <div key={item.id} className="group bg-[#0A0A0A] border border-white/5 rounded-[2.5rem] overflow-hidden flex flex-col p-6 space-y-6 hover:border-[#A855F7]/50 transition-colors">
-                            <div className="relative aspect-square w-full bg-[#121212] rounded-[2rem] overflow-hidden flex items-center justify-center p-8">
+                        <div key={item.id} className="group bg-[#0A0A0A] border border-white/5 overflow-hidden flex flex-col p-6 space-y-6 hover:border-gaming-accent/50 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
+                            <div className="relative aspect-square w-full bg-[#121212] overflow-hidden flex items-center justify-center p-8" style={{ borderRadius: 'calc(var(--layout-border-radius, 2.5rem) - 0.5rem)' }}>
                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                             </div>
 
@@ -264,30 +263,32 @@ export default function Home() {
                 <AIConcierge />
 
                 {/* User Reviews Section */}
-                <div className="pt-24 border-t border-white/5">
-                    <div className="text-center mb-16">
+                <div className="pt-24 border-t border-white/5 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+                    <div className="text-center mb-16 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
                         <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4">
-                            WHAT GAMERS SAY
+                            <EditableText pageKey="home" itemKey="reviews_title" defaultText="WHAT GAMERS SAY" />
                         </h2>
-                        <div className="h-1 w-20 bg-[#A855F7] mx-auto rounded-full" />
+                        <div className="h-1 w-20 bg-gaming-accent mx-auto rounded-full" />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 'var(--layout-grid-gap, 2rem)' }}>
                         {[
                             { name: "Arjun R.", rating: 5, comment: "Rental process was super smooth. The PS5 arrived in pristine condition. Highly recommended!", location: "Chennai" },
                             { name: "Sarah K.", rating: 5, comment: "Sold my old PS4 for a great price. Payout was instant as promised. Best place to sell gear.", location: "Bangalore" },
                             { name: "Vivek M.", rating: 5, comment: "The 144Hz monitor rental changed my weekend tournament experience. Professional service!", location: "Mumbai" }
                         ].map((review, i) => (
-                            <div key={i} className="bg-[#0A0A0A] border border-white/5 p-8 rounded-[2.5rem] space-y-6 relative group overflow-hidden hover:border-[#A855F7]/30 transition-colors">
+                            <div key={i} className="bg-[#0A0A0A] border border-white/5 p-8 rounded-[2.5rem] space-y-6 relative group overflow-hidden hover:border-gaming-accent/30 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
                                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <Gamepad2 size={80} className="text-white" />
                                 </div>
-                                <div className="flex text-[#A855F7] gap-1">
+                                <div className="flex text-gaming-accent gap-1">
                                     {[...Array(review.rating)].map((_, i) => <span key={i} className="text-xl">★</span>)}
                                 </div>
-                                <p className="text-gray-400 text-sm leading-relaxed italic">"{review.comment}"</p>
+                                <p className="text-gray-400 text-sm leading-relaxed italic">
+                                    <EditableText pageKey="home" itemKey={`review_comment_${i}`} defaultText={review.comment} />
+                                </p>
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#A855F7] to-blue-500 flex items-center justify-center font-bold text-xs text-white">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gaming-accent to-gaming-secondary flex items-center justify-center font-bold text-xs text-white">
                                         {review.name.charAt(0)}
                                     </div>
                                     <div>
@@ -301,8 +302,8 @@ export default function Home() {
                 </div>
 
                 {/* FAQ Section */}
-                <div className="pt-32 pb-12">
-                    <div className="text-center mb-16">
+                <div className="pt-32 pb-12 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+                    <div className="text-center mb-16 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
                         <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4">
                             MISSION SUPPORT
                         </h2>
