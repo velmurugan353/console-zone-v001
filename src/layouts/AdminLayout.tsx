@@ -18,7 +18,8 @@ import {
   RefreshCw,
   Menu,
   X,
-  Cpu
+  Cpu,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
@@ -82,6 +83,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       title: 'Users & Finance',
       links: [
         { name: 'Customers', path: '/admin/customers', icon: Users },
+        { name: 'Invoices', path: '/admin/invoices', icon: FileText },
         { name: 'KYC', path: '/admin/kyc', icon: ShieldCheck },
         { name: 'Coupons', path: '/admin/coupons', icon: Tag },
       ]

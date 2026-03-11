@@ -29,7 +29,8 @@ import {
   Edit2,
   Save,
   History,
-  MapPin
+  MapPin,
+  Printer
 } from 'lucide-react';
 import {
   format,
@@ -49,6 +50,8 @@ import { automationService } from '../../services/automationService';
 import { notificationService } from '../../services/notificationService';
 import { collection, onSnapshot, query, doc, updateDoc, orderBy, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { invoiceService } from '../../services/invoiceService';
+import InvoiceModal from '../../components/admin/InvoiceModal';
 
 type RentalStatus = 'active' | 'completed' | 'late' | 'pending';
 
@@ -85,82 +88,6 @@ interface Rental {
   internalNotes?: string;
 }
 
-const MOCK_RENTALS: Rental[] = [
-  {
-    id: 'R-1001',
-    user: 'Alex Gamer',
-    email: 'alex@example.com',
-    phone: '+1 234 567 8901',
-    product: 'PlayStation 5 Pro',
-    productId: 'P5-PRO-001',
-    image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80&w=200',
-    startDate: '2023-10-25',
-    endDate: '2023-10-28',
-    totalPrice: 75.00,
-    deposit: 200.00,
-    lateFees: 0,
-    status: 'active',
-    timeline: [
-      { status: 'pending', timestamp: '2023-10-24 02:00 PM', note: 'Booking initialized' },
-      { status: 'active', timestamp: '2023-10-25 10:00 AM', note: 'Hardware deployed to customer' }
-    ],
-    transactions: [
-      { id: 'TXN-1001-A', type: 'payment', amount: 75.00, date: '2023-10-24', status: 'completed' },
-      { id: 'TXN-1001-B', type: 'deposit', amount: 200.00, date: '2023-10-24', status: 'completed' }
-    ]
-  },
-  {
-    id: 'R-1002',
-    user: 'Sarah Smith',
-    email: 'sarah@example.com',
-    phone: '+1 987 654 3210',
-    product: 'Nintendo Switch OLED',
-    productId: 'NSW-OLED-001',
-    image: 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?auto=format&fit=crop&q=80&w=200',
-    startDate: '2023-10-20',
-    endDate: '2023-10-27',
-    totalPrice: 105.00,
-    deposit: 150.00,
-    lateFees: 20.00,
-    status: 'late',
-    timeline: [
-      { status: 'pending', timestamp: '2023-10-19 11:00 AM', note: 'Booking initialized' },
-      { status: 'active', timestamp: '2023-10-20 09:00 AM', note: 'Hardware deployed' },
-      { status: 'late', timestamp: '2023-10-28 12:00 AM', note: 'Return window exceeded' }
-    ],
-    transactions: [
-      { id: 'TXN-1002-A', type: 'payment', amount: 105.00, date: '2023-10-19', status: 'completed' },
-      { id: 'TXN-1002-B', type: 'deposit', amount: 150.00, date: '2023-10-19', status: 'completed' },
-      { id: 'TXN-1002-C', type: 'fee', amount: 20.00, date: '2023-10-28', status: 'pending' }
-    ]
-  },
-  {
-    id: 'R-1003',
-    user: 'Mike Johnson',
-    email: 'mike@example.com',
-    phone: '+1 555 012 3456',
-    product: 'Xbox Series X',
-    productId: 'XSX-001',
-    image: 'https://images.unsplash.com/photo-1621259182902-3b836c824e22?auto=format&fit=crop&q=80&w=200',
-    startDate: '2023-10-15',
-    endDate: '2023-10-18',
-    totalPrice: 60.00,
-    deposit: 200.00,
-    lateFees: 0,
-    status: 'completed',
-    timeline: [
-      { status: 'pending', timestamp: '2023-10-14 04:00 PM', note: 'Booking initialized' },
-      { status: 'active', timestamp: '2023-10-15 01:00 PM', note: 'Hardware deployed' },
-      { status: 'completed', timestamp: '2023-10-18 05:00 PM', note: 'Hardware returned and inspected' }
-    ],
-    transactions: [
-      { id: 'TXN-1003-A', type: 'payment', amount: 60.00, date: '2023-10-14', status: 'completed' },
-      { id: 'TXN-1003-B', type: 'deposit', amount: 200.00, date: '2023-10-14', status: 'completed' },
-      { id: 'TXN-1003-C', type: 'refund', amount: 200.00, date: '2023-10-18', status: 'completed' }
-    ]
-  }
-];
-
 export default function AdminRentals() {
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,6 +109,8 @@ export default function AdminRentals() {
     totalPrice: 0,
     lateFees: 0
   });
+
+  const [showInvoice, setShowInvoice] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, 'rentals'), orderBy('startDate', 'desc'));
@@ -392,7 +321,6 @@ export default function AdminRentals() {
       `${r.id},${r.user},${r.product},${r.startDate},${r.endDate},${r.status},${r.totalPrice},${r.deposit},${r.lateFees}`
     ).join('\n');
 
-    // Create a blob and simulate a download (purely visual for UI demonstration)
     const blob = new Blob([csvHeader + csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -595,7 +523,7 @@ export default function AdminRentals() {
         </div>
       </div>
 
-      {/* Fleet Utilization Heatmap (Power Tool) */}
+      {/* Fleet Utilization Heatmap */}
       <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -1140,42 +1068,6 @@ export default function AdminRentals() {
                   </div>
                 </div>
 
-                {/* Real-Time Tracking Visualization */}
-                {selectedRental.status === 'active' && (
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                      <MapPin className="mr-2 h-3 w-3 text-[#00d4ff]" /> Live_Asset_Tracking
-                    </h3>
-                    <div className="h-64 bg-white/[0.02] rounded-2xl border border-white/5 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-[#050505] opacity-40"></div>
-                      {/* Simulated Tech Map Grid */}
-                      <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#1a1a1a 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-[#00d4ff]/20 rounded-full animate-ping scale-150"></div>
-                          <div className="relative z-10 w-12 h-12 bg-[#00d4ff]/10 border border-[#00d4ff]/50 rounded-full flex items-center justify-center backdrop-blur-sm">
-                            <Zap className="h-5 w-5 text-[#00d4ff] animate-pulse" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md p-4 rounded-xl border border-white/10 flex justify-between items-center">
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-mono text-gray-500 uppercase">Estimated Position</p>
-                          <p className="text-xs font-bold text-white uppercase tracking-tight">Cyber-District, Zone 7b // Transit</p>
-                        </div>
-                        <div className="text-right space-y-1">
-                          <p className="text-[10px] font-mono text-gray-500 uppercase">Signal Strength</p>
-                          <div className="flex gap-0.5">
-                            {[1, 2, 3, 4, 5].map(i => <div key={i} className={`w-1 h-3 rounded-sm ${i < 5 ? 'bg-emerald-500' : 'bg-white/10'}`}></div>)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Identity & Asset */}
                   <div className="space-y-6">
@@ -1273,7 +1165,6 @@ export default function AdminRentals() {
                 </div>
 
                 {/* Financial Manifest */}
-                {/* Financial Manifest */}
                 <div className="space-y-4">
                   <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
                     <DollarSign className="mr-2 h-3 w-3 text-[#A855F7]" /> Financial_Manifest
@@ -1359,63 +1250,15 @@ export default function AdminRentals() {
                     </div>
                   </div>
                 </div>
-
-                {/* Asset History */}
-                <div className="space-y-4">
-                  <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                    <History className="mr-2 h-3 w-3 text-[#A855F7]" /> Asset_History
-                  </h3>
-                  <div className="bg-white/[0.02] rounded-2xl border border-white/5 p-6 space-y-4">
-                    <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                      <div>
-                        <span className="text-[10px] font-mono text-gray-500 uppercase block mb-1">Total Rentals</span>
-                        <span className="text-white font-bold text-lg tracking-tighter">12</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-mono text-gray-500 uppercase block mb-1">Last Maintenance</span>
-                        <span className="text-[#A855F7] font-bold text-lg tracking-tighter">2023-09-15</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-mono text-gray-500 uppercase block mb-1">Current Condition</span>
-                        <span className="text-emerald-500 font-bold text-lg tracking-tighter">Good</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <h4 className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Recent Activity</h4>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center bg-black/50 p-3 rounded-lg border border-white/5">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <span className="text-xs font-mono text-white uppercase">Rented to John Doe</span>
-                          </div>
-                          <span className="text-[10px] font-mono text-gray-500">2023-09-20 to 2023-09-25</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-black/50 p-3 rounded-lg border border-white/5">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                            <span className="text-xs font-mono text-white uppercase">Routine Maintenance</span>
-                          </div>
-                          <span className="text-[10px] font-mono text-gray-500">2023-09-15</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-black/50 p-3 rounded-lg border border-white/5">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                            <span className="text-xs font-mono text-white uppercase">Returned from Jane Smith</span>
-                          </div>
-                          <span className="text-[10px] font-mono text-gray-500">2023-09-10</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div className="p-6 bg-white/[0.02] border-t border-white/10 flex justify-end space-x-3">
                 <button
-                  className="px-6 py-2 bg-white/5 text-gray-400 rounded-xl font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-colors border border-white/5"
+                  onClick={() => setShowInvoice(true)}
+                  className="px-6 py-2 bg-white/5 text-[#A855F7] rounded-xl font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-colors border border-[#A855F7]/20 flex items-center gap-2"
                 >
-                  Print Agreement
+                  <Printer size={12} />
+                  Generate Invoice
                 </button>
                 <button
                   onClick={() => setSelectedRental(null)}
@@ -1426,6 +1269,16 @@ export default function AdminRentals() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Invoice Generator Modal */}
+      <AnimatePresence>
+        {showInvoice && selectedRental && (
+          <InvoiceModal 
+            data={invoiceService.formatRentalData(selectedRental)} 
+            onClose={() => setShowInvoice(false)} 
+          />
         )}
       </AnimatePresence>
     </div>

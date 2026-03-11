@@ -16,7 +16,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function UserLayout() {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -37,12 +37,12 @@ export default function UserLayout() {
           <div className="lg:col-span-1">
             <div className="bg-gaming-card border border-gaming-border rounded-xl p-6 sticky top-24">
               <div className="flex items-center space-x-4 mb-8 pb-8 border-b border-gaming-border">
-                <div className="w-12 h-12 rounded-full bg-gaming-accent/20 flex items-center justify-center text-gaming-accent">
-                  <User className="h-6 w-6" />
+                <div className="w-12 h-12 rounded-full bg-gaming-accent/20 flex items-center justify-center text-gaming-accent overflow-hidden">
+                  {user?.avatar ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" /> : <User className="h-6 w-6" />}
                 </div>
-                <div>
-                  <h3 className="text-white font-bold">User Account</h3>
-                  <p className="text-gaming-muted text-sm">user@gamevault.com</p>
+                <div className="overflow-hidden">
+                  <h3 className="text-white font-bold truncate">{user?.name || 'User Account'}</h3>
+                  <p className="text-gaming-muted text-sm truncate">{user?.email || 'user@gamevault.com'}</p>
                 </div>
               </div>
               

@@ -24,20 +24,19 @@ class KYCAgentService {
     private async documentAgent(data: any): Promise<AgentFeedback> {
         // Simulate processing time
         await new Promise(r => setTimeout(r, 1500));
-        
-        const hasAadhar = data.aadharNumber && data.aadharNumber.length === 12;
-        const hasIdUrl = !!data.idUrl;
-        
-        if (hasAadhar && hasIdUrl) {
+
+        const hasDL = !!data.drivingLicenseNumber;
+        const hasIdImages = !!data.idFrontUrl && !!data.idBackUrl;
+
+        if (hasDL && hasIdImages) {
             return {
                 agentName: 'Document Specialist',
                 status: 'PASS',
-                message: 'Document structure validated. OCR successfully extracted data.',
-                details: `Extracted Name: ${data.fullName}, ID: ${data.aadharNumber.substring(0,4)}-XXXX-XXXX`,
+                message: 'Driving License validated. OCR successfully extracted data from both sides.',
+                details: `Extracted Name: ${data.fullName}, DL: ${data.drivingLicenseNumber}`,
                 timestamp: new Date().toISOString()
             };
-        }
-        
+        }        
         return {
             agentName: 'Document Specialist',
             status: 'FAIL',

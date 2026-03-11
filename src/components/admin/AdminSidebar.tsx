@@ -13,7 +13,9 @@ import {
   Box,
   ShieldCheck,
   Zap,
-  Activity
+  Activity,
+  FileText,
+  User
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
@@ -28,8 +30,10 @@ const sidebarItems = [
   { name: 'Used Consoles', icon: RefreshCw, path: '/admin/used-consoles' },
   { name: 'Customers', icon: Users, path: '/admin/customers' },
   { name: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
+  { name: 'Invoices', icon: FileText, path: '/admin/invoices' },
   { name: 'KYC Review', icon: ShieldCheck, path: '/admin/kyc' },
   { name: 'Settings', icon: Settings, path: '/admin/settings' },
+  { name: 'Customer View', icon: User, path: '/dashboard' },
 ];
 
 export default function AdminSidebar() {

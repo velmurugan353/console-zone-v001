@@ -49,43 +49,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
-      // FOOLPROOF BYPASS FOR TEST ENVIRONMENT
-      if (typeof window !== 'undefined' && window.location.search.includes('bypass=true')) {
-        setUser({
-          id: 'dev-admin-id',
-          name: 'Cheersediting',
-          email: 'Cheersediting@gmail.com',
-          role: 'admin',
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100',
-        });
-        setLoading(false);
-        return;
-      }
+      try {
+        if (firebaseUser) {
+          // Recover our extended properties from localStorage if possible (roles, avatars)
+          const savedStr = localStorage.getItem('consolezone_auth_user');
+          let savedMeta: any = {};
+          if (savedStr && savedStr !== 'undefined') {
+            try {
+              savedMeta = JSON.parse(savedStr);
+            } catch (e) {
+              console.error("Failed to parse auth meta:", e);
+            }
+          }
+          let kycData = null;
+          try {
+            kycData = getKYCStatus(firebaseUser.uid);
+          } catch (e) {
+            console.error("Failed to load KYC status:", e);
+          }
 
-      if (firebaseUser) {
-        // Recover our extended properties from localStorage if possible (roles, avatars)
-        const savedStr = localStorage.getItem('consolezone_auth_user');
-        const savedMeta = savedStr ? JSON.parse(savedStr) : {};
+          // Auto-assign Admin Object mapping based on hardcoded emails on state changes
+          const isTrueAdmin = firebaseUser.email && ADMIN_EMAILS.some(e => e.toLowerCase() === firebaseUser.email?.toLowerCase());
+          const resolvedRole = isTrueAdmin ? 'admin' : (savedMeta.role || 'user');
 
-        const kycData = getKYCStatus(firebaseUser.uid);
-
-        // Auto-assign Admin Object mapping based on hardcoded emails on state changes
-        const isTrueAdmin = firebaseUser.email && ADMIN_EMAILS.some(e => e.toLowerCase() === firebaseUser.email?.toLowerCase());
-        const resolvedRole = isTrueAdmin ? 'admin' : (savedMeta.role || 'user');
-
-        setUser({
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-          email: firebaseUser.email || '',
-          role: resolvedRole,
-          avatar: firebaseUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100',
-          kyc_status: kycData?.status,
-          kyc_address: kycData?.address
-        });
-      } else {
+          setUser({
+            id: firebaseUser.uid,
+            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+            email: firebaseUser.email || '',
+            role: resolvedRole,
+            avatar: firebaseUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100',
+            kyc_status: kycData?.status,
+            kyc_address: kycData?.address
+          });
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Auth state change error:", error);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();

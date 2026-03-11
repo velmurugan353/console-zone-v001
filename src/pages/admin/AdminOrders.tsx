@@ -26,13 +26,16 @@ import {
   User,
   AlertCircle,
   Edit2,
-  Save
+  Save,
+  Printer
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { automationService } from '../../services/automationService';
 import { notificationService } from '../../services/notificationService';
 import { collection, onSnapshot, query, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { invoiceService } from '../../services/invoiceService';
+import InvoiceModal from '../../components/admin/InvoiceModal';
 
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
@@ -68,67 +71,6 @@ interface Order {
   timeline: OrderTimeline[];
 }
 
-const MOCK_ORDERS: Order[] = [
-  {
-    id: 'ORD-5001',
-    customer: 'John Doe',
-    email: 'john@example.com',
-    phone: '+1 234 567 8901',
-    date: '2023-10-26',
-    total: 549.99,
-    status: 'pending',
-    items: [
-      { id: '1', name: 'PlayStation 5 Pro', price: 499.99, quantity: 1, type: 'buy', image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80&w=200' },
-      { id: '2', name: 'DualSense Edge', price: 50.00, quantity: 1, type: 'buy', image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80&w=200' }
-    ],
-    paymentMethod: 'Credit Card',
-    shippingAddress: '123 Gamer St, Los Angeles, CA 90001',
-    timeline: [
-      { status: 'pending', timestamp: '2023-10-26 10:30 AM', note: 'Order placed by customer' }
-    ]
-  },
-  {
-    id: 'ORD-5002',
-    customer: 'Sarah Smith',
-    email: 'sarah@example.com',
-    phone: '+1 987 654 3210',
-    date: '2023-10-25',
-    total: 29.99,
-    status: 'shipped',
-    items: [
-      { id: '3', name: 'Xbox Controller Rental', price: 10.00, quantity: 1, type: 'rent', rentalDuration: 3, image: 'https://images.unsplash.com/photo-1621259182902-3b836c824e22?auto=format&fit=crop&q=80&w=200' }
-    ],
-    paymentMethod: 'PayPal',
-    shippingAddress: '456 Console Ave, New York, NY 10001',
-    trackingNumber: 'TRK987654321',
-    timeline: [
-      { status: 'pending', timestamp: '2023-10-25 09:15 AM', note: 'Order placed' },
-      { status: 'processing', timestamp: '2023-10-25 02:00 PM', note: 'Order processed and packed' },
-      { status: 'shipped', timestamp: '2023-10-25 05:30 PM', note: 'Handed over to carrier' }
-    ]
-  },
-  {
-    id: 'ORD-5003',
-    customer: 'Mike Johnson',
-    email: 'mike@example.com',
-    phone: '+1 555 012 3456',
-    date: '2023-10-24',
-    total: 129.50,
-    status: 'delivered',
-    items: [
-      { id: '4', name: 'Nintendo Switch Pro Controller', price: 69.99, quantity: 1, type: 'buy', image: 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?auto=format&fit=crop&q=80&w=200' },
-      { id: '5', name: 'Switch Carrying Case', price: 59.51, quantity: 1, type: 'buy', image: 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?auto=format&fit=crop&q=80&w=200' }
-    ],
-    paymentMethod: 'Credit Card',
-    shippingAddress: '789 Retro Rd, Austin, TX 78701',
-    trackingNumber: 'TRK123456789',
-    timeline: [
-      { status: 'pending', timestamp: '2023-10-24 08:00 AM', note: 'Order placed' },
-      { status: 'delivered', timestamp: '2023-10-26 11:00 AM', note: 'Package delivered to porch' }
-    ]
-  }
-];
-
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,6 +84,7 @@ export default function AdminOrders() {
   const [sortConfig, setSortConfig] = useState<{ key: keyof Order | 'items_count'; direction: 'asc' | 'desc' } | null>(null);
   const [bulkConfirm, setBulkConfirm] = useState<{ show: boolean; status: OrderStatus | null }>({ show: false, status: null });
   const [shippingTrackingNumber, setShippingTrackingNumber] = useState('');
+  const [showInvoice, setShowInvoice] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, 'orders'), orderBy('date', 'desc'));
@@ -1008,9 +951,11 @@ export default function AdminOrders() {
 
               <div className="p-6 bg-white/[0.02] border-t border-white/10 flex justify-end space-x-3">
                 <button
-                  className="px-6 py-2 bg-white/5 text-gray-400 rounded-xl font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-colors border border-white/5"
+                  onClick={() => setShowInvoice(true)}
+                  className="px-6 py-2 bg-white/5 text-[#A855F7] rounded-xl font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-colors border border-[#A855F7]/20 flex items-center gap-2"
                 >
-                  Print Manifest
+                  <Printer size={12} />
+                  Generate Invoice
                 </button>
                 <button
                   onClick={() => setSelectedOrder(null)}
@@ -1021,6 +966,16 @@ export default function AdminOrders() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Invoice Generator Modal */}
+      <AnimatePresence>
+        {showInvoice && selectedOrder && (
+          <InvoiceModal 
+            data={invoiceService.formatOrderData(selectedOrder)} 
+            onClose={() => setShowInvoice(false)} 
+          />
         )}
       </AnimatePresence>
     </div>

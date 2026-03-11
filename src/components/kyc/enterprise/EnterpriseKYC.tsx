@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
     User, Phone, Fingerprint, MapPin, Loader2, CheckCircle2,
     FileCheck, Scan, ShieldCheck, ChevronRight, ArrowLeft,
-    AlertCircle
+    AlertCircle, Target, Crosshair
 } from "lucide-react";
 import PageHero from "../../layout/PageHero";
 import { useAuth } from "../../../context/AuthContext";
 import { uploadKYCDocument, submitKYC } from "../../../services/kyc";
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 
 export default function EnterpriseKYC() {
     const [step, setStep] = useState(1);
@@ -20,13 +22,16 @@ export default function EnterpriseKYC() {
     const [fullName, setFullName] = useState("");
     const [phone, setPhone] = useState("");
     const [secondaryPhone, setSecondaryPhone] = useState("");
-    const [aadharNumber, setAadharNumber] = useState("");
+    const [drivingLicenseNumber, setDrivingLicenseNumber] = useState("");
     const [secondaryIdType, setSecondaryIdType] = useState("");
     const [secondaryIdNumber, setSecondaryIdNumber] = useState("");
     const [address, setAddress] = useState("");
-    const [idFile, setIdFile] = useState<File | null>(null);
+    const [mapPosition, setMapPosition] = useState<L.LatLng | null>(null);
+    const [isMapActive, setIsMapActive] = useState(false);
+    const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
+    const [idBackFile, setIdBackFile] = useState<File | null>(null);
     const [selfieFile, setSelfieFile] = useState<File | null>(null);
-    const [uploadProgress, setUploadProgress] = useState({ id: 0, selfie: 0 });
+    const [uploadProgress, setUploadProgress] = useState({ front: 0, back: 0, selfie: 0 });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [agentStatus, setAgentStatus] = useState<{ name: string, status: string }[]>([]);
     const [currentAgent, setCurrentAgent] = useState<string | null>(null);
@@ -44,14 +49,13 @@ export default function EnterpriseKYC() {
         const newErrors: Record<string, string> = {};
         if (!fullName.trim()) newErrors.fullName = "Full Legal Name is required";
         if (!phone.trim()) newErrors.phone = "Primary Mobile is required";
-        if (!aadharNumber.trim()) newErrors.aadharNumber = "Aadhar Number is required";
+        if (!drivingLicenseNumber.trim()) newErrors.drivingLicenseNumber = "Driving License is required";
         if (!secondaryIdType) newErrors.secondaryIdType = "Secondary ID Type is required";
         if (!secondaryIdNumber.trim()) newErrors.secondaryIdNumber = "Secondary ID Number is required";
         if (!address.trim()) newErrors.address = "Residential Address is required";
 
         // Simple regex validation
         if (phone && !/^\+?[0-9]{10,15}$/.test(phone)) newErrors.phone = "Invalid phone format";
-        if (aadharNumber && !/^[0-9]{12}$/.test(aadharNumber)) newErrors.aadharNumber = "Aadhar must be 12 digits";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -62,17 +66,11 @@ export default function EnterpriseKYC() {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const { latitude, longitude } = position.coords;
-                try {
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-                    );
-                    const data = await response.json();
-                    setAddress(data.display_name);
-                } catch (error) {
-                    console.error("Error fetching address:", error);
-                } finally {
-                    setIsLocating(false);
-                }
+                const latlng = L.latLng(latitude, longitude);
+                setMapPosition(latlng);
+                await fetchAddress(latitude, longitude, setAddress);
+                setIsLocating(false);
+                setIsMapActive(true);
             }, (error) => {
                 console.error("Error getting location:", error);
                 setIsLocating(false);
@@ -99,15 +97,15 @@ export default function EnterpriseKYC() {
         }
 
         if (step === 2) {
-            if (!idFile || !selfieFile) {
-                alert("Please upload both Government ID and Selfie.");
+            if (!idFrontFile || !idBackFile || !selfieFile) {
+                alert("Please upload Front & Back of ID and Selfie.");
                 return;
             }
             setStep(3);
             return;
         }
 
-        if (!user || !idFile || !selfieFile) {
+        if (!user || !idFrontFile || !idBackFile || !selfieFile) {
             alert("Please ensure you are logged in and all documents are uploaded.");
             return;
         }
@@ -115,9 +113,14 @@ export default function EnterpriseKYC() {
         setIsSubmitting(true);
 
         try {
-            // Upload ID
-            const idUrl = await uploadKYCDocument(user.id, idFile, 'id-card', (progress) => {
-                setUploadProgress(prev => ({ ...prev, id: progress }));
+            // Upload ID Front
+            const idFrontUrl = await uploadKYCDocument(user.id, idFrontFile, 'id-front', (progress) => {
+                setUploadProgress(prev => ({ ...prev, front: progress }));
+            });
+
+            // Upload ID Back
+            const idBackUrl = await uploadKYCDocument(user.id, idBackFile, 'id-back', (progress) => {
+                setUploadProgress(prev => ({ ...prev, back: progress }));
             });
 
             // Upload Selfie
@@ -134,7 +137,13 @@ export default function EnterpriseKYC() {
                 if (status !== 'PENDING') {
                     setTimeout(() => {
                         window.removeEventListener('kyc-updated', handleUpdate);
-                        navigate("/dashboard");
+                        const redirectPath = sessionStorage.getItem('redirectAfterKYC');
+                        if (redirectPath) {
+                            sessionStorage.removeItem('redirectAfterKYC');
+                            navigate(redirectPath);
+                        } else {
+                            navigate("/dashboard");
+                        }
                     }, 2000);
                 }
             };
@@ -148,11 +157,12 @@ export default function EnterpriseKYC() {
                 fullName,
                 phone,
                 secondaryPhone,
-                aadharNumber,
+                drivingLicenseNumber,
                 secondaryIdType,
                 secondaryIdNumber,
                 address,
-                idUrl,
+                idFrontUrl,
+                idBackUrl,
                 selfieUrl
             });
 
@@ -295,23 +305,23 @@ export default function EnterpriseKYC() {
                                                 </div>
 
                                                 <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Aadhar / National ID</label>
-                                                    <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'aadhar' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.aadharNumber ? 'border-red-500/50' : 'border-white/10'}`}>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Driving License Number</label>
+                                                    <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'dl' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.drivingLicenseNumber ? 'border-red-500/50' : 'border-white/10'}`}>
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                                                             <Fingerprint size={18} />
                                                         </div>
                                                         <input
                                                             required
                                                             type="text"
-                                                            value={aadharNumber}
-                                                            onChange={(e) => setAadharNumber(e.target.value)}
-                                                            placeholder="XXXX-XXXX-XXXX"
-                                                            onFocus={() => setActiveField('aadhar')}
+                                                            value={drivingLicenseNumber}
+                                                            onChange={(e) => setDrivingLicenseNumber(e.target.value)}
+                                                            placeholder="DL-XXXXXXXXXXXXX"
+                                                            onFocus={() => setActiveField('dl')}
                                                             onBlur={() => setActiveField(null)}
                                                             className="w-full bg-transparent p-4 pl-12 text-white font-mono outline-none placeholder:text-gray-700"
                                                         />
                                                     </div>
-                                                    {errors.aadharNumber && <p className="text-[10px] text-red-500 mt-1 ml-2 font-bold uppercase tracking-tighter">{errors.aadharNumber}</p>}
+                                                    {errors.drivingLicenseNumber && <p className="text-[10px] text-red-500 mt-1 ml-2 font-bold uppercase tracking-tighter">{errors.drivingLicenseNumber}</p>}
                                                 </div>
                                             </div>
 
@@ -328,10 +338,10 @@ export default function EnterpriseKYC() {
                                                             className="w-full bg-transparent p-4 text-white outline-none font-bold appearance-none cursor-pointer"
                                                         >
                                                             <option value="" disabled className="bg-[#0A0A0A]">Select ID Type</option>
-                                                            <option value="PAN" className="bg-[#0A0A0A]">PAN Card</option>
                                                             <option value="VOTER" className="bg-[#0A0A0A]">Voter ID</option>
                                                             <option value="PASSPORT" className="bg-[#0A0A0A]">Passport</option>
-                                                            <option value="DL" className="bg-[#0A0A0A]">Driving License</option>
+                                                            <option value="AADHAR" className="bg-[#0A0A0A]">Aadhar Card</option>
+                                                            <option value="OTHERS" className="bg-[#0A0A0A]">Others</option>
                                                         </select>
                                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
                                                             <ChevronRight size={18} className="rotate-90" />
@@ -364,16 +374,74 @@ export default function EnterpriseKYC() {
                                             <div className="group">
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 group-focus-within:text-[#A855F7] transition-colors">Residential Address</label>
-                                                    <button
-                                                        type="button"
-                                                        onClick={detectLocation}
-                                                        disabled={isLocating}
-                                                        className="text-[10px] font-black text-[#A855F7] hover:text-[#A855F7]/80 flex items-center gap-1 disabled:opacity-50 uppercase tracking-[0.1em]"
-                                                    >
-                                                        {isLocating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
-                                                        {isLocating ? "Locating..." : "Use Current Location"}
-                                                    </button>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setIsMapActive(!isMapActive)}
+                                                            className={`text-[10px] font-black flex items-center gap-1 uppercase tracking-[0.1em] transition-colors ${isMapActive ? 'text-[#A855F7]' : 'text-gray-500 hover:text-white'}`}
+                                                        >
+                                                            <Crosshair size={12} />
+                                                            {isMapActive ? "Close Map" : "Mark on Map"}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={detectLocation}
+                                                            disabled={isLocating}
+                                                            className="text-[10px] font-black text-[#A855F7] hover:text-[#A855F7]/80 flex items-center gap-1 disabled:opacity-50 uppercase tracking-[0.1em]"
+                                                        >
+                                                            {isLocating ? <Loader2 size={12} className="animate-spin" /> : <Target size={12} />}
+                                                            {isLocating ? "Locating..." : "Auto-Locate"}
+                                                        </button>
+                                                    </div>
                                                 </div>
+
+                                                <AnimatePresence>
+                                                    {isMapActive && (
+                                                        <motion.div
+                                                            initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                                                            animate={{ height: 350, opacity: 1, marginBottom: 16 }}
+                                                            exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                                                            className="relative rounded-xl border border-white/10 bg-[#0a0a0a] overflow-hidden group/map"
+                                                        >
+                                                            <MapContainer 
+                                                                center={[20.5937, 78.9629]} 
+                                                                zoom={5} 
+                                                                style={{ height: '100%', width: '100%', background: '#050505' }}
+                                                                attributionControl={false}
+                                                            >
+                                                                <TileLayer
+                                                                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                                                                />
+                                                                <LocationMarker 
+                                                                    position={mapPosition} 
+                                                                    setPosition={setMapPosition} 
+                                                                    setAddress={setAddress} 
+                                                                />
+                                                            </MapContainer>
+                                                            
+                                                            {/* Overlay elements */}
+                                                            <div className="absolute top-4 left-4 z-[1000] pointer-events-none">
+                                                                <div className="bg-black/60 backdrop-blur-md border border-white/10 p-2 rounded-lg">
+                                                                    <p className="text-[8px] font-black text-white uppercase tracking-widest">OpenSource Mapping Engine</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="absolute bottom-4 right-4 z-[1000] pointer-events-none text-right">
+                                                                <p className="text-[8px] font-mono text-gray-500 uppercase tracking-widest mb-1">Global Positioning Matrix v4.2</p>
+                                                                {mapPosition && (
+                                                                    <p className="text-[10px] font-mono text-[#A855F7] bg-black/60 backdrop-blur-md px-2 py-1 rounded">COORD: {mapPosition.lat.toFixed(4)}°N / {mapPosition.lng.toFixed(4)}°E</p>
+                                                                )}
+                                                            </div>
+
+                                                            {!mapPosition && (
+                                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 group-hover/map:opacity-100 transition-opacity z-[1000]">
+                                                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">Tap to place landing pin</p>
+                                                                </div>
+                                                            )}
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+
                                                 <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'address' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
                                                     <div className="absolute left-4 top-4 text-gray-500">
                                                         <MapPin size={18} />
@@ -406,22 +474,42 @@ export default function EnterpriseKYC() {
                                                 <h2 className="text-xl font-black tracking-widest uppercase italic">Secure Document Sync</h2>
                                             </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {/* ID Card Upload */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                {/* ID Front Upload */}
                                                 <div className="space-y-4">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block">Government ID (Front)</label>
-                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-8 text-center transition-all min-h-[180px] flex flex-col items-center justify-center ${idFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
-                                                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileChange(e, setIdFile)} accept="image/*,.pdf" />
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Primary ID (Front)</label>
+                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center ${idFrontFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
+                                                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileChange(e, setIdFrontFile)} accept="image/*,.pdf" />
 
-                                                        {idFile ? (
+                                                        {idFrontFile ? (
                                                             <div className="text-center">
-                                                                <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={32} />
-                                                                <p className="text-xs font-mono text-white truncate max-w-[200px] mx-auto">{idFile.name}</p>
+                                                                <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={24} />
+                                                                <p className="text-[10px] font-mono text-white truncate max-w-[150px] mx-auto">{idFrontFile.name}</p>
                                                             </div>
                                                         ) : (
                                                             <div className="text-center">
-                                                                <FileCheck className="text-[#A855F7] mx-auto mb-2 group-hover:scale-110 transition-transform" size={32} />
-                                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Sync ID Card</p>
+                                                                <FileCheck className="text-[#A855F7] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Front Side</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* ID Back Upload */}
+                                                <div className="space-y-4">
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Primary ID (Back)</label>
+                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center ${idBackFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
+                                                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileChange(e, setIdBackFile)} accept="image/*,.pdf" />
+
+                                                        {idBackFile ? (
+                                                            <div className="text-center">
+                                                                <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={24} />
+                                                                <p className="text-[10px] font-mono text-white truncate max-w-[150px] mx-auto">{idBackFile.name}</p>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-center">
+                                                                <FileCheck className="text-[#A855F7] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Back Side</p>
                                                             </div>
                                                         )}
                                                     </div>
@@ -429,19 +517,19 @@ export default function EnterpriseKYC() {
 
                                                 {/* Selfie Upload */}
                                                 <div className="space-y-4">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block">Live Face Check</label>
-                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-8 text-center transition-all min-h-[180px] flex flex-col items-center justify-center ${selfieFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Live Face Check</label>
+                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center ${selfieFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
                                                         <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileChange(e, setSelfieFile)} accept="image/*" />
 
                                                         {selfieFile ? (
                                                             <div className="text-center">
-                                                                <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={32} />
-                                                                <p className="text-xs font-mono text-white truncate max-w-[200px] mx-auto">{selfieFile.name}</p>
+                                                                <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={24} />
+                                                                <p className="text-[10px] font-mono text-white truncate max-w-[150px] mx-auto">{selfieFile.name}</p>
                                                             </div>
                                                         ) : (
                                                             <div className="text-center">
-                                                                <Scan className="text-[#A855F7] mx-auto mb-2 group-hover:scale-110 transition-transform" size={32} />
-                                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Capture Bio-Data</p>
+                                                                <Scan className="text-[#A855F7] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Face Scan</p>
                                                             </div>
                                                         )}
                                                     </div>
@@ -536,8 +624,8 @@ export default function EnterpriseKYC() {
                                                                 <p className="text-lg font-black text-white">{fullName || 'Not Provided'}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] uppercase font-black text-gray-600 tracking-widest mb-1">Aadhar Number</p>
-                                                                <p className="text-lg font-mono text-white tracking-widest">{aadharNumber || 'Not Provided'}</p>
+                                                                <p className="text-[10px] uppercase font-black text-gray-600 tracking-widest mb-1">Driving License</p>
+                                                                <p className="text-lg font-mono text-white tracking-widest">{drivingLicenseNumber || 'Not Provided'}</p>
                                                             </div>
                                                             {secondaryIdType && (
                                                                 <div>
@@ -552,7 +640,8 @@ export default function EnterpriseKYC() {
                                                                 <p className="text-sm font-black text-emerald-500">READY TO TRANSMIT</p>
                                                             </div>
                                                             <div className="flex justify-end gap-2">
-                                                                {idFile && <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg" title="ID Sync"><FileCheck size={16} /></div>}
+                                                                {idFrontFile && <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg" title="Front Sync"><FileCheck size={16} /></div>}
+                                                                {idBackFile && <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg" title="Back Sync"><FileCheck size={16} /></div>}
                                                                 {selfieFile && <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg" title="Bio Sync"><User size={16} /></div>}
                                                             </div>
                                                         </div>

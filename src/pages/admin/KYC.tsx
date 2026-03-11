@@ -153,7 +153,7 @@ export default function AdminKYC() {
                                         </div>
                                         <div className="flex flex-wrap items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-gray-500">
                                             <span className="flex items-center gap-1 text-[#A855F7]">
-                                                <Fingerprint size={12} /> {docItem.aadharNumber.substring(0, 4)}-XXXX-XXXX
+                                                <Fingerprint size={12} /> {docItem.drivingLicenseNumber}
                                             </span>
                                             <span>•</span>
                                             <span>SUBMITTED: {new Date(docItem.submittedAt || '').toLocaleDateString()}</span>
@@ -202,22 +202,31 @@ export default function AdminKYC() {
                                             {/* Documents */}
                                             <div className="space-y-4">
                                                 <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Evidence Assets</h4>
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-3 gap-2">
                                                     <div className="space-y-2">
-                                                        <p className="text-[9px] font-mono text-gray-600 uppercase">Primary ID Card</p>
+                                                        <p className="text-[8px] font-mono text-gray-600 uppercase text-center">ID Front</p>
                                                         <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative">
-                                                            <img src={docItem.idUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                            <img src={docItem.idFrontUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
                                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
-                                                                <Eye size={16} />
+                                                                <Eye size={14} />
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <p className="text-[9px] font-mono text-gray-600 uppercase">Live Selfie</p>
+                                                        <p className="text-[8px] font-mono text-gray-600 uppercase text-center">ID Back</p>
+                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative">
+                                                            <img src={docItem.idBackUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
+                                                                <Eye size={14} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <p className="text-[8px] font-mono text-gray-600 uppercase text-center">Live Selfie</p>
                                                         <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative">
                                                             <img src={docItem.selfieUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
                                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
-                                                                <Eye size={16} />
+                                                                <Eye size={14} />
                                                             </div>
                                                         </div>
                                                     </div>

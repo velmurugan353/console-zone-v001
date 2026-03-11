@@ -1,12 +1,29 @@
 import { useState, useEffect } from 'react';
 import { formatCurrency } from '../../lib/utils';
-import { CheckCircle, XCircle, Search, Filter, AlertTriangle, Activity, Zap, User, DollarSign, TrendingUp, Edit2, Save } from 'lucide-react';
+import { 
+  CheckCircle, 
+  XCircle, 
+  Search, 
+  Filter, 
+  AlertTriangle, 
+  Activity, 
+  Zap, 
+  User, 
+  DollarSign, 
+  TrendingUp, 
+  Edit2, 
+  Save,
+  Printer,
+  FileText
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { automationService } from '../../services/automationService';
 import { notificationService } from '../../services/notificationService';
 import { aiService } from '../../services/aiService';
 import { collection, onSnapshot, query, doc, updateDoc, orderBy, addDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { invoiceService } from '../../services/invoiceService';
+import InvoiceModal from '../../components/admin/InvoiceModal';
 
 type SellRequestStatus = 'pending' | 'offered' | 'accepted' | 'rejected' | 'completed';
 
@@ -24,44 +41,6 @@ interface SellRequest {
   images: string[];
 }
 
-const MOCK_SELL_REQUESTS: SellRequest[] = [
-  {
-    id: 'SELL-3001',
-    customer: 'Alex Gamer',
-    email: 'alex@example.com',
-    device: 'PlayStation 5',
-    condition: 'Like New',
-    estimatedValue: 450.00,
-    adminOffer: 380.00,
-    date: '2023-10-25',
-    status: 'offered',
-    images: ['https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80&w=200']
-  },
-  {
-    id: 'SELL-3002',
-    customer: 'Sarah Smith',
-    email: 'sarah@example.com',
-    device: 'Nintendo Switch OLED',
-    condition: 'Good',
-    estimatedValue: 250.00,
-    date: '2023-10-24',
-    status: 'pending',
-    images: ['https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?auto=format&fit=crop&q=80&w=200']
-  },
-  {
-    id: 'SELL-3003',
-    customer: 'Mike Johnson',
-    email: 'mike@example.com',
-    device: 'Xbox Series X',
-    condition: 'Fair',
-    estimatedValue: 350.00,
-    adminOffer: 280.00,
-    date: '2023-10-22',
-    status: 'accepted',
-    images: ['https://images.unsplash.com/photo-1621259182902-3b836c824e22?auto=format&fit=crop&q=80&w=200']
-  }
-];
-
 export default function AdminSellRequests() {
   const [requests, setRequests] = useState<SellRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +52,7 @@ export default function AdminSellRequests() {
   const [marketAnalysis, setMarketAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isBridging, setIsBridging] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
 
   const handleAIMarketAnalysis = async () => {
     if (!selectedRequest) return;
@@ -87,11 +67,10 @@ export default function AdminSellRequests() {
     if (!selectedRequest) return;
     setIsBridging(true);
     try {
-      // 1. Create a new product entry in Firestore
       const productData = {
         name: `${selectedRequest.device} (Pre-owned)`,
-        category: 'console', // Default to console
-        price: (selectedRequest.adminOffer || selectedRequest.estimatedValue) * 1.4, // 40% margin
+        category: 'console',
+        price: (selectedRequest.adminOffer || selectedRequest.estimatedValue) * 1.4,
         image: selectedRequest.images[0],
         rating: 4.5,
         reviews: 0,
@@ -106,10 +85,7 @@ export default function AdminSellRequests() {
       };
 
       await addDoc(collection(db, 'products'), productData);
-      
-      // 2. Mark request as completed
       await handleStatusChange(selectedRequest.id, 'completed');
-      
       alert('INVENTORY BRIDGE SUCCESSFUL: Asset has been de-materialized from Acquisitions and re-materialized in the Shop Matrix.');
       setSelectedRequest(null);
     } catch (error) {
@@ -156,11 +132,6 @@ export default function AdminSellRequests() {
     setEditForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const closeRequestModal = () => {
-    setSelectedRequest(null);
-    setIsEditing(false);
-  };
-
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
 
   const handleStatusChange = async (id: string, newStatus: SellRequestStatus) => {
@@ -182,7 +153,6 @@ export default function AdminSellRequests() {
       return;
     }
 
-    // Trigger Automations
     if (newStatus === 'offered') {
       await automationService.triggerWorkflow('buyback_quote_sent', {
         requestId: id,
@@ -211,9 +181,9 @@ export default function AdminSellRequests() {
       });
       alert(`Custom quote sent to ${selectedRequest.customer}`);
     } else if (type === 'update') {
-      notificationService.sendNotification('repair_update', selectedRequest.email, { // using generic update
+      notificationService.sendNotification('repair_update', selectedRequest.email, {
         customerName: selectedRequest.customer,
-        repairId: selectedRequest.id, // using generic structure
+        repairId: selectedRequest.id,
         device: selectedRequest.device,
         status: selectedRequest.status
       });
@@ -270,12 +240,21 @@ export default function AdminSellRequests() {
                   <h3 className="text-xs font-mono uppercase tracking-widest text-[#A855F7]">Acquisition_Protocol</h3>
                   <p className="text-2xl font-bold text-white tracking-tighter uppercase italic">Request Details</p>
                 </div>
-                <button
-                  onClick={() => setSelectedRequest(null)}
-                  className="text-gray-500 hover:text-white transition-colors"
-                >
-                  <XCircle className="h-6 w-6" />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowInvoice(true)}
+                    className="p-2 bg-white/5 rounded-full text-[#A855F7] border border-[#A855F7]/20 hover:bg-white/10 transition-colors"
+                    title="Generate Acquisition Invoice"
+                  >
+                    <FileText size={20} />
+                  </button>
+                  <button
+                    onClick={() => setSelectedRequest(null)}
+                    className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-500 hover:text-white"
+                  >
+                    <XCircle size={24} />
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-6">
@@ -554,6 +533,16 @@ export default function AdminSellRequests() {
           </div>
         )}
       </div>
+
+      {/* Invoice Generator Modal */}
+      <AnimatePresence>
+        {showInvoice && selectedRequest && (
+          <InvoiceModal 
+            data={invoiceService.formatSellRequestData(selectedRequest)} 
+            onClose={() => setShowInvoice(false)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

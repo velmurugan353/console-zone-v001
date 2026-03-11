@@ -81,6 +81,21 @@ interface RentalHistoryRecord {
   status: 'completed' | 'active' | 'late' | 'pending';
 }
 
+interface KitItem {
+  id: string;
+  name: string;
+  serialNumber?: string;
+  status: 'present' | 'missing' | 'damaged';
+}
+
+interface ConditionLog {
+  date: string;
+  status: InventoryStatus;
+  note: string;
+  technician: string;
+  images?: string[];
+}
+
 interface InventoryItem {
   id: string;
   name: string;
@@ -106,6 +121,8 @@ interface InventoryItem {
   insurancePolicy: string;
   insuranceExpiry: string;
   depreciationRate: number;
+  firmwareVersion?: string;
+  qrCode?: string;
 }
 
 interface TransferRecord {
@@ -1279,6 +1296,74 @@ export default function AdminInventory() {
 
                 {activeTab === 'control' && (
                   <div className="space-y-8">
+                    {/* Unit Command Center */}
+                    <div className="bg-[#A855F7]/5 border border-[#A855F7]/20 rounded-2xl p-6 flex flex-col md:flex-row gap-8 items-center">
+                      <div className="bg-white p-2 rounded-xl shrink-0 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+                        <QrCode size={120} className="text-black" />
+                        <p className="text-[8px] font-black text-center text-black mt-1 tracking-tighter uppercase">{selectedItem.id}</p>
+                      </div>
+                      <div className="flex-grow space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-sm font-black uppercase tracking-widest text-white italic">Unit Command Center</h3>
+                            <p className="text-[9px] font-mono text-[#A855F7] uppercase tracking-widest mt-1">Direct Hardware Link // OS v{selectedItem.firmwareVersion || '2.4.0'}</p>
+                          </div>
+                          <button className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
+                            <Download size={14} />
+                            Print Label
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="bg-black/40 p-3 rounded-xl border border-white/5">
+                            <p className="text-[8px] font-mono text-gray-500 uppercase mb-1">Status</p>
+                            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">SIGNAL_LOCK</p>
+                          </div>
+                          <div className="bg-black/40 p-3 rounded-xl border border-white/5">
+                            <p className="text-[8px] font-mono text-gray-500 uppercase mb-1">Uptime</p>
+                            <p className="text-[10px] font-black text-white uppercase tracking-widest">1,244 HRS</p>
+                          </div>
+                          <div className="bg-black/40 p-3 rounded-xl border border-white/5">
+                            <p className="text-[8px] font-mono text-gray-500 uppercase mb-1">Last Sync</p>
+                            <p className="text-[10px] font-black text-white uppercase tracking-widest">2 MIN AGO</p>
+                          </div>
+                          <div className="bg-black/40 p-3 rounded-xl border border-white/5">
+                            <p className="text-[8px] font-mono text-gray-500 uppercase mb-1">Battery/Power</p>
+                            <p className="text-[10px] font-black text-[#A855F7] uppercase tracking-widest">STABLE</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Asset Condition Gallery */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.3em]">Evidence Timeline // Condition Assets</h3>
+                        <button className="flex items-center gap-2 px-3 py-1.5 bg-white/5 text-gray-400 rounded-lg text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-white/10 transition-all border border-white/5">
+                          <Camera size={12} /> Add Evidence
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="aspect-video bg-black rounded-xl border border-white/5 relative group overflow-hidden">
+                          <img src={selectedItem.image} alt="Ref" className="w-full h-full object-cover opacity-40 group-hover:opacity-100 transition-opacity" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex items-end p-3">
+                            <p className="text-[8px] font-mono text-white/60 uppercase">Pre-Deployment // {selectedItem.lastService}</p>
+                          </div>
+                        </div>
+                        {selectedItem.conditionLogs?.map((log, idx) => (
+                          <div key={idx} className="aspect-video bg-black rounded-xl border border-white/5 relative group overflow-hidden">
+                            <img src={log.photoUrl} alt="Log" className="w-full h-full object-cover opacity-40 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex items-end p-3">
+                              <p className="text-[8px] font-mono text-white/60 uppercase">Log_{idx + 1} // {log.date}</p>
+                            </div>
+                          </div>
+                        ))}
+                        <button className="aspect-video bg-white/[0.02] border border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-white/[0.05] transition-all group">
+                          <Upload size={20} className="text-gray-600 group-hover:text-[#A855F7]" />
+                          <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Upload Frame</span>
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.3em]">Status Controls</h3>

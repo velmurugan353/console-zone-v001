@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ShoppingBag, Calendar, Wrench, DollarSign, Activity, ShieldCheck, RefreshCw } from 'lucide-react';
+import { ShoppingBag, Calendar, Wrench, DollarSign, Activity, ShieldCheck, RefreshCw, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminOrders from './AdminOrders';
 import AdminRentals from './AdminRentals';
 import AdminRepairs from './AdminRepairs';
 import AdminSellRequests from './AdminSellRequests';
 import AdminInventory from './AdminInventory';
+import AdminInvoices from './AdminInvoices';
 
-type OperationTab = 'orders' | 'rentals' | 'repairs' | 'sell-requests' | 'inventory';
+type OperationTab = 'orders' | 'rentals' | 'repairs' | 'sell-requests' | 'inventory' | 'invoices';
 
 const tabs: { id: OperationTab; name: string; icon: any }[] = [
   { id: 'orders', name: 'Orders', icon: ShoppingBag },
@@ -16,6 +17,7 @@ const tabs: { id: OperationTab; name: string; icon: any }[] = [
   { id: 'inventory', name: 'Inventory', icon: Activity },
   { id: 'repairs', name: 'Repairs', icon: Wrench },
   { id: 'sell-requests', name: 'Sell Requests', icon: DollarSign },
+  { id: 'invoices', name: 'Invoices', icon: FileText },
 ];
 
 export default function AdminOperations() {
@@ -85,6 +87,7 @@ export default function AdminOperations() {
           {activeTab === 'inventory' && <AdminInventory />}
           {activeTab === 'repairs' && <AdminRepairs />}
           {activeTab === 'sell-requests' && <AdminSellRequests />}
+          {activeTab === 'invoices' && <AdminInvoices />}
         </AnimatePresence>
       </motion.div>
 

@@ -14,11 +14,12 @@ export interface KYCData {
     trustScore?: number; // Trust score for admin panel
     phone: string;
     secondaryPhone?: string;
-    aadharNumber: string;
+    drivingLicenseNumber: string;
     secondaryIdType?: string;
     secondaryIdNumber?: string;
     address: string;
-    idUrl: string;
+    idFrontUrl: string;
+    idBackUrl: string;
     selfieUrl: string;
     status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'MANUAL_REVIEW';
     submittedAt?: string;
@@ -28,14 +29,21 @@ export interface KYCData {
 const KYC_STORAGE_KEY = 'consolezone_kyc_data';
 
 export const getKYCStatus = (userId: string): KYCData | null => {
-    const allData = JSON.parse(localStorage.getItem(KYC_STORAGE_KEY) || '{}');
-    return allData[userId] || null;
+    try {
+        const stored = localStorage.getItem(KYC_STORAGE_KEY);
+        if (!stored || stored === 'undefined') return null;
+        const allData = JSON.parse(stored);
+        return allData[userId] || null;
+    } catch (e) {
+        console.error("KYC Data corruption:", e);
+        return null;
+    }
 };
 
 export const uploadKYCDocument = async (
     userId: string,
     file: File,
-    type: 'id-card' | 'selfie',
+    type: 'id-front' | 'id-back' | 'selfie',
     onProgress?: (progress: number) => void
 ): Promise<string> => {
     // Simulate upload delay and progress

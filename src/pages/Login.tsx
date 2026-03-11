@@ -96,20 +96,6 @@ export default function Login() {
           >
             {loading ? 'Authenticating...' : 'Secure Login'}
           </button>
-
-          {searchParams.get('test') === 'true' && (
-            <button
-              type="button"
-              id="test-bypass-btn"
-              onClick={async () => {
-                await login('Cheersediting@gmail.com', 'admin123', 'admin');
-                navigate('/admin');
-              }}
-              className="w-full py-2 mt-2 bg-emerald-500/10 border border-emerald-500/50 text-emerald-500 font-mono text-[10px] uppercase tracking-widest rounded-xl hover:bg-emerald-500 hover:text-white transition-all"
-            >
-              Execute Test Bypass Protocol
-            </button>
-          )}
         </form>
 
         <div className="mt-8 text-center text-sm text-gaming-muted space-y-2">

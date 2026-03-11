@@ -23,6 +23,15 @@ export default function UserKYC() {
                 // For demo, we check if user has a kyc_status property (mocking approved for specific IDs)
                 const mockStatus = (user as any).kyc_status || null;
 
+                if (mockStatus === 'APPROVED') {
+                    const redirectPath = sessionStorage.getItem('redirectAfterKYC');
+                    if (redirectPath) {
+                        sessionStorage.removeItem('redirectAfterKYC');
+                        navigate(redirectPath);
+                        return;
+                    }
+                }
+
                 if (mockStatus === 'PENDING' || mockStatus === 'APPROVED') {
                     setStatus(mockStatus);
                 }

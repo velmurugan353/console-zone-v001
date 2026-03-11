@@ -52,16 +52,15 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
 
           {/* Actions */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link
-              to="/admin"
-              className={cn(
-                "flex items-center space-x-1 text-sm font-medium transition-colors",
-                isAdmin ? "text-gaming-accent" : "text-gaming-muted hover:text-white"
-              )}
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              <span>Admin</span>
-            </Link>
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="flex items-center space-x-1 text-sm font-medium transition-colors text-gaming-accent hover:text-gaming-accent/80"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Admin</span>
+              </Link>
+            )}
 
             <Link to="/cart" className="relative text-gaming-text hover:text-gaming-accent transition-colors">
               <ShoppingCart className="h-5 w-5" />
@@ -74,7 +73,7 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
 
             {user ? (
               <Link
-                to={isAdmin ? "/admin" : "/dashboard"}
+                to="/dashboard"
                 className="flex items-center space-x-2 text-sm font-medium text-gaming-text hover:text-gaming-accent transition-colors"
               >
                 <div className="h-8 w-8 rounded-full bg-gaming-card border border-gaming-border flex items-center justify-center overflow-hidden">
@@ -130,14 +129,16 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
                 </Link>
               ))}
               <div className="pt-4 border-t border-gaming-border">
-                <Link
-                  to="/admin"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center space-x-2 px-3 py-2 text-gaming-muted hover:text-white"
-                >
-                  <LayoutDashboard className="h-5 w-5" />
-                  <span>Admin Panel</span>
-                </Link>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 text-gaming-accent hover:text-gaming-accent/80"
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span>Admin Panel</span>
+                  </Link>
+                )}
                 <Link
                   to="/cart"
                   onClick={() => setIsOpen(false)}
@@ -148,7 +149,7 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
                 </Link>
                 {user ? (
                   <Link
-                    to={isAdmin ? "/admin" : "/dashboard"}
+                    to="/dashboard"
                     onClick={() => setIsOpen(false)}
                     className="flex items-center space-x-2 px-3 py-2 text-gaming-muted hover:text-white"
                   >

@@ -55,6 +55,7 @@ import AdminControls from './pages/admin/AdminControls';
 import AdminUsedConsoles from './pages/admin/AdminUsedConsoles';
 import AdminOperations from './pages/admin/AdminOperations';
 import AdminAutomation from './pages/admin/AdminAutomation';
+import AdminInvoices from './pages/admin/AdminInvoices';
 
 function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -80,7 +81,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* User Routes */}
-            <Route path="/dashboard" element={<MainLayout><UserLayout /></MainLayout>}>
+            <Route path="/dashboard" element={<RequireAuth onLoginRequired={() => setIsAuthOpen(true)}><MainLayout><UserLayout /></MainLayout></RequireAuth>}>
               <Route index element={<UserDashboard />} />
               <Route path="orders" element={<MyOrders />} />
               <Route path="rentals" element={<MyRentals />} />
@@ -112,13 +113,14 @@ function App() {
             <Route path="/admin/used-consoles" element={<AdminLayout><AdminUsedConsoles /></AdminLayout>} />
             <Route path="/admin/operations" element={<AdminLayout><AdminOperations /></AdminLayout>} />
             <Route path="/admin/automation" element={<AdminLayout><AdminAutomation /></AdminLayout>} />
+            <Route path="/admin/invoices" element={<AdminLayout><AdminInvoices /></AdminLayout>} />
 
             {/* Fallback */}
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
+          <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
         </Router>
-        <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
       </CartProvider>
     </AuthProvider>
   );

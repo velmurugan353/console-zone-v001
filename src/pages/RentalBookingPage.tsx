@@ -126,6 +126,27 @@ export default function RentalBookingPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const savedBooking = sessionStorage.getItem('pending_rental_booking');
+    if (savedBooking && savedBooking !== 'undefined') {
+      try {
+        const { state: savedState, step, slug: savedSlug } = JSON.parse(savedBooking);
+        if (savedSlug === slug) {
+          // Restore dates as Date objects
+          if (savedState.duration.startDate) savedState.duration.startDate = new Date(savedState.duration.startDate);
+          if (savedState.duration.endDate) savedState.duration.endDate = new Date(savedState.duration.endDate);
+          
+          setBookingState(savedState);
+          setCurrentStep(step as Step);
+          // Clear it after restoration to avoid accidental reuse
+          sessionStorage.removeItem('pending_rental_booking');
+        }
+      } catch (e) {
+        console.error("Failed to restore saved booking:", e);
+      }
+    }
+  }, [slug]);
+
+  useEffect(() => {
     const fetchConsole = async () => {
       try {
         const q = query(collection(db, 'products'), where('type', '==', 'rental'));
@@ -871,15 +892,20 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
   isFirstBooking: boolean
 }) {
   const isKycApproved = kycStatus === 'APPROVED';
+  const [showManualAddress, setShowManualAddress] = useState(false);
 
   useEffect(() => {
-    if (state.delivery.method === 'delivery' && isKycApproved && kycAddress) {
-      setState((prev: BookingState) => ({
-        ...prev,
-        delivery: { ...prev.delivery, address: kycAddress }
-      }));
+    // Only auto-fill if the user hasn't explicitly chosen to show manual address
+    // and if the current address is empty or is the kyc address
+    if (state.delivery.method === 'delivery' && isKycApproved && kycAddress && !showManualAddress) {
+      if (!state.delivery.address || state.delivery.address === kycAddress) {
+        setState((prev: BookingState) => ({
+          ...prev,
+          delivery: { ...prev.delivery, address: kycAddress }
+        }));
+      }
     }
-  }, [state.delivery.method, isKycApproved, kycAddress]);
+  }, [state.delivery.method, isKycApproved, kycAddress, showManualAddress]);
 
   return (
     <motion.div
@@ -927,7 +953,14 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                 if (isKycApproved) {
                   setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, method: 'delivery' } }));
                 } else {
-                  alert("KYC Verification Required for Home Delivery. Please verify your identity first.");
+                  // Save progress to sessionStorage immediately
+                  sessionStorage.setItem('pending_rental_booking', JSON.stringify({
+                    state: state,
+                    step: 3,
+                    slug: slug
+                  }));
+                  sessionStorage.setItem('redirectAfterKYC', `/rentals/${slug}/book`);
+                  navigate('/dashboard/kyc');
                 }
               }}
               className={cn(
@@ -935,16 +968,19 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                 state.delivery.method === 'delivery'
                   ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
                   : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30",
-                !isKycApproved && "opacity-50 grayscale hover:border-white/10 cursor-not-allowed"
+                !isKycApproved && "opacity-50 grayscale hover:border-white/10"
               )}
             >
               <Truck size={32} className="mb-4" />
               <h4 className="text-xl font-black uppercase tracking-tight mb-2">Home Delivery</h4>
               <p className="text-xs leading-relaxed opacity-70">We bring the game to your doorstep. Same-day available.</p>
               {!isKycApproved && (
-                <div className="mt-2 text-[10px] text-amber-500 font-bold uppercase tracking-widest flex items-center gap-1">
-                  <ShieldCheck size={12} />
-                  KYC Required
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="text-[10px] text-amber-500 font-bold uppercase tracking-widest flex items-center gap-1">
+                    <ShieldCheck size={12} />
+                    KYC Required
+                  </div>
+                  <span className="text-[9px] font-black text-[#00d4ff] underline uppercase tracking-widest">Verify Now</span>
                 </div>
               )}
               <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-2">
@@ -968,25 +1004,87 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                   />
                 </div>
               </div>
+              
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Delivery Address</label>
-                <div className="relative">
-                  <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input
-                    type="text"
-                    readOnly={state.delivery.method === 'pickup' || isKycApproved}
-                    placeholder={state.delivery.method === 'pickup' ? "Store Location (Auto-filled)" : "Enter your full address"}
-                    disabled={state.delivery.method === 'pickup' || (!isKycApproved && state.delivery.method === 'delivery')}
-                    value={state.delivery.method === 'pickup' ? "123 Gaming Hub, Tech District" : (isKycApproved ? kycAddress : state.delivery.address)}
-                    onChange={(e) => !isKycApproved && setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: e.target.value } }))}
-                    className={cn(
-                      "w-full bg-black/40 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-sm focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none transition-all",
-                      (state.delivery.method === 'pickup' || isKycApproved) && "opacity-70 cursor-not-allowed bg-white/5"
+                
+                {state.delivery.method === 'pickup' ? (
+                  <div className="relative opacity-70">
+                    <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input
+                      type="text"
+                      readOnly
+                      value="123 Gaming Hub, Tech District"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-sm outline-none cursor-not-allowed"
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {isKycApproved && kycAddress && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowManualAddress(false);
+                          setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: kycAddress } }));
+                        }}
+                        className={cn(
+                          "w-full p-4 rounded-xl border text-left transition-all flex items-start gap-3 group",
+                          !showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address)
+                            ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
+                            : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30"
+                        )}
+                      >
+                        <div className={cn(
+                          "mt-1 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors",
+                          !showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address) ? "border-[#00d4ff]" : "border-gray-600 group-hover:border-gray-400"
+                        )}>
+                          {!showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address) && <div className="w-2 h-2 rounded-full bg-[#00d4ff]" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[10px] font-black uppercase tracking-widest mb-1">Use KYC Verified Address</p>
+                          <p className="text-xs opacity-80 line-clamp-2 leading-relaxed">{kycAddress}</p>
+                        </div>
+                        <div className="bg-emerald-500/20 text-emerald-500 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest self-start">Verified</div>
+                      </button>
                     )}
-                  />
-                </div>
-                {isKycApproved && state.delivery.method === 'delivery' && (
-                  <p className="text-[9px] text-emerald-500 font-mono uppercase tracking-widest mt-1">Verified KYC Address Locked</p>
+
+                    {(!isKycApproved || !kycAddress || showManualAddress) ? (
+                      <div className="relative group">
+                        <MapPin size={16} className="absolute left-4 top-4 text-gray-500 group-focus-within:text-[#00d4ff] transition-colors" />
+                        <textarea
+                          autoFocus={showManualAddress}
+                          placeholder="Enter your full delivery address..."
+                          value={state.delivery.address}
+                          onChange={(e) => setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: e.target.value } }))}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl py-4 pl-12 pr-12 text-sm focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none transition-all h-24 resize-none"
+                        />
+                        {isKycApproved && kycAddress && (
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setShowManualAddress(false);
+                              setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: kycAddress } }));
+                            }}
+                            className="absolute right-4 top-4 text-[10px] font-black text-gray-500 hover:text-white uppercase tracking-widest transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowManualAddress(true);
+                          setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: '' } }));
+                        }}
+                        className="w-full p-4 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-[#00d4ff] hover:border-[#00d4ff]/50 transition-all flex items-center justify-center gap-2 group"
+                      >
+                        <PlusCircle size={16} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Add Different Delivery Address</span>
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

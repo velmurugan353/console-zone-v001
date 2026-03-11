@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 @theme {
   --color-gaming-bg: #0a0a0a;
@@ -83,4 +84,29 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-modal, .invoice-modal * {
+    visibility: visible;
+  }
+  .invoice-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  #invoice-content {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
 }
