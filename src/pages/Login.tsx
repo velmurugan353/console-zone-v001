@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShieldAlert } from 'lucide-react';
-import { useEffect } from 'react';
+import { ShieldAlert, ChevronLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function Login() {
   const { login } = useAuth();
@@ -36,7 +36,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gaming-bg flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-gaming-bg flex items-center justify-center relative overflow-hidden p-4">
+      {/* Mobile Back Button */}
+      <div className="md:hidden fixed top-6 left-6 z-20">
+        <button onClick={() => navigate('/')} className="text-white flex items-center gap-1 text-xs font-bold uppercase tracking-widest bg-white/10 px-3 py-2 rounded-full border border-white/10">
+          <ChevronLeft size={16} /> Back to Home
+        </button>
+      </div>
+
       {/* Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-[100px]" />

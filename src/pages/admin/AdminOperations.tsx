@@ -55,12 +55,12 @@ export default function AdminOperations() {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
-            className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all duration-300 border ${activeTab === tab.id
+            className={`flex items-center space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold uppercase tracking-widest text-[9px] md:text-[10px] transition-all duration-300 border whitespace-nowrap ${activeTab === tab.id
                 ? 'bg-[#A855F7] text-white border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.4)]'
                 : 'bg-white/5 text-gray-500 border-white/10 hover:bg-white/10 hover:text-white'
               }`}

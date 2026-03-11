@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, Mail, AlertCircle } from 'lucide-react';
+import { User, Lock, Mail, AlertCircle, X, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './AuthModal.css';
 
@@ -60,6 +60,14 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 auth-wrapper">
+            {/* Mobile Close Button */}
+            <button 
+                onClick={onClose}
+                className="md:hidden fixed top-6 right-6 p-2 bg-white/10 rounded-full text-white z-[110] border border-white/20"
+            >
+                <X size={24} />
+            </button>
+
             <div className={`container ${isRegistering ? 'active' : ''}`}>
                 {/* Background Shapes */}
                 <div className="curved-shape"></div>
@@ -74,6 +82,11 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
 
                 {/* Login Form */}
                 <div className="form-box bg-transparent Login">
+                    <div className="md:hidden mb-4">
+                        <button onClick={onClose} className="text-white flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
+                            <ChevronLeft size={16} /> Back
+                        </button>
+                    </div>
                     <h2 className="animation" style={{ '--D': 0, '--S': 21 } as React.CSSProperties}>Login</h2>
                     <form className="relative" onSubmit={handleLogin}>
                         <div className="input-box animation" style={{ '--D': 1, '--S': 22 } as React.CSSProperties}>
@@ -127,6 +140,11 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
 
                 {/* Register Form */}
                 <div className="form-box bg-transparent Register">
+                    <div className="md:hidden mb-4">
+                        <button type="button" onClick={() => setIsRegistering(false)} className="text-white flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
+                            <ChevronLeft size={16} /> Back to Login
+                        </button>
+                    </div>
                     <h2 className="animation" style={{ '--li': 17, '--S': 0 } as React.CSSProperties}>Register</h2>
                     <form className="relative" onSubmit={handleRegister}>
                         <div className="input-box animation" style={{ '--li': 18, '--S': 1 } as React.CSSProperties}>

@@ -167,7 +167,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Net Liquidity"
           value="₹142,509.22"
@@ -203,9 +203,9 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-8 overflow-x-auto lg:overflow-x-visible">
           {/* Deep Inventory Protocol */}
-          <div className="bg-[#0a0a0a] rounded-lg border border-white/10 overflow-hidden">
+          <div className="bg-[#0a0a0a] rounded-lg border border-white/10 overflow-hidden min-w-[800px] lg:min-w-0">
             <div className="p-4 bg-white/[0.02] border-b border-white/10 flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <Box className="h-4 w-4 text-[#A855F7]" />

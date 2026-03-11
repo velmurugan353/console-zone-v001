@@ -16,6 +16,45 @@
   background: #0a0a0a;
 }
 
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .auth-wrapper .container {
+    width: 100%;
+    height: auto;
+    min-height: 500px;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .auth-wrapper .info-content {
+    display: none !important;
+  }
+
+  .auth-wrapper .form-box {
+    width: 100% !important;
+    padding: 40px 30px !important;
+    position: relative !important;
+  }
+
+  .auth-wrapper .form-box.Register {
+    display: none;
+  }
+
+  .auth-wrapper .container.active .form-box.Login {
+    display: none;
+  }
+
+  .auth-wrapper .container.active .form-box.Register {
+    display: flex;
+    right: 0;
+  }
+
+  .auth-wrapper .curved-shape,
+  .auth-wrapper .curved-shape2 {
+    display: none;
+  }
+}
+
 .auth-wrapper .form-box {
   position: absolute;
   top: 0;
