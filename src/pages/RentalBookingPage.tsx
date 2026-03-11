@@ -43,7 +43,7 @@ type Step = 1 | 2 | 3 | 4 | 5;
 interface BookingState {
   console: RentalConsole | null;
   duration: {
-    type: 'daily' | 'weekend' | 'weekly' | 'monthly';
+    type: 'daily' | 'weekly' | 'monthly';
     startDate: Date | null;
     endDate: Date | null;
     totalDays: number;
@@ -78,7 +78,7 @@ function StepIndicator({ currentStep, completedSteps }: { currentStep: Step, com
   ];
 
   return (
-    <div className="flex items-center justify-between mb-12 overflow-x-auto pb-4 scrollbar-hide">
+    <div className="flex items-center gap-4 md:justify-between mb-12 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
       {steps.map((step, index) => (
         <div key={step.id} className="flex items-center">
           <div className="flex flex-col items-center">
@@ -425,6 +425,36 @@ export default function RentalBookingPage() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Sticky Summary Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-xl border-t border-white/10 p-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg overflow-hidden border border-white/10 shrink-0">
+              <img src={consoleData?.image} alt="" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-[#00d4ff] uppercase tracking-tighter truncate max-w-[100px]">
+                {consoleData?.name}
+              </p>
+              <p className="text-sm font-black text-white">
+                {formatCurrency(totalDue)}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={currentStep === 4 ? handleConfirmBooking : nextStep}
+            disabled={
+              (currentStep === 2 && (!bookingState.duration.startDate || !bookingState.duration.endDate)) ||
+              (currentStep === 3 && (!bookingState.delivery.phone || (bookingState.delivery.method === 'delivery' && !bookingState.delivery.address))) ||
+              (currentStep === 4 && !bookingState.payment.termsAccepted)
+            }
+            className="flex-1 py-3 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-[10px] rounded-xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] disabled:opacity-50"
+          >
+            {currentStep === 4 ? 'Confirm' : 'Continue'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -607,7 +637,7 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
     // Mapping plan types to day counts
     const planDurations = {
       weekly: 7,
-      weekend: 3,
+      monthly: 30,
       daily: 0 // daily is special, manual range
     };
 
@@ -663,8 +693,8 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
 
   const durationTypes = [
     { id: 'daily', label: 'Daily', days: 1 },
-    { id: 'weekend', label: 'Weekend', days: 3 },
-    { id: 'weekly', label: 'Weekly', days: 7 }
+    { id: 'weekly', label: 'Weekly', days: 7 },
+    { id: 'monthly', label: 'Monthly', days: 30 }
   ];
 
   return (
@@ -750,12 +780,12 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
                 </button>
               </div>
 
-              <div className="grid grid-cols-7 gap-2 mb-4">
+              <div className="grid grid-cols-7 gap-1 md:gap-2 mb-4">
                 {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
                   <div key={day} className="text-center text-[10px] font-black text-gray-600 py-2">{day}</div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-1 md:gap-2">
                 {calendarDays.map((date, i) => {
                   const isPast = isBefore(date, today);
                   const isToday = isSameDay(date, today);

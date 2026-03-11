@@ -152,7 +152,7 @@ export default function Rentals() {
             Select from our elite fleet of current-gen and classic consoles
           </p>
 
-          <div className="inline-flex bg-black/40 backdrop-blur-md p-1 rounded-2xl border border-white/10 overflow-x-auto max-w-full mt-8">
+          <div className="flex md:inline-flex bg-black/40 backdrop-blur-md p-1 rounded-2xl border border-white/10 overflow-x-auto max-w-full mt-8 scrollbar-hide mx-auto">
             {rentals.map((item) => (
               <button
                 key={item.id}

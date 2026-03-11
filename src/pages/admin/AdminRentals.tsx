@@ -655,7 +655,7 @@ export default function AdminRentals() {
             className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] w-full"
           />
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
           <Filter className="h-4 w-4 text-gray-500" />
           <select
             value={filter}

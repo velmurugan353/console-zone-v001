@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ShieldAlert, ChevronLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 export default function Login() {
   const { login } = useAuth();

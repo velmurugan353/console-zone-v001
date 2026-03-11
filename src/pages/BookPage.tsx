@@ -298,7 +298,7 @@ export default function BookPage() {
                 </button>
               </div>
               
-              <div className="grid grid-cols-7 gap-1 text-center mb-2">
+              <div className="grid grid-cols-7 gap-1 md:gap-2 text-center mb-2">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
                   <div key={i} className="text-[10px] text-gray-500 font-bold py-1">{day}</div>
                 ))}
