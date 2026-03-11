@@ -1,13 +1,16 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Support both Vite (import.meta.env) and Node/Other (process.env)
+const API_KEY = import.meta.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
+
+const genAI = new GoogleGenerativeAI(API_KEY);
 
 export const aiService = {
     /**
      * Get repair diagnosis and parts estimation
      */
     async getRepairDiagnosis(device: string, issue: string): Promise<string> {
-        if (!process.env.GEMINI_API_KEY) return "AI Diagnosis Unavailable: API Key Missing.";
+        if (!API_KEY) return "AI Diagnosis Unavailable: API Key Missing.";
         
         try {
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -31,7 +34,7 @@ export const aiService = {
      * Get market value for buyback
      */
     async getMarketValue(device: string, condition: string): Promise<string> {
-        if (!process.env.GEMINI_API_KEY) return "Market Intelligence Offline.";
+        if (!API_KEY) return "Market Intelligence Offline.";
         
         try {
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
