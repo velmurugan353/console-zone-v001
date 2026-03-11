@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gaming-bg: #0a0a0a;
+  --color-gaming-card: #121212;
+  --color-gaming-accent: #00f0ff;
+  /* Neon Cyan */
+  --color-gaming-secondary: #7000ff;
+  /* Neon Purple */
+  --color-gaming-text: #e0e0e0;
+  --color-gaming-muted: #a0a0a0;
+  --color-gaming-border: #2a2a2a;
+
+  --color-royal-purple: #8B5CF6;
+  --color-neon-purple: #A855F7;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-gaming-bg);
+  color: var(--color-gaming-text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-gaming-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gaming-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gaming-accent);
+}
+
+.neon-text {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.neon-border {
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.purple-glow {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

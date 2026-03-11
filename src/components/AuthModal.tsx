@@ -1,0 +1,201 @@
+import React, { useState } from 'react';
+import { User, Lock, Mail, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import './AuthModal.css';
+
+export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+    const { login, register, loginWithGoogle, loginWithApple } = useAuth();
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleOAuth = async (provider: 'google' | 'apple') => {
+        setError('');
+        setLoading(true);
+        try {
+            if (provider === 'google') await loginWithGoogle();
+            if (provider === 'apple') await loginWithApple();
+            onClose();
+        } catch (err: any) {
+            setError(err.message || `Failed to login via ${provider}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            await login(email, password);
+            onClose();
+        } catch (err: any) {
+            setError(err.message || 'Failed to login');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            await register(email, password, name);
+            // Optionally auto-login after register, though Firebase often automatically signs in on creation.
+            await login(email, password);
+            onClose();
+        } catch (err: any) {
+            setError(err.message || 'Failed to register');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 auth-wrapper">
+            <div className={`container ${isRegistering ? 'active' : ''}`}>
+                {/* Background Shapes */}
+                <div className="curved-shape"></div>
+                <div className="curved-shape2"></div>
+
+                {error && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 w-3/4 bg-red-500/20 border border-red-500/50 text-red-100 p-3 rounded-xl flex items-center gap-2 z-50 shadow-2xl backdrop-blur-sm">
+                        <AlertCircle size={16} className="text-red-400" />
+                        <span className="text-xs font-mono">{error}</span>
+                    </div>
+                )}
+
+                {/* Login Form */}
+                <div className="form-box bg-transparent Login">
+                    <h2 className="animation" style={{ '--D': 0, '--S': 21 } as React.CSSProperties}>Login</h2>
+                    <form className="relative" onSubmit={handleLogin}>
+                        <div className="input-box animation" style={{ '--D': 1, '--S': 22 } as React.CSSProperties}>
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <label>Email</label>
+                            <User size={18} className="text-gray-400 absolute top-1/2 right-0 -translate-y-1/2" />
+                        </div>
+
+                        <div className="input-box animation" style={{ '--D': 2, '--S': 23 } as React.CSSProperties}>
+                            <input
+                                type="password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <label>Password</label>
+                            <Lock size={18} className="text-gray-400 absolute top-1/2 right-0 -translate-y-1/2" />
+                        </div>
+
+                        <div className="input-box animation mt-6" style={{ '--D': 3, '--S': 24 } as React.CSSProperties}>
+                            <button className="auth-btn" type="submit" disabled={loading}>
+                                {loading ? 'Processing...' : 'Login'}
+                            </button>
+                        </div>
+
+                        <div className="mt-4 flex flex-row items-center justify-between gap-4 animation" style={{ '--D': 3.5, '--S': 24.5 } as React.CSSProperties}>
+                            <button type="button" onClick={() => handleOAuth('google')} className="bg-white/10 hover:bg-white/20 transition-colors w-full py-2 rounded-xl text-white font-bold text-xs uppercase tracking-widest border border-white/10">Google</button>
+                            <button type="button" onClick={() => handleOAuth('apple')} className="bg-white/10 hover:bg-white/20 transition-colors w-full py-2 rounded-xl text-white font-bold text-xs uppercase tracking-widest border border-white/10">Apple</button>
+                        </div>
+
+                        <div className="regi-link animation" style={{ '--D': 4, '--S': 25 } as React.CSSProperties}>
+                            <p>Don't have an account? <br />
+                                <button type="button" onClick={() => { setIsRegistering(true); setError(''); }} className="text-[#A855F7] font-bold hover:underline bg-transparent border-0 mt-1 cursor-pointer">
+                                    Sign Up
+                                </button>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+
+                {/* Login Info Block */}
+                <div className="info-content Login">
+                    <h2 className="animation" style={{ '--D': 0, '--S': 20 } as React.CSSProperties}>WELCOME BACK!</h2>
+                    <p className="animation" style={{ '--D': 1, '--S': 21 } as React.CSSProperties}>We are happy to have you with us again. If you need anything, we are here to help.</p>
+                </div>
+
+                {/* Register Form */}
+                <div className="form-box bg-transparent Register">
+                    <h2 className="animation" style={{ '--li': 17, '--S': 0 } as React.CSSProperties}>Register</h2>
+                    <form className="relative" onSubmit={handleRegister}>
+                        <div className="input-box animation" style={{ '--li': 18, '--S': 1 } as React.CSSProperties}>
+                            <input
+                                type="text"
+                                required
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                            <label>Username</label>
+                            <User size={18} className="text-gray-400 absolute top-1/2 right-0 -translate-y-1/2" />
+                        </div>
+
+                        <div className="input-box animation" style={{ '--li': 19, '--S': 2 } as React.CSSProperties}>
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <label>Email</label>
+                            <Mail size={18} className="text-gray-400 absolute top-1/2 right-0 -translate-y-1/2" />
+                        </div>
+
+                        <div className="input-box animation" style={{ '--li': 19, '--S': 3 } as React.CSSProperties}>
+                            <input
+                                type="password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <label>Password</label>
+                            <Lock size={18} className="text-gray-400 absolute top-1/2 right-0 -translate-y-1/2" />
+                        </div>
+
+                        <div className="input-box animation mt-6" style={{ '--li': 20, '--S': 4 } as React.CSSProperties}>
+                            <button className="auth-btn" type="submit" disabled={loading}>
+                                {loading ? 'Processing...' : 'Register'}
+                            </button>
+                        </div>
+
+                        <div className="mt-4 flex flex-row flex-wrap items-center justify-between gap-4 animation" style={{ '--li': 20.5, '--S': 4.5 } as React.CSSProperties}>
+                            <button type="button" onClick={() => handleOAuth('google')} className="bg-white/10 hover:bg-white/20 transition-colors flex-1 py-2 rounded-xl text-white font-bold text-xs uppercase tracking-widest border border-white/10">Google</button>
+                            <button type="button" onClick={() => handleOAuth('apple')} className="bg-white/10 hover:bg-white/20 transition-colors flex-1 py-2 rounded-xl text-white font-bold text-xs uppercase tracking-widest border border-white/10">Apple</button>
+                        </div>
+
+                        <div className="regi-link animation" style={{ '--li': 21, '--S': 5 } as React.CSSProperties}>
+                            <p>Already have an account? <br />
+                                <button type="button" onClick={() => { setIsRegistering(false); setError(''); }} className="text-[#A855F7] font-bold hover:underline bg-transparent border-0 mt-1 cursor-pointer">
+                                    Sign In
+                                </button>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+
+                {/* Register Info Block */}
+                <div className="info-content Register">
+                    <h2 className="animation" style={{ '--li': 17, '--S': 0 } as React.CSSProperties}>WELCOME!</h2>
+                    <p className="animation" style={{ '--li': 18, '--S': 1 } as React.CSSProperties}>We're delighted to have you here. If you need any assistance, feel free to reach out.</p>
+                </div>
+            </div>
+
+            <button
+                onClick={onClose}
+                className="absolute top-8 right-8 text-white hover:text-gray-300 font-mono tracking-wider font-bold z-50"
+            >
+                Close [X]
+            </button>
+        </div>
+    );
+}
