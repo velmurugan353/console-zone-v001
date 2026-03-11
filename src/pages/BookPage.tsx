@@ -21,7 +21,7 @@ import {
   ArrowLeft,
   ArrowRight
 } from "lucide-react";
-import { format, addDays, startOfToday, isSameDay, isBefore } from "date-fns";
+import { format, addDays, startOfToday, isSameDay, isBefore, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth } from "date-fns";
 
 interface ConsoleOption {
   id: string;
@@ -68,6 +68,18 @@ export default function BookPage() {
   const [promoError, setPromoError] = useState('');
 
   const today = startOfToday();
+  const [viewDate, setViewDate] = useState(startOfMonth(today));
+
+  const monthStart = startOfMonth(viewDate);
+  const monthEnd = endOfMonth(monthStart);
+  const calendarStartDate = startOfWeek(monthStart);
+  const calendarEndDate = endOfWeek(monthEnd);
+
+  const calendarDays = eachDayOfInterval({
+    start: calendarStartDate,
+    end: calendarEndDate
+  });
+
   const durationPresets = [
     { id: 'daily' as const, label: 'Daily', days: 1, discount: 0 },
     { id: 'weekly' as const, label: 'One Week', days: 7, discount: 10 },
@@ -267,28 +279,46 @@ export default function BookPage() {
                 )}
               </div>
               
-              {/* Simple Date Picker */}
+              {/* Month Navigation */}
+              <div className="flex items-center justify-between mb-4 px-1">
+                <button 
+                  onClick={() => setViewDate(subMonths(viewDate, 1))}
+                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                >
+                  <ArrowLeft size={16} />
+                </button>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">
+                  {format(viewDate, 'MMMM yyyy')}
+                </h4>
+                <button 
+                  onClick={() => setViewDate(addMonths(viewDate, 1))}
+                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                >
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+              
               <div className="grid grid-cols-7 gap-1 text-center mb-2">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
                   <div key={i} className="text-[10px] text-gray-500 font-bold py-1">{day}</div>
                 ))}
-                {Array.from({ length: 28 }).map((_, i) => {
-                  const date = addDays(startOfToday(), i);
+                {calendarDays.map((date, i) => {
                   const isPast = isBefore(date, today);
+                  const isCurrentMonth = isSameMonth(date, monthStart);
                   const isSelected = (startDate && isSameDay(date, startDate)) || (endDate && isSameDay(date, endDate));
                   const isInRange = startDate && endDate && date >= startDate && date <= endDate;
                   
                   return (
                     <button
                       key={i}
-                      disabled={isPast}
+                      disabled={isPast || !isCurrentMonth}
                       onClick={() => handleDateSelect(date)}
                       className={`
                         p-2 rounded-lg text-xs font-bold transition-all
-                        ${isPast ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}
+                        ${(isPast || !isCurrentMonth) ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}
                         ${isSelected ? 'bg-[#A855F7] text-black' : ''}
                         ${isInRange ? 'bg-[#A855F7]/20 text-[#A855F7]' : ''}
-                        ${!isPast && !isSelected && !isInRange ? 'text-white' : ''}
+                        ${!isPast && isCurrentMonth && !isSelected && !isInRange ? 'text-white' : ''}
                       `}
                     >
                       {format(date, 'd')}

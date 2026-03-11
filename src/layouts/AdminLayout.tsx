@@ -83,7 +83,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       links: [
         { name: 'Customers', path: '/admin/customers', icon: Users },
         { name: 'KYC', path: '/admin/kyc', icon: ShieldCheck },
-        { name: 'Payments', path: '/admin/payments', icon: DollarSign },
         { name: 'Coupons', path: '/admin/coupons', icon: Tag },
       ]
     },

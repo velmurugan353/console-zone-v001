@@ -30,7 +30,6 @@ import MyRentals from './pages/user/MyRentals';
 import MyRepairRequests from './pages/user/MyRepairRequests';
 import Wishlist from './pages/user/Wishlist';
 import AddressManagement from './pages/user/AddressManagement';
-import PaymentHistory from './pages/user/PaymentHistory';
 import Notifications from './pages/user/Notifications';
 import UserKYC from './pages/user/KYC';
 import UserLayout from './layouts/UserLayout';
@@ -47,7 +46,6 @@ import AdminSettings from './pages/admin/AdminSettings';
 import RentalStatus from './pages/admin/RentalStatus';
 import RentalSettingsPage from './pages/admin/RentalSettingsPage';
 import AdminSellRequests from './pages/admin/AdminSellRequests';
-import AdminPayments from './pages/admin/AdminPayments';
 import AdminCoupons from './pages/admin/AdminCoupons';
 import AdminContent from './pages/admin/AdminContent';
 import KYCPage from './pages/admin/KYC';
@@ -89,7 +87,6 @@ function App() {
               <Route path="repairs" element={<MyRepairRequests />} />
               <Route path="wishlist" element={<Wishlist />} />
               <Route path="addresses" element={<AddressManagement />} />
-              <Route path="payments" element={<PaymentHistory />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="kyc" element={<UserKYC />} />
             </Route>
@@ -106,7 +103,6 @@ function App() {
             <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
             <Route path="/admin/rental-settings" element={<AdminLayout><RentalSettingsPage /></AdminLayout>} />
             <Route path="/admin/sell-requests" element={<Navigate to="/admin/operations?tab=sell-requests" replace />} />
-            <Route path="/admin/payments" element={<AdminLayout><AdminPayments /></AdminLayout>} />
             <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
             <Route path="/admin/content" element={<AdminLayout><AdminContent /></AdminLayout>} />
             <Route path="/admin/kyc" element={<AdminLayout><KYCPage /></AdminLayout>} />

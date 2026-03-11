@@ -22,7 +22,7 @@ import {
   RefreshCw,
   User
 } from 'lucide-react';
-import { format, addDays, differenceInDays, isBefore, isSameDay, startOfToday } from 'date-fns';
+import { format, addDays, differenceInDays, isBefore, isSameDay, startOfToday, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth } from 'date-fns';
 import { RENTAL_CONSOLES, RentalConsole } from '../constants/rentals';
 import { formatCurrency } from '../lib/utils';
 import { clsx, type ClassValue } from 'clsx';
@@ -30,6 +30,7 @@ import { twMerge } from 'tailwind-merge';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs, limit, addDoc } from 'firebase/firestore';
 import { automationService } from '../services/automationService';
+import { razorpayService } from '../services/razorpayService';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -269,61 +270,78 @@ export default function RentalBookingPage() {
   const handleConfirmBooking = async () => {
     if (!user || !consoleData) return;
 
-    try {
-      setLoading(true);
+    // Proceed with Razorpay checkout
+    razorpayService.openCheckout({
+      amount: totalDue * 100, // Razorpay expects amount in paise
+      prefill: {
+        name: user.name || '',
+        email: user.email || ''
+      },
+      handler: async (response: any) => {
+        console.log('Payment Successful:', response);
+        try {
+          setLoading(true);
 
-      const rentalData = {
-        user: user.name || user.email,
-        email: user.email,
-        phone: bookingState.delivery.phone,
-        product: consoleData.name,
-        productId: consoleData.id,
-        image: consoleData.image,
-        startDate: bookingState.duration.startDate ? bookingState.duration.startDate.toISOString().split('T')[0] : '',
-        endDate: bookingState.duration.endDate ? bookingState.duration.endDate.toISOString().split('T')[0] : '',
-        totalPrice: totalDue,
-        deposit: deposit,
-        lateFees: 0,
-        status: 'pending',
-        deliveryMethod: bookingState.delivery.method,
-        shippingAddress: bookingState.delivery.address,
-        notes: bookingState.delivery.notes,
-        createdAt: new Date().toISOString(),
-        timeline: [
-          { status: 'pending', timestamp: new Date().toLocaleString(), note: 'Rental booking initialized by customer' }
-        ],
-        transactions: [
-          {
-            id: `TXN-${Date.now()}`,
-            type: 'payment',
-            amount: totalDue,
-            date: new Date().toISOString().split('T')[0],
-            status: 'completed'
-          }
-        ]
-      };
+          const rentalData = {
+            user: user.name || user.email,
+            email: user.email,
+            phone: bookingState.delivery.phone,
+            product: consoleData.name,
+            productId: consoleData.id,
+            image: consoleData.image,
+            startDate: bookingState.duration.startDate ? bookingState.duration.startDate.toISOString().split('T')[0] : '',
+            endDate: bookingState.duration.endDate ? bookingState.duration.endDate.toISOString().split('T')[0] : '',
+            totalPrice: totalDue,
+            deposit: deposit,
+            lateFees: 0,
+            status: 'pending',
+            paymentId: response.razorpay_payment_id,
+            deliveryMethod: bookingState.delivery.method,
+            shippingAddress: bookingState.delivery.address,
+            notes: bookingState.delivery.notes,
+            createdAt: new Date().toISOString(),
+            timeline: [
+              { status: 'pending', timestamp: new Date().toLocaleString(), note: 'Rental booking confirmed via Razorpay' }
+            ],
+            transactions: [
+              {
+                id: response.razorpay_payment_id,
+                type: 'payment',
+                amount: totalDue,
+                date: new Date().toISOString().split('T')[0],
+                status: 'completed'
+              }
+            ]
+          };
 
-      const docRef = await addDoc(collection(db, 'rentals'), rentalData);
-      console.log("Rental saved with ID: ", docRef.id);
+          const docRef = await addDoc(collection(db, 'rentals'), rentalData);
+          console.log("Rental saved with ID: ", docRef.id);
 
-      // Trigger Automation & Notifications
-      await automationService.triggerWorkflow('rental_confirmed', {
-        rentalId: docRef.id,
-        customerName: user.name || user.email,
-        productName: consoleData.name,
-        startDate: rentalData.startDate,
-        endDate: rentalData.endDate,
-        email: user.email,
-        phone: rentalData.phone
-      });
+          // Trigger Automation & Notifications
+          await automationService.triggerWorkflow('rental_confirmed', {
+            rentalId: docRef.id,
+            customerName: user.name || user.email,
+            productName: consoleData.name,
+            startDate: rentalData.startDate,
+            endDate: rentalData.endDate,
+            email: user.email,
+            phone: rentalData.phone
+          });
 
-      navigate(`/rentals/${slug}/book/confirm?id=${docRef.id}`);
-    } catch (error) {
-      console.error("Error saving rental booking:", error);
-      alert("Failed to confirm booking. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+          navigate(`/rentals/${slug}/book/confirm?id=${docRef.id}`);
+        } catch (error) {
+          console.error("Error saving rental booking:", error);
+          alert("Failed to confirm booking. Please contact support if your payment was successful.");
+        } finally {
+          setLoading(false);
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          console.log('Checkout dismissed');
+        }
+      }
+    });
   };
 
   return (
@@ -571,6 +589,17 @@ function Step1ConsoleDetails({ console, state, setState, onNext }: { console: Re
 function Step2DurationDates({ state, setState, onNext, onBack }: { state: BookingState, setState: any, onNext: () => void, onBack: () => void }) {
   const [hoverDate, setHoverDate] = useState<Date | null>(null);
   const today = startOfToday();
+  const [viewDate, setViewDate] = useState(startOfMonth(today));
+
+  const monthStart = startOfMonth(viewDate);
+  const monthEnd = endOfMonth(monthStart);
+  const calendarStartDate = startOfWeek(monthStart);
+  const calendarEndDate = endOfWeek(monthEnd);
+
+  const calendarDays = eachDayOfInterval({
+    start: calendarStartDate,
+    end: calendarEndDate
+  });
 
   const handleDateClick = (date: Date) => {
     if (isBefore(date, today)) return;
@@ -703,16 +732,34 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
             </div>
 
             <div className="bg-black/40 border border-white/5 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6 px-2">
+                <button
+                  onClick={() => setViewDate(subMonths(viewDate, 1))}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <h4 className="text-sm font-black uppercase tracking-[0.3em] text-white">
+                  {format(viewDate, 'MMMM yyyy')}
+                </h4>
+                <button
+                  onClick={() => setViewDate(addMonths(viewDate, 1))}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+
               <div className="grid grid-cols-7 gap-2 mb-4">
                 {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
                   <div key={day} className="text-center text-[10px] font-black text-gray-600 py-2">{day}</div>
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-2">
-                {Array.from({ length: 35 }).map((_, i) => {
-                  const date = addDays(today, i - today.getDay());
+                {calendarDays.map((date, i) => {
                   const isPast = isBefore(date, today);
                   const isToday = isSameDay(date, today);
+                  const isCurrentMonth = isSameMonth(date, monthStart);
                   const selected = isSelected(date);
                   const inRange = isInRange(date);
                   const isBooked = i % 12 === 0 && i > 10; // Mock booked dates
@@ -720,13 +767,13 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
                   return (
                     <button
                       key={i}
-                      disabled={isPast || isBooked}
+                      disabled={isPast || isBooked || !isCurrentMonth}
                       onClick={() => handleDateClick(date)}
                       onMouseEnter={() => setHoverDate(date)}
                       onMouseLeave={() => setHoverDate(null)}
                       className={cn(
                         "aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all duration-200",
-                        isPast ? "opacity-20 cursor-not-allowed" : "hover:scale-110",
+                        (isPast || !isCurrentMonth) ? "opacity-20 cursor-not-allowed" : "hover:scale-110",
                         isBooked ? "bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20" : "bg-white/5 text-white",
                         isToday && !selected && "border border-[#00d4ff]/50",
                         selected ? "bg-[#00d4ff] text-black z-10 shadow-[0_0_15px_rgba(0,212,255,0.5)]" : "",
@@ -999,56 +1046,6 @@ function Step4Payment({ state, setState, totals, onNext, onBack }: { state: Book
             )}
           </div>
 
-          {/* Payment Method */}
-          <div className="space-y-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Payment Method</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {['card', 'paypal', 'apple-pay'].map(method => (
-                <button
-                  key={method}
-                  onClick={() => setState((prev: BookingState) => ({ ...prev, payment: { ...prev.payment, method } }))}
-                  className={cn(
-                    "p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all",
-                    state.payment.method === method
-                      ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
-                      : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30"
-                  )}
-                >
-                  {method === 'card' && <CreditCard size={24} />}
-                  {method === 'paypal' && <span className="font-black italic text-lg">PayPal</span>}
-                  {method === 'apple-pay' && <span className="font-bold text-lg"> Pay</span>}
-                  <span className="text-[10px] font-black uppercase tracking-widest">{method.replace('-', ' ')}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Card Details (Stripe Style) */}
-          {state.payment.method === 'card' && (
-            <div className="space-y-4 p-6 bg-black/40 border border-white/5 rounded-2xl">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Card Number</label>
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-gray-300">
-                  •••• •••• •••• 4242
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Expiry</label>
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-gray-300">
-                    MM / YY
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">CVC</label>
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-gray-300">
-                    •••
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Deposit Info */}
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 flex gap-4">
             <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
@@ -1097,7 +1094,7 @@ function Step4Payment({ state, setState, totals, onNext, onBack }: { state: Book
           disabled={!state.payment.termsAccepted}
           className="px-12 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Book Now — {formatCurrency(totals.totalDue)}
+          Pay with Razorpay — {formatCurrency(totals.totalDue)}
         </button>
       </div>
     </motion.div>
@@ -1202,7 +1199,7 @@ function OrderSummary({ console, state, totals, onNext, currentStep, user }: { c
           }
           className="w-full py-5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-sm rounded-2xl transition-all hover:shadow-[0_0_30px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
         >
-          {currentStep === 4 ? 'Confirm Booking' : 'Continue'}
+          {currentStep === 4 ? 'Pay with Razorpay' : 'Continue'}
         </button>
       </div>
 

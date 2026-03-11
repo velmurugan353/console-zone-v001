@@ -25,7 +25,6 @@ export default function UserLayout() {
     { name: 'Repair Requests', href: '/dashboard/repairs', icon: Wrench },
     { name: 'Wishlist', href: '/dashboard/wishlist', icon: Heart },
     { name: 'Addresses', href: '/dashboard/addresses', icon: MapPin },
-    { name: 'Payment History', href: '/dashboard/payments', icon: CreditCard },
     { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
     { name: 'KYC Verification', href: '/dashboard/kyc', icon: ShieldCheck },
   ];
