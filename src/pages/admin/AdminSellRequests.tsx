@@ -105,6 +105,9 @@ export default function AdminSellRequests() {
       })) as SellRequest[];
       setRequests(fetchedRequests);
       setLoading(false);
+    }, (error) => {
+      console.error("Firestore error in AdminSellRequests:", error);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);

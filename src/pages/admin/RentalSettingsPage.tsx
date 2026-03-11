@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 import { getControllerSettings, saveControllerSettings, resetControllerSettings, type ControllerSettings } from '../../services/controller-settings';
 import { getCatalogSettings, saveCatalogSettings, resetCatalogSettings, type CatalogSettings } from '../../services/catalog-settings';
 
-export default function RentalSettingsPage() {
+export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?: boolean }) {
     // Controller Settings State
     const [controllerSettings, setControllerSettings] = useState<ControllerSettings>(getControllerSettings());
 
@@ -51,22 +51,37 @@ export default function RentalSettingsPage() {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className={`space-y-8 ${!hideHeader ? 'animate-in fade-in duration-500' : ''}`}>
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-black italic tracking-tighter uppercase">Rental <span className="text-[#A855F7]">Management</span></h1>
-                    <p className="text-gray-400 text-sm mt-1">Configure console rates, features, and controller pricing.</p>
+            {!hideHeader && (
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-black italic tracking-tighter uppercase">Rental <span className="text-[#A855F7]">Management</span></h1>
+                        <p className="text-gray-400 text-sm mt-1">Configure console rates, features, and controller pricing.</p>
+                    </div>
+                    <button
+                        id="save-rental-settings"
+                        onClick={handleSaveSettings}
+                        className="px-6 py-3 rounded-xl bg-white text-black font-bold uppercase tracking-widest hover:bg-[#A855F7] hover:text-white transition-all flex items-center gap-2"
+                    >
+                        <Save size={18} />
+                        Save Changes
+                    </button>
                 </div>
-                <button
-                    id="save-rental-settings"
-                    onClick={handleSaveSettings}
-                    className="px-6 py-3 rounded-xl bg-white text-black font-bold uppercase tracking-widest hover:bg-[#A855F7] hover:text-white transition-all flex items-center gap-2"
-                >
-                    <Save size={18} />
-                    Save Changes
-                </button>
-            </div>
+            )}
+
+            {hideHeader && (
+                <div className="flex justify-end">
+                    <button
+                        id="save-rental-settings"
+                        onClick={handleSaveSettings}
+                        className="px-6 py-3 rounded-xl bg-[#A855F7] text-white font-bold uppercase tracking-widest hover:bg-[#9333EA] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+                    >
+                        <Save size={18} />
+                        Save All Catalog Changes
+                    </button>
+                </div>
+            )}
 
             <div className="space-y-6">
                 {/* Controller Pricing Settings */}
@@ -98,59 +113,33 @@ export default function RentalSettingsPage() {
 
                         {/* Pricing Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* PS4 Pricing */}
-                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                                <h4 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
-                                    <Gamepad2 size={16} className="text-blue-400" />
-                                    PS4 Controllers
-                                </h4>
-                                <div className="space-y-3">
-                                    {['DAILY', 'WEEKLY', 'MONTHLY'].map((plan) => (
-                                        <div key={plan}>
-                                            <label className="text-[9px] text-gray-500 uppercase font-bold mb-1 block">{plan}</label>
-                                            <input
-                                                type="number"
-                                                value={controllerSettings.pricing.ps4[plan.toLowerCase() as keyof typeof controllerSettings.pricing.ps4] || 0}
-                                                onChange={(e) => setControllerSettings({
-                                                    ...controllerSettings,
-                                                    pricing: {
-                                                        ...controllerSettings.pricing,
-                                                        ps4: { ...controllerSettings.pricing.ps4, [plan]: Number(e.target.value) }
-                                                    }
-                                                })}
-                                                className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white text-sm outline-none focus:border-blue-400"
-                                            />
-                                        </div>
-                                    ))}
+                            {(Object.keys(controllerSettings.pricing) as Array<keyof typeof controllerSettings.pricing>).map((platform) => (
+                                <div key={platform} className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                    <h4 className="text-white font-bold text-sm mb-4 flex items-center gap-2 uppercase">
+                                        <Gamepad2 size={16} className={platform.includes('ps') ? 'text-blue-400' : platform.includes('xbox') ? 'text-emerald-400' : 'text-red-400'} />
+                                        {platform} Controllers
+                                    </h4>
+                                    <div className="space-y-3">
+                                        {(['DAILY', 'WEEKLY', 'MONTHLY'] as const).map((plan) => (
+                                            <div key={plan}>
+                                                <label className="text-[9px] text-gray-500 uppercase font-bold mb-1 block">{plan}</label>
+                                                <input
+                                                    type="number"
+                                                    value={controllerSettings.pricing[platform][plan] || 0}
+                                                    onChange={(e) => setControllerSettings({
+                                                        ...controllerSettings,
+                                                        pricing: {
+                                                            ...controllerSettings.pricing,
+                                                            [platform]: { ...controllerSettings.pricing[platform], [plan]: Number(e.target.value) }
+                                                        }
+                                                    })}
+                                                    className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white text-sm outline-none focus:border-[#A855F7]"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-
-                            {/* PS5 Pricing */}
-                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                                <h4 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
-                                    <Gamepad2 size={16} className="text-purple-400" />
-                                    PS5 Controllers
-                                </h4>
-                                <div className="space-y-3">
-                                    {['DAILY', 'WEEKLY', 'MONTHLY'].map((plan) => (
-                                        <div key={plan}>
-                                            <label className="text-[9px] text-gray-500 uppercase font-bold mb-1 block">{plan}</label>
-                                            <input
-                                                type="number"
-                                                value={controllerSettings.pricing.ps5[plan.toLowerCase() as keyof typeof controllerSettings.pricing.ps5] || 0}
-                                                onChange={(e) => setControllerSettings({
-                                                    ...controllerSettings,
-                                                    pricing: {
-                                                        ...controllerSettings.pricing,
-                                                        ps5: { ...controllerSettings.pricing.ps5, [plan]: Number(e.target.value) }
-                                                    }
-                                                })}
-                                                className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white text-sm outline-none focus:border-purple-400"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </ControlSection>
@@ -168,45 +157,82 @@ export default function RentalSettingsPage() {
                                 Reset Defaults
                             </button>
                         </div>
-                        <div className="grid grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 gap-8">
                             {Object.keys(catalogSettings).map(catName => (
-                                <div key={catName} className="bg-white/5 border border-white/10 rounded-xl p-4">
-                                    <h4 className="text-white font-bold text-sm mb-4 flex items-center gap-2 uppercase border-b border-white/10 pb-2">
-                                        {catName}
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div key={catName} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                                    <div className="bg-white/[0.03] p-4 border-b border-white/10 flex items-center justify-between">
+                                        <h4 className="text-white font-black text-sm uppercase tracking-widest flex items-center gap-2 italic">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" />
+                                            {catName}
+                                        </h4>
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[8px] text-gray-500 uppercase font-bold">Base Security Deposit</span>
+                                                <input
+                                                    type="number"
+                                                    value={catalogSettings[catName].securityDeposit || 0}
+                                                    onChange={(e) => {
+                                                        const newVal = Number(e.target.value);
+                                                        setCatalogSettings(prev => ({
+                                                            ...prev,
+                                                            [catName]: { ...prev[catName], securityDeposit: newVal }
+                                                        }));
+                                                    }}
+                                                    className="w-24 bg-black/40 border border-white/10 rounded px-2 py-0.5 text-emerald-400 text-[10px] font-mono outline-none focus:border-emerald-500 text-right"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[8px] text-gray-500 uppercase font-bold">Matrix Stock Count</span>
+                                                <input
+                                                    type="number"
+                                                    value={catalogSettings[catName].totalStock || 0}
+                                                    onChange={(e) => {
+                                                        const newVal = Number(e.target.value);
+                                                        setCatalogSettings(prev => ({
+                                                            ...prev,
+                                                            [catName]: { ...prev[catName], totalStock: newVal }
+                                                        }));
+                                                    }}
+                                                    className="w-16 bg-black/40 border border-white/10 rounded px-2 py-0.5 text-[#A855F7] text-[10px] font-mono outline-none focus:border-[#A855F7] text-right"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                                         {(['daily', 'weekly', 'monthly'] as const).map((plan) => {
                                             const planConfig = (catalogSettings as any)[catName][plan];
                                             if (!planConfig) return null;
 
                                             return (
-                                                <div key={plan} className="bg-black/20 p-3 rounded-lg">
-                                                    <label className="text-[10px] text-[#A855F7] uppercase font-bold mb-2 block">{plan} Plan</label>
-                                                    <div className="mb-3">
-                                                        <label className="text-[9px] text-gray-400 uppercase block mb-1">Price (₹)</label>
-                                                        <input
-                                                            type="number"
-                                                            value={planConfig.price}
-                                                            onChange={(e) => {
-                                                                const newVal = Number(e.target.value);
-                                                                setCatalogSettings(prev => ({
-                                                                    ...prev,
-                                                                    [catName]: {
-                                                                        ...prev[catName],
-                                                                        [plan]: {
-                                                                            ...prev[catName][plan],
-                                                                            price: newVal
+                                                <div key={plan} className="bg-black/20 p-4 rounded-xl border border-white/5 space-y-4">
+                                                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                                        <label className="text-[10px] text-[#A855F7] uppercase font-black tracking-tighter">{plan} Protocol</label>
+                                                        <div className="flex items-center gap-1">
+                                                            <span className="text-[9px] text-gray-500 font-mono italic">Rate:</span>
+                                                            <input
+                                                                type="number"
+                                                                value={planConfig.price}
+                                                                onChange={(e) => {
+                                                                    const newVal = Number(e.target.value);
+                                                                    setCatalogSettings(prev => ({
+                                                                        ...prev,
+                                                                        [catName]: {
+                                                                            ...prev[catName],
+                                                                            [plan]: {
+                                                                                ...prev[catName][plan],
+                                                                                price: newVal
+                                                                            }
                                                                         }
-                                                                    }
-                                                                }));
-                                                            }}
-                                                            className="w-full bg-black/30 border border-white/10 rounded px-2 py-1 text-white text-xs outline-none focus:border-[#A855F7]"
-                                                        />
+                                                                    }));
+                                                                }}
+                                                                className="w-20 bg-transparent text-white text-xs font-black font-mono outline-none focus:text-[#A855F7] text-right"
+                                                            />
+                                                        </div>
                                                     </div>
                                                     <div>
-                                                        <label className="text-[9px] text-gray-400 uppercase block mb-1">Features (One per line)</label>
+                                                        <label className="text-[8px] text-gray-500 uppercase font-black mb-2 block">Feature Set (Matrix Layout)</label>
                                                         <textarea
-                                                            rows={4}
+                                                            rows={5}
                                                             value={planConfig.features.join('\n')}
                                                             onChange={(e) => {
                                                                 const newFeatures = e.target.value.split('\n');
@@ -221,7 +247,8 @@ export default function RentalSettingsPage() {
                                                                     }
                                                                 }));
                                                             }}
-                                                            className="w-full bg-black/30 border border-white/10 rounded px-2 py-1 text-white text-xs outline-none focus:border-[#A855F7] resize-none font-mono"
+                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-[10px] outline-none focus:border-[#A855F7] resize-none font-mono leading-relaxed"
+                                                            placeholder="Enter one feature per line..."
                                                         />
                                                     </div>
                                                 </div>

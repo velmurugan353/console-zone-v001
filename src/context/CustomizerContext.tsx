@@ -55,17 +55,47 @@ const CustomizerContext = createContext<CustomizerContextType | undefined>(undef
 export const CustomizerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<ThemePalette>(() => {
     const saved = localStorage.getItem('gv_custom_theme');
-    return saved ? JSON.parse(saved) : DEFAULT_THEME;
+    if (saved && saved !== 'undefined') {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          return { ...DEFAULT_THEME, ...parsed };
+        }
+      } catch (e) {
+        console.error("Failed to parse theme:", e);
+      }
+    }
+    return DEFAULT_THEME;
   });
 
   const [layout, setLayout] = useState<LayoutSettings>(() => {
     const saved = localStorage.getItem('gv_custom_layout');
-    return saved ? JSON.parse(saved) : DEFAULT_LAYOUT;
+    if (saved && saved !== 'undefined') {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          return { ...DEFAULT_LAYOUT, ...parsed };
+        }
+      } catch (e) {
+        console.error("Failed to parse layout:", e);
+      }
+    }
+    return DEFAULT_LAYOUT;
   });
 
   const [content, setContent] = useState<SiteContent>(() => {
     const saved = localStorage.getItem('gv_custom_content');
-    return saved ? JSON.parse(saved) : {};
+    if (saved && saved !== 'undefined') {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          return parsed;
+        }
+      } catch (e) {
+        console.error("Failed to parse content:", e);
+      }
+    }
+    return {};
   });
 
   const [isEditMode, setEditMode] = useState(false);

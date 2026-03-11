@@ -31,6 +31,8 @@ import { db } from '../lib/firebase';
 import { collection, query, where, getDocs, limit, addDoc } from 'firebase/firestore';
 import { automationService } from '../services/automationService';
 import { razorpayService } from '../services/razorpayService';
+import { getCatalogSettings } from '../services/catalog-settings';
+import { getControllerSettings } from '../services/controller-settings';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -125,6 +127,32 @@ export default function RentalBookingPage() {
   const [consoleData, setConsoleData] = useState<RentalConsole | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [bookingState, setBookingState] = useState<BookingState>({
+    console: null,
+    duration: {
+      type: 'daily',
+      startDate: null,
+      endDate: null,
+      totalDays: 0,
+      timeSlot: '10:00 AM - 12:00 PM'
+    },
+    delivery: {
+      method: 'pickup',
+      address: '',
+      phone: '',
+      notes: ''
+    },
+    payment: {
+      method: 'card',
+      couponCode: '',
+      discount: 0,
+      termsAccepted: false
+    },
+    addons: {
+      extraControllers: 0
+    }
+  });
+
   useEffect(() => {
     const savedBooking = sessionStorage.getItem('pending_rental_booking');
     if (savedBooking && savedBooking !== 'undefined') {
@@ -153,14 +181,15 @@ export default function RentalBookingPage() {
         const snapshot = await getDocs(q);
         const fetched = snapshot.docs.map(doc => {
           const data = doc.data();
+          const name = data.name || 'Unknown Console';
           return {
             id: doc.id,
-            name: data.name,
-            slug: data.slug || data.name.toLowerCase().replace(/\s+/g, '-'),
-            image: data.image,
+            name: name,
+            slug: data.slug || name.toLowerCase().replace(/\s+/g, '-'),
+            image: data.image || '',
             available: data.stockCount || 0,
             dailyRate: data.price || 500,
-            deposit: data.securityDeposit || (data.price * 10),
+            deposit: data.securityDeposit || (data.price ? data.price * 10 : 5000),
             specs: data.specs || ['4K Gaming', 'High Speed SSD', 'Next-Gen Performance'],
             included: data.included || ['Console', 'Controller', 'Cables'],
             condition: data.condition || 'Excellent'
@@ -179,32 +208,6 @@ export default function RentalBookingPage() {
     };
     fetchConsole();
   }, [slug]);
-
-  const [bookingState, setBookingState] = useState<BookingState>({
-    console: consoleData,
-    duration: {
-      type: 'daily',
-      startDate: null,
-      endDate: null,
-      totalDays: 0,
-      timeSlot: '10:00 AM - 12:00 PM'
-    },
-    delivery: {
-      method: 'pickup',
-      address: '',
-      phone: '',
-      notes: ''
-    },
-    payment: {
-      method: 'card',
-      couponCode: '',
-      discount: 0,
-      termsAccepted: false
-    },
-    addons: {
-      extraControllers: 0
-    }
-  });
 
   useEffect(() => {
     if (consoleData && !bookingState.console) {
@@ -242,6 +245,63 @@ export default function RentalBookingPage() {
     checkRentalHistory();
   }, [user]);
 
+  // --- Calculations ---
+  const { rentalCost, addonsCost, deposit, deliveryFee, subtotal, discountAmount, totalDue } = useMemo(() => {
+    if (!consoleData) return { rentalCost: 0, addonsCost: 0, deposit: 0, deliveryFee: 0, subtotal: 0, discountAmount: 0, totalDue: 0 };
+
+    const catalog = getCatalogSettings();
+    const controllers = getControllerSettings();
+
+    // Map console IDs to catalog keys
+    const idToKey: Record<string, string> = {
+      'ps5': 'Sony PlayStation 5',
+      'xbox': 'Xbox Series X',
+      'ps4': 'PlayStation 4 Pro',
+      'switch': 'Nintendo Switch OLED'
+    };
+
+    const key = idToKey[consoleData.id] || idToKey['ps5'];
+    const config = catalog[key] || catalog['Sony PlayStation 5'];
+
+    // Map console IDs to controller keys
+    const idToCtrl: Record<string, keyof typeof controllers.pricing> = {
+      'ps5': 'ps5',
+      'xbox': 'xbox',
+      'ps4': 'ps4',
+      'switch': 'switch'
+    };
+    const ctrlKey = idToCtrl[consoleData.id] || 'ps5';
+    const ctrlPricing = controllers.pricing[ctrlKey];
+
+    // Determine controller rate based on duration type
+    const ctrlRate = bookingState.duration.type === 'monthly' ? ctrlPricing.MONTHLY :
+                    bookingState.duration.type === 'weekly' ? ctrlPricing.WEEKLY :
+                    ctrlPricing.DAILY;
+
+    // Base console rate
+    const consoleRate = bookingState.duration.type === 'monthly' ? config.monthly.price :
+                       bookingState.duration.type === 'weekly' ? config.weekly.price :
+                       config.daily.price * bookingState.duration.totalDays;
+
+    const currentAddonsCost = bookingState.addons.extraControllers * ctrlRate * (bookingState.duration.type === 'daily' ? bookingState.duration.totalDays : 1);
+    const currentRentalCost = consoleRate + currentAddonsCost;
+    const currentDeliveryFee = bookingState.delivery.method === 'delivery' ? 9.99 : 0;
+    const currentDeposit = config.securityDeposit || consoleData.deposit;
+    const currentSubtotal = currentRentalCost + currentDeliveryFee;
+    const currentDiscountAmount = (currentSubtotal * bookingState.payment.discount) / 100;
+    const currentTotalDue = currentSubtotal - currentDiscountAmount + currentDeposit;
+
+    return {
+      rentalCost: currentRentalCost - currentAddonsCost,
+      addonsCost: currentAddonsCost,
+      deposit: currentDeposit,
+      deliveryFee: currentDeliveryFee,
+      subtotal: currentSubtotal,
+      discountAmount: currentDiscountAmount,
+      totalDue: currentTotalDue
+    };
+  }, [consoleData, bookingState.duration, bookingState.addons.extraControllers, bookingState.delivery.method, bookingState.payment.discount]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
@@ -271,22 +331,6 @@ export default function RentalBookingPage() {
     setCurrentStep(prev => (prev - 1) as Step);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const goToStep = (step: Step) => {
-    if (completedSteps.includes(step) || step === 1) {
-      setCurrentStep(step);
-    }
-  };
-
-  // --- Calculations ---
-  const extraControllerRate = 100; // ₹100 per controller per day
-  const addonsCost = bookingState.addons.extraControllers * extraControllerRate * bookingState.duration.totalDays;
-  const rentalCost = (bookingState.duration.totalDays * (consoleData?.dailyRate || 0)) + addonsCost;
-  const deliveryFee = bookingState.delivery.method === 'delivery' ? 9.99 : 0;
-  const deposit = consoleData?.deposit || 0;
-  const subtotal = rentalCost + deliveryFee;
-  const discountAmount = (subtotal * bookingState.payment.discount) / 100;
-  const totalDue = subtotal - discountAmount + deposit;
 
   const handleConfirmBooking = async () => {
     if (!user || !consoleData) return;
@@ -394,7 +438,7 @@ export default function RentalBookingPage() {
             <AnimatePresence mode="wait">
               {currentStep === 1 && (
                 <Step1ConsoleDetails
-                  console={consoleData}
+                  selectedConsole={consoleData}
                   state={bookingState}
                   setState={setBookingState}
                   onNext={nextStep}
@@ -435,7 +479,7 @@ export default function RentalBookingPage() {
           <div className="lg:col-span-5 xl:col-span-4">
             <div className="sticky top-24">
               <OrderSummary
-                console={consoleData}
+                selectedConsole={consoleData}
                 state={bookingState}
                 totals={{ rentalCost, deliveryFee, deposit, subtotal, discountAmount, totalDue, addonsCost }}
                 onNext={currentStep === 4 ? handleConfirmBooking : nextStep}
@@ -482,11 +526,26 @@ export default function RentalBookingPage() {
 
 // --- Step Components ---
 
-function Step1ConsoleDetails({ console, state, setState, onNext }: { console: RentalConsole, state: BookingState, setState: any, onNext: () => void }) {
-  const extraControllerRate = 100; // ₹100 per controller per day
+function Step1ConsoleDetails({ selectedConsole, state, setState, onNext }: { selectedConsole: RentalConsole, state: BookingState, setState: any, onNext: () => void }) {
+  const controllers = getControllerSettings();
+  
+  // Map console IDs to controller keys
+  const idToCtrl: Record<string, keyof typeof controllers.pricing> = {
+    'ps5': 'ps5',
+    'xbox': 'xbox',
+    'ps4': 'ps4',
+    'switch': 'switch'
+  };
+  const ctrlKey = idToCtrl[selectedConsole.id] || 'ps5';
+  const ctrlPricing = controllers.pricing[ctrlKey];
+  
+  // Determine rate based on duration type
+  const extraControllerRate = state.duration.type === 'monthly' ? ctrlPricing.MONTHLY :
+                             state.duration.type === 'weekly' ? ctrlPricing.WEEKLY :
+                             ctrlPricing.DAILY;
 
   const updateExtraControllers = (val: number) => {
-    const newVal = Math.max(0, Math.min(3, state.addons.extraControllers + val));
+    const newVal = Math.max(0, Math.min(controllers.maxQuantity, state.addons.extraControllers + val));
     setState((prev: BookingState) => ({
       ...prev,
       addons: { ...prev.addons, extraControllers: newVal }
@@ -505,31 +564,31 @@ function Step1ConsoleDetails({ console, state, setState, onNext }: { console: Re
           <div className="md:w-1/2">
             <div className="aspect-square rounded-2xl overflow-hidden bg-black/40 border border-white/5 relative group">
               <img
-                src={console.image}
-                alt={console.name}
+                src={selectedConsole.image}
+                alt={selectedConsole.name}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute top-4 left-4">
                 <span className="bg-[#00d4ff] text-black text-[10px] font-black px-3 py-1 rounded-full uppercase shadow-[0_0_15px_rgba(0,212,255,0.5)]">
-                  {console.condition} Condition
+                  {selectedConsole.condition} Condition
                 </span>
               </div>
             </div>
           </div>
           <div className="md:w-1/2 space-y-6">
             <div>
-              <h2 className="text-3xl font-black uppercase tracking-tight text-white mb-2">{console.name}</h2>
+              <h2 className="text-3xl font-black uppercase tracking-tight text-white mb-2">{selectedConsole.name}</h2>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-bold text-green-500 uppercase tracking-widest">{console.available} Units Available</span>
+                <span className="text-xs font-bold text-green-500 uppercase tracking-widest">{selectedConsole.available} Units Available</span>
               </div>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Key Specs</h3>
               <div className="grid grid-cols-1 gap-3">
-                {console.specs.map((spec, i) => (
+                {selectedConsole.specs.map((spec, i) => (
                   <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#00d4ff]" />
                     {spec}
@@ -541,7 +600,7 @@ function Step1ConsoleDetails({ console, state, setState, onNext }: { console: Re
             <div className="space-y-4">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">What's Included</h3>
               <div className="flex flex-wrap gap-2">
-                {console.included.map((item, i) => (
+                {selectedConsole.included.map((item, i) => (
                   <span key={i} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs font-medium text-gray-300">
                     {item}
                   </span>
@@ -552,40 +611,57 @@ function Step1ConsoleDetails({ console, state, setState, onNext }: { console: Re
             <div className="w-full h-px bg-white/5 my-6" />
 
             {/* Optional Addons Section */}
-            <div className="space-y-4 pt-2">
+            <div className="space-y-4 pt-4">
               <div className="flex items-center gap-2">
                 <Gamepad2 size={16} className="text-[#00d4ff]" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-white">Enhance Your Experience</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Add-On Equipment</h3>
               </div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all hover:border-[#00d4ff]/30">
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-white uppercase tracking-tight">Extra Wireless Controller</h4>
-                  <p className="text-[10px] text-gray-500 font-mono">₹{extraControllerRate}/DAY PER UNIT // MAX 3</p>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-4 bg-black/40 p-2 rounded-xl border border-white/10">
+              <div className={cn(
+                "relative group overflow-hidden rounded-2xl border transition-all duration-500",
+                state.addons.extraControllers > 0 
+                  ? "bg-[#00d4ff]/5 border-[#00d4ff]/30 shadow-[0_0_30px_rgba(0,212,255,0.1)]" 
+                  : "bg-white/[0.02] border-white/10 hover:border-white/20"
+              )}>
+                <div className="p-5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500",
+                      state.addons.extraControllers > 0 ? "bg-[#00d4ff] text-black shadow-[0_0_20px_rgba(0,212,255,0.4)]" : "bg-white/5 text-gray-500"
+                    )}>
+                      <Gamepad2 size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white uppercase tracking-tight">Extra Controller</h4>
+                      <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mt-0.5">
+                        Wireless Gear // ₹{extraControllerRate} Day
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-black/60 p-1.5 rounded-xl border border-white/5">
                     <button
                       onClick={() => updateExtraControllers(-1)}
-                      className="text-gray-500 hover:text-white transition-colors"
                       disabled={state.addons.extraControllers === 0}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
                     >
-                      <MinusCircle size={20} />
+                      <MinusCircle size={18} />
                     </button>
-                    <span className="w-4 text-center font-black text-[#00d4ff] font-mono">{state.addons.extraControllers}</span>
+                    <span className="w-6 text-center font-black text-[#00d4ff] font-mono text-sm">{state.addons.extraControllers}</span>
                     <button
                       onClick={() => updateExtraControllers(1)}
-                      className="text-gray-500 hover:text-[#00d4ff] transition-colors"
                       disabled={state.addons.extraControllers === 3}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00d4ff] hover:bg-[#00d4ff]/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
                     >
-                      <PlusCircle size={20} />
+                      <PlusCircle size={18} />
                     </button>
                   </div>
-                  {state.addons.extraControllers > 0 && (
-                    <div className="text-right">
-                      <span className="text-[10px] font-mono text-emerald-500 block">+ ₹{state.addons.extraControllers * extraControllerRate} / Day</span>
-                    </div>
-                  )}
                 </div>
+                
+                {/* Visual feedback line */}
+                <div className={cn(
+                  "absolute bottom-0 left-0 h-[2px] bg-[#00d4ff] transition-all duration-700",
+                  state.addons.extraControllers === 0 ? "w-0" : state.addons.extraControllers === 1 ? "w-1/3" : state.addons.extraControllers === 2 ? "w-2/3" : "w-full"
+                )} />
               </div>
             </div>
           </div>
@@ -598,7 +674,7 @@ function Step1ConsoleDetails({ console, state, setState, onNext }: { console: Re
               <span className="text-xs font-bold uppercase tracking-widest">Deposit Policy</span>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
-              A refundable deposit of {formatCurrency(console.deposit)} is required. Released within 3 days of return.
+              A refundable deposit of {formatCurrency(selectedConsole.deposit)} is required. Released within 3 days of return.
             </p>
           </div>
           <div className="space-y-2">
@@ -842,23 +918,30 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
 
           {/* Time Slot */}
           <div className="space-y-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Preferred Pickup/Delivery Time</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {['10:00 AM - 12:00 PM', '12:00 PM - 02:00 PM', '02:00 PM - 04:00 PM', '04:00 PM - 06:00 PM'].map(slot => (
+            <div className="flex items-center justify-between">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Preferred Deployment Window</h3>
+              <span className="text-[9px] font-mono text-emerald-500 uppercase">Office Hours: 10AM - 08PM</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {[
+                '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', 
+                '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM'
+              ].map(slot => (
                 <button
                   key={slot}
                   onClick={() => setState((prev: BookingState) => ({ ...prev, duration: { ...prev.duration, timeSlot: slot } }))}
                   className={cn(
-                    "p-4 rounded-xl border text-left transition-all",
+                    "py-3 rounded-xl border text-center transition-all duration-300",
                     state.duration.timeSlot === slot
-                      ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
-                      : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30"
+                      ? "bg-[#00d4ff] text-black border-[#00d4ff] shadow-[0_0_15px_rgba(0,212,255,0.3)] font-black"
+                      : "bg-white/5 border-white/10 text-gray-400 hover:border-[#00d4ff]/50 hover:text-white"
                   )}
                 >
-                  <span className="text-sm font-bold">{slot}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-tighter">{slot}</span>
                 </button>
               ))}
             </div>
+            <p className="text-[9px] text-gray-600 italic">Deliveries/Pickups are processed hourly within our secure operating window.</p>
           </div>
         </div>
       </div>
@@ -891,6 +974,8 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
   kycAddress?: string,
   isFirstBooking: boolean
 }) {
+  const { slug } = useParams();
+  const navigate = useNavigate();
   const isKycApproved = kycStatus === 'APPROVED';
   const [showManualAddress, setShowManualAddress] = useState(false);
 
@@ -1229,17 +1314,17 @@ function Step4Payment({ state, setState, totals, onNext, onBack }: { state: Book
   );
 }
 
-function OrderSummary({ console, state, totals, onNext, currentStep, user }: { console: RentalConsole, state: BookingState, totals: any, onNext: () => void, currentStep: number, user: any }) {
+function OrderSummary({ selectedConsole, state, totals, onNext, currentStep, user }: { selectedConsole: RentalConsole, state: BookingState, totals: any, onNext: () => void, currentStep: number, user: any }) {
   return (
     <div className="bg-[#0a0f1e] border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
       <div className="p-8 space-y-6">
         <div className="flex gap-4">
           <div className="w-20 h-20 rounded-xl overflow-hidden bg-black/40 border border-white/5 shrink-0">
-            <img src={console.image} alt={console.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            <img src={selectedConsole.image} alt={selectedConsole.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           </div>
           <div className="flex-1">
-            <h4 className="text-sm font-bold text-white leading-tight">{console.name}</h4>
-            <p className="text-xs text-gray-500 mt-1">{formatCurrency(console.dailyRate)} / Day</p>
+            <h4 className="text-sm font-bold text-white leading-tight">{selectedConsole.name}</h4>
+            <p className="text-xs text-gray-500 mt-1">{formatCurrency(selectedConsole.dailyRate)} / Day</p>
           </div>
         </div>
 
@@ -1347,24 +1432,4 @@ function OrderSummary({ console, state, totals, onNext, currentStep, user }: { c
       </div>
     </div>
   );
-}
-
-function Mail(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="20" height="16" x="2" y="4" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-  )
 }

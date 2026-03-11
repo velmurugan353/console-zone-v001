@@ -7,30 +7,8 @@ import { RENTAL_CONSOLES, RentalConsole } from '../constants/rentals';
 import { db } from '../lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { EditableText } from '../components/Editable';
-
-// Mock data for the rental page specific structure
-const RENTAL_PLANS: Record<string, any[]> = {
-  ps5: [
-    { duration: "Day", price: 500, features: ["4K 120Hz Gaming", "100+ Games Free", "24 Hours Access", "Self Pickup Available"], extraController: 299, color: "bg-[#1a1a1a]", recommended: false },
-    { duration: "Week", price: 3000, features: ["4K 120Hz Gaming", "100+ Games Free", "7 Days Access", "Free Delivery", "Priority Support"], extraController: 799, color: "bg-[#A855F7]", recommended: true },
-    { duration: "Month", price: 8000, features: ["4K 120Hz Gaming", "100+ Games Free", "30 Days Access", "Free Delivery", "Game Pass Included"], extraController: 1499, color: "bg-[#1a1a1a]", recommended: false }
-  ],
-  xbox: [
-    { duration: "Day", price: 450, features: ["4K 120Hz Gaming", "Game Pass Ultimate", "24 Hours Access", "Self Pickup Available"], extraController: 249, color: "bg-[#1a1a1a]", recommended: false },
-    { duration: "Week", price: 2800, features: ["4K 120Hz Gaming", "Game Pass Ultimate", "7 Days Access", "Free Delivery", "Priority Support"], extraController: 699, color: "bg-[#A855F7]", recommended: true },
-    { duration: "Month", price: 7500, features: ["4K 120Hz Gaming", "Game Pass Ultimate", "30 Days Access", "Free Delivery", "Priority Support"], extraController: 1299, color: "bg-[#1a1a1a]", recommended: false }
-  ],
-  ps4: [
-    { duration: "Day", price: 300, features: ["HD Gaming", "50+ Games Free", "24 Hours Access", "Self Pickup Available"], extraController: 199, color: "bg-[#1a1a1a]", recommended: false },
-    { duration: "Week", price: 1800, features: ["HD Gaming", "50+ Games Free", "7 Days Access", "Free Delivery", "Standard Support"], extraController: 499, color: "bg-[#A855F7]", recommended: true },
-    { duration: "Month", price: 5000, features: ["HD Gaming", "50+ Games Free", "30 Days Access", "Free Delivery", "Standard Support"], extraController: 999, color: "bg-[#1a1a1a]", recommended: false }
-  ],
-  switch: [
-    { duration: "Day", price: 350, features: ["Portable Gaming", "Top Nintendo Titles", "24 Hours Access", "Self Pickup Available"], extraController: 199, color: "bg-[#1a1a1a]", recommended: false },
-    { duration: "Week", price: 2000, features: ["Portable Gaming", "Top Nintendo Titles", "7 Days Access", "Free Delivery", "Standard Support"], extraController: 599, color: "bg-[#A855F7]", recommended: true },
-    { duration: "Month", price: 5500, features: ["Portable Gaming", "Top Nintendo Titles", "30 Days Access", "Free Delivery", "Standard Support"], extraController: 1099, color: "bg-[#1a1a1a]", recommended: false }
-  ]
-};
+import { getCatalogSettings } from '../services/catalog-settings';
+import { getControllerSettings } from '../services/controller-settings';
 
 const GAMES_LIST = [
   "GTA V", "Red Dead Redemption 2", "PUBG: Battlegrounds", "Tomb Raider Collection", "Uncharted 4",
@@ -80,12 +58,12 @@ export default function Rentals() {
         const data = doc.data();
         return {
           id: doc.id,
-          name: data.name,
-          slug: data.slug || data.name.toLowerCase().replace(/\s+/g, '-'),
-          image: data.image,
+          name: data.name || 'Unknown Console',
+          slug: data.slug || (data.name ? data.name.toLowerCase().replace(/\s+/g, '-') : doc.id),
+          image: data.image || '',
           available: data.stockCount || 0,
           dailyRate: data.price || 500,
-          deposit: data.securityDeposit || (data.price * 10),
+          deposit: data.securityDeposit || (data.price ? data.price * 10 : 5000),
           specs: data.specs || ['4K Gaming', 'High Speed SSD', 'Next-Gen Performance'],
           included: data.included || ['Console', 'Controller', 'Cables'],
           condition: data.condition || 'Excellent'
@@ -100,21 +78,77 @@ export default function Rentals() {
       }
 
       setLoading(false);
+    }, (error) => {
+      console.error("Firestore error in Rentals:", error);
+      setRentals(RENTAL_CONSOLES);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   const activeStock = rentals.find(s => s.id === activeTab) || rentals[0];
 
-  // Dynamic plan generator for consoles that don't have hardcoded plans
-  const getPlans = (consoleId: string, dailyRate: number) => {
-    if (RENTAL_PLANS[consoleId]) return RENTAL_PLANS[consoleId];
+  // Dynamic plan generator using Admin Catalog Settings
+  const getPlans = (consoleId: string) => {
+    const catalog = getCatalogSettings();
+    const controllers = getControllerSettings();
 
-    // Generate standard plans based on daily rate
+    // Map console IDs to catalog keys
+    const idToKey: Record<string, string> = {
+      'ps5': 'Sony PlayStation 5',
+      'xbox': 'Xbox Series X',
+      'ps4': 'PlayStation 4 Pro',
+      'switch': 'Nintendo Switch OLED'
+    };
+
+    const key = idToKey[consoleId] || idToKey['ps5'];
+    const config = catalog[key] || catalog['Sony PlayStation 5'];
+    
+    // Use dynamic stock and deposit from catalog
+    const currentStock = config.totalStock || activeStock?.available || 0;
+    const currentDeposit = config.securityDeposit || activeStock?.deposit || 0;
+
+    // Map console IDs to controller keys
+    const idToCtrl: Record<string, keyof typeof controllers.pricing> = {
+      'ps5': 'ps5',
+      'xbox': 'xbox',
+      'ps4': 'ps4',
+      'switch': 'switch'
+    };
+    const ctrlKey = idToCtrl[consoleId] || 'ps5';
+    const ctrlPricing = controllers.pricing[ctrlKey];
+
     return [
-      { duration: "Day", price: dailyRate, features: ["24 Hours Access", "Self Pickup Available", "Vetted Hardware"], extraController: 299, color: "bg-[#1a1a1a]", recommended: false },
-      { duration: "Week", price: dailyRate * 6, features: ["7 Days Access", "Free Delivery", "Priority Support", "Bulk Discount"], extraController: 799, color: "bg-[#A855F7]", recommended: true },
-      { duration: "Month", price: dailyRate * 20, features: ["30 Days Access", "Free Delivery", "Massive Savings", "Ultimate Gaming"], extraController: 1499, color: "bg-[#1a1a1a]", recommended: false }
+      { 
+        duration: "Day", 
+        price: config.daily.price, 
+        features: config.daily.features, 
+        extraController: ctrlPricing.DAILY, 
+        color: "bg-[#1a1a1a]", 
+        recommended: false,
+        available: currentStock,
+        deposit: currentDeposit
+      },
+      { 
+        duration: "Week", 
+        price: config.weekly.price, 
+        features: config.weekly.features, 
+        extraController: ctrlPricing.WEEKLY, 
+        color: "bg-[#A855F7]", 
+        recommended: true,
+        available: currentStock,
+        deposit: currentDeposit
+      },
+      { 
+        duration: "Month", 
+        price: config.monthly.price, 
+        features: config.monthly.features, 
+        extraController: ctrlPricing.MONTHLY, 
+        color: "bg-[#1a1a1a]", 
+        recommended: false,
+        available: currentStock,
+        deposit: currentDeposit
+      }
     ];
   };
 
@@ -174,7 +208,7 @@ export default function Rentals() {
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
           <AnimatePresence mode="wait">
-            {activeTab && getPlans(activeTab, activeStock?.dailyRate || 500).map((plan: any, index: number) => (
+            {activeTab && getPlans(activeTab).map((plan: any, index: number) => (
               <motion.div
                 key={plan.duration}
                 initial={{ opacity: 0, y: 20 }}
@@ -194,15 +228,9 @@ export default function Rentals() {
                   <div className="mt-4 relative z-10 flex flex-col items-center justify-center gap-1">
                     <span className="text-5xl font-black tracking-tighter">{formatCurrency(plan.price)}</span>
                     {/* Availability Badge */}
-                    {(() => {
-                      const currentStock = rentals.find(s => s.id === activeTab);
-                      const isAvailable = (currentStock?.available || 0) > 0;
-                      return (
-                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${isAvailable ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
-                          {isAvailable ? `${currentStock?.available} Units Available` : 'Out of Stock'}
-                        </span>
-                      );
-                    })()}
+                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${plan.available > 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                      {plan.available > 0 ? `${plan.available} Units Available` : 'Out of Stock'}
+                    </span>
                   </div>
                   {plan.recommended && (
                     <span className="absolute top-4 right-4 bg-white text-black text-[10px] font-black px-3 py-1 rounded-full uppercase z-10 shadow-lg">Best Value</span>
@@ -228,13 +256,13 @@ export default function Rentals() {
                   <div className="space-y-4 pt-4">
                     <Link
                       to={`/rentals/${activeStock?.slug}/book`}
-                      className={`group/btn relative overflow-hidden block w-full text-center py-5 rounded-2xl font-black text-lg transition-all ${(activeStock?.available || 0) > 0
+                      className={`group/btn relative overflow-hidden block w-full text-center py-5 rounded-2xl font-black text-lg transition-all ${plan.available > 0
                         ? (plan.recommended ? 'bg-[#A855F7] text-white shadow-[0_0_25px_rgba(168,85,247,0.4)] hover:shadow-[0_0_35px_rgba(168,85,247,0.6)]' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-[#A855F7]/50')
                         : 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed grayscale'
                         }`}
                     >
                       <span className="relative z-10 flex items-center justify-center gap-2 tracking-widest uppercase">
-                        {(activeStock?.available || 0) > 0 ? (
+                        {plan.available > 0 ? (
                           <>RENT NOW <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" /></>
                         ) : <span className="flex items-center gap-2"><ArrowRight size={20} className="rotate-45" /> SOLD OUT</span>}
                       </span>

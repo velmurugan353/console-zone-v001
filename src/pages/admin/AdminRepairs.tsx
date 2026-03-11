@@ -98,6 +98,9 @@ export default function AdminRepairs() {
         setRepairs(fetchedRepairs);
       }
       setLoading(false);
+    }, (error) => {
+      console.error("Firestore error in AdminRepairs:", error);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);

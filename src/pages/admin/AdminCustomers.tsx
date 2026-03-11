@@ -15,7 +15,8 @@ import {
   ArrowUpRight,
   TrendingUp,
   CreditCard,
-  Package
+  Package,
+  RefreshCw
 } from 'lucide-react';
 import { collection, onSnapshot, query, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
@@ -71,6 +72,9 @@ export default function AdminCustomers() {
         };
       });
       setCustomers(fetchedCustomers);
+      setLoading(false);
+    }, (error) => {
+      console.error("Firestore error in AdminCustomers:", error);
       setLoading(false);
     });
 

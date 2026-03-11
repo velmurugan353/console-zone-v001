@@ -12,6 +12,31 @@ import { uploadKYCDocument, submitKYC } from "../../../services/kyc";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
+const fetchAddress = async (lat: number, lng: number, setAddress: (addr: string) => void) => {
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+        const data = await response.json();
+        if (data.display_name) {
+            setAddress(data.display_name);
+        }
+    } catch (error) {
+        console.error("Error fetching address:", error);
+    }
+};
+
+const LocationMarker = ({ position, setPosition, setAddress }: { position: L.LatLng | null, setPosition: (pos: L.LatLng) => void, setAddress: (addr: string) => void }) => {
+    useMapEvents({
+        click(e) {
+            setPosition(e.latlng);
+            fetchAddress(e.latlng.lat, e.latlng.lng, setAddress);
+        },
+    });
+
+    return position === null ? null : (
+        <Marker position={position}></Marker>
+    );
+};
+
 export default function EnterpriseKYC() {
     const [step, setStep] = useState(1);
     const [activeField, setActiveField] = useState<string | null>(null);

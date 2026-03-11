@@ -95,6 +95,9 @@ export default function AdminOrders() {
       })) as Order[];
       setOrders(fetchedOrders);
       setLoading(false);
+    }, (error) => {
+      console.error("Firestore error in AdminOrders:", error);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);

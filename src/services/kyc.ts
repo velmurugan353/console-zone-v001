@@ -33,6 +33,7 @@ export const getKYCStatus = (userId: string): KYCData | null => {
         const stored = localStorage.getItem(KYC_STORAGE_KEY);
         if (!stored || stored === 'undefined') return null;
         const allData = JSON.parse(stored);
+        if (!allData || typeof allData !== 'object') return null;
         return allData[userId] || null;
     } catch (e) {
         console.error("KYC Data corruption:", e);

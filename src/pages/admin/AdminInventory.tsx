@@ -61,6 +61,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '../../lib/utils';
+import { getCatalogSettings } from '../../services/catalog-settings';
 
 type InventoryStatus = 'Available' | 'Rented' | 'Maintenance' | 'Retired';
 
@@ -309,6 +310,8 @@ export default function AdminInventory() {
         ...doc.data()
       })) as InventoryItem[];
       setInventory(fetchedItems);
+    }, (error) => {
+      console.error("Firestore error in unsubInv:", error);
     });
 
     const qProd = query(collection(db, 'products'), where('isRental', '==', true));
@@ -318,6 +321,9 @@ export default function AdminInventory() {
         ...doc.data()
       }));
       setProducts(fetchedProducts);
+      setLoading(false);
+    }, (error) => {
+      console.error("Firestore error in unsubProd:", error);
       setLoading(false);
     });
 
@@ -580,8 +586,113 @@ export default function AdminInventory() {
     }));
   }, [inventory]);
 
+  const calculateTotalRevenue = () => inventory.reduce((sum, item) => sum + (item.totalRevenue || 0), 0);
+  const calculateTotalValue = () => inventory.reduce((sum, item) => sum + (item.purchasePrice || 0), 0);
+  const calculateAverageHealth = () => inventory.length > 0 ? Math.round(inventory.reduce((sum, item) => sum + item.health, 0) / inventory.length) : 0;
+
   return (
     <div className="space-y-8">
+      {/* Fleet Summary Matrix */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-[#A855F7]">
+            <Box size={40} />
+          </div>
+          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Total Asset Value</p>
+          <h3 className="text-2xl font-black text-white font-mono">{formatCurrency(calculateTotalValue())}</h3>
+          <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-[#A855F7]/40 w-full" />
+          </div>
+        </div>
+        <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-emerald-500">
+            <TrendingUp size={40} />
+          </div>
+          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Cumulative Revenue</p>
+          <h3 className="text-2xl font-black text-emerald-500 font-mono">{formatCurrency(calculateTotalRevenue())}</h3>
+          <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-emerald-500/40 w-[65%]" />
+          </div>
+        </div>
+        <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-red-500">
+            <Heart size={40} />
+          </div>
+          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Avg Fleet Health</p>
+          <h3 className="text-2xl font-black text-white font-mono">{calculateAverageHealth()}%</h3>
+          <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-1000 ${calculateAverageHealth() > 80 ? 'bg-emerald-500/40' : 'bg-amber-500/40'}`} 
+              style={{ width: `${calculateAverageHealth()}%` }} 
+            />
+          </div>
+        </div>
+        <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-blue-500">
+            <Zap size={40} />
+          </div>
+          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Active Rental Load</p>
+          <h3 className="text-2xl font-black text-[#A855F7] font-mono">
+            {inventory.filter(i => i.status === 'Rented').length} / {inventory.length}
+          </h3>
+          <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-[#A855F7] shadow-[0_0_10px_rgba(168,85,247,0.5)]" 
+              style={{ width: `${(inventory.filter(i => i.status === 'Rented').length / (inventory.length || 1)) * 100}%` }} 
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Category Stock Matrix */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {['Sony PlayStation 5', 'Xbox Series X', 'PlayStation 4 Pro', 'Nintendo Switch OLED'].map(category => {
+          const catItems = inventory.filter(i => i.name.includes(category) || i.category === category);
+          const available = catItems.filter(i => i.status === 'Available').length;
+          const totalUnits = catItems.length;
+          
+          // Get the Manual Matrix Stock Count from Catalog Settings
+          const catalog = getCatalogSettings();
+          const targetStock = catalog[category]?.totalStock || 0;
+          
+          return (
+            <div key={category} className="bg-white/5 border border-white/10 rounded-xl p-4 hover:border-[#A855F7]/30 transition-all group">
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-tighter truncate max-w-[80%]">{category}</span>
+                <div className={`w-1.5 h-1.5 rounded-full ${available > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[8px] font-mono text-gray-600 uppercase">Available</span>
+                  <span className="text-lg font-black text-white font-mono">{available}</span>
+                </div>
+                <div className="flex items-baseline justify-between border-t border-white/5 pt-1">
+                  <span className="text-[8px] font-mono text-gray-600 uppercase">Matrix Nodes</span>
+                  <span className="text-xs font-bold text-gray-400 font-mono">{totalUnits}</span>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[8px] font-mono text-[#A855F7]/70 uppercase font-black">Catalog Stock</span>
+                  <span className="text-xs font-black text-[#A855F7] font-mono">{targetStock}</span>
+                </div>
+              </div>
+
+              <div className="mt-3 h-1 w-full bg-white/5 rounded-full overflow-hidden relative">
+                {/* Visual indicator of Actual vs Target */}
+                <div 
+                  className="absolute inset-0 bg-white/10"
+                  style={{ width: '100%' }}
+                />
+                <div 
+                  className={`h-full relative z-10 ${available > 0 ? 'bg-emerald-500/50' : 'bg-red-500/50'}`} 
+                  style={{ width: `${(available / (Math.max(totalUnits, targetStock) || 1)) * 100}%` }} 
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {/* Professional Analytics Matrix */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
@@ -944,7 +1055,23 @@ export default function AdminInventory() {
       )}
 
       {/* Inventory Display */}
-      {viewMode === 'grid' ? (
+      {filteredInventory.length === 0 ? (
+        <div className="bg-[#0a0a0a] border border-dashed border-white/10 rounded-3xl p-20 text-center space-y-4">
+          <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/5">
+            <Box size={40} className="text-gray-600" />
+          </div>
+          <h3 className="text-xl font-bold text-white uppercase italic tracking-tighter">Zero Hardware Nodes Detected</h3>
+          <p className="text-gray-500 font-mono text-xs uppercase tracking-widest max-w-md mx-auto">
+            The Asset Matrix is currently void of any active entries matching your current filters.
+          </p>
+          <button
+            onClick={() => { setStatusFilter('All'); setSearch(''); }}
+            className="text-[10px] font-black text-[#A855F7] uppercase tracking-widest hover:underline"
+          >
+            Reset Matrix Filters
+          </button>
+        </div>
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredInventory.map((item, i) => (
             <motion.div

@@ -121,6 +121,9 @@ export default function AdminRentals() {
       })) as Rental[];
       setRentals(fetchedRentals);
       setLoading(false);
+    }, (error) => {
+      console.error("Firestore error in AdminRentals:", error);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);

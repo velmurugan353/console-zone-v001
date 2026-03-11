@@ -34,7 +34,8 @@ import {
   ChevronRight,
   ShieldCheck,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Palette
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAdminNotifications } from '../../hooks/useAdminNotifications';
@@ -304,6 +305,7 @@ export default function AdminDashboard() {
                   { name: 'Customizer', path: '/admin/customizer', icon: Palette },
                   { name: 'Rental Status', path: '/admin/rental-status', icon: Activity },
                   { name: 'KYC Review', path: '/admin/kyc', icon: ShieldCheck },
+                  { name: 'Rental Inventory', path: '/admin/inventory', icon: Box },
                 ].map((action) => (
                   <Link
                     key={action.name}

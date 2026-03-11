@@ -100,6 +100,9 @@ export default function AdminInvoices() {
         };
       });
       updateUnifiedTransactions(orders, 'order');
+    }, (error) => {
+      console.error("Firestore error in unsubOrders:", error);
+      setLoading(false);
     });
 
     const unsubRentals = onSnapshot(qRentals, (snapshot) => {
@@ -116,6 +119,9 @@ export default function AdminInvoices() {
         };
       });
       updateUnifiedTransactions(rentals, 'rental');
+    }, (error) => {
+      console.error("Firestore error in unsubRentals:", error);
+      setLoading(false);
     });
 
     const unsubBuybacks = onSnapshot(qBuybacks, (snapshot) => {
@@ -132,6 +138,9 @@ export default function AdminInvoices() {
         };
       });
       updateUnifiedTransactions(buybacks, 'buyback');
+    }, (error) => {
+      console.error("Firestore error in unsubBuybacks:", error);
+      setLoading(false);
     });
 
     const unsubManual = onSnapshot(qManual, (snapshot) => {
@@ -149,11 +158,16 @@ export default function AdminInvoices() {
         };
       });
       updateUnifiedTransactions(manualItems, 'manual');
+    }, (error) => {
+      console.error("Firestore error in unsubManual:", error);
+      setLoading(false);
     });
 
     // Fetch products for selector
     getDocs(collection(db, 'products')).then(snap => {
       setSystemProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }).catch(error => {
+      console.error("Firestore error fetching products:", error);
     });
 
     return () => {
@@ -272,7 +286,8 @@ export default function AdminInvoices() {
       tax: 0,
       shipping: 0,
       total: 0,
-      paymentMethod: 'Custom / Offline'
+      paymentMethod: 'Custom / Offline',
+      type: 'Order'
     });
     setSelectedService('order');
   };

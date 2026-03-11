@@ -16,17 +16,23 @@ export default function AdminKYC() {
 
     const fetchDocuments = () => {
         setLoading(true);
-        const allData = JSON.parse(localStorage.getItem('consolezone_kyc_data') || '{}');
-        const docsList = Object.keys(allData).map(userId => ({
-            ...allData[userId],
-            id: userId,
-            // Fallback mappings if missing
-            user: allData[userId].fullName,
-            avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100",
-            type: "ID Card & Selfie",
-            date: allData[userId].submittedAt?.split('T')[0] || 'N/A',
-        }));
-        setDocuments(docsList);
+        try {
+            const stored = localStorage.getItem('consolezone_kyc_data');
+            const allData = stored ? JSON.parse(stored) : {};
+            const docsList = Object.keys(allData).map(userId => ({
+                ...allData[userId],
+                id: userId,
+                // Fallback mappings if missing
+                user: allData[userId].fullName,
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100",
+                type: "ID Card & Selfie",
+                date: allData[userId].submittedAt?.split('T')[0] || 'N/A',
+            }));
+            setDocuments(docsList);
+        } catch (e) {
+            console.error("Failed to parse KYC data:", e);
+            setDocuments([]);
+        }
         setLoading(false);
     };
 
