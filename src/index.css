@@ -2,32 +2,50 @@
 @import "leaflet/dist/leaflet.css";
 
 @theme {
-  --color-gaming-bg: #0a0a0a;
-  --color-gaming-card: #121212;
-  --color-gaming-accent: #00f0ff;
+  --color-gaming-bg: var(--bg, #0a0a0a);
+  --color-gaming-card: var(--card, #121212);
+  --color-gaming-accent: var(--accent, #00f0ff);
   /* Neon Cyan */
-  --color-gaming-secondary: #7000ff;
+  --color-gaming-secondary: var(--secondary, #7000ff);
   /* Neon Purple */
-  --color-gaming-text: #e0e0e0;
-  --color-gaming-muted: #a0a0a0;
-  --color-gaming-border: #2a2a2a;
+  --color-gaming-text: var(--text, #e0e0e0);
+  --color-gaming-muted: var(--muted, #a0a0a0);
+  --color-gaming-border: var(--border, #2a2a2a);
 
   --color-royal-purple: #8B5CF6;
   --color-neon-purple: #A855F7;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body, "Inter", ui-sans-serif, system-ui, sans-serif);
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 :root {
   color-scheme: dark;
+  
+  /* Standard Variables from Customizer */
+  --bg: #0a0a0a;
+  --card: #121212;
+  --accent: #00f0ff;
+  --secondary: #7000ff;
+  --text: #e0e0e0;
+  --muted: #a0a0a0;
+  --border: #2a2a2a;
+
+  /* RGB Helpers for Tailwind Opacity */
+  --accent-rgb: 0, 240, 255;
+  --secondary-rgb: 112, 0, 255;
 }
 
 body {
   background-color: var(--color-gaming-bg);
   color: var(--color-gaming-text);
-  font-family: var(--font-sans);
+  font-family: var(--font-body, var(--font-sans));
   overflow-x: hidden;
+  transition: all var(--layout-transition, 0.3s) ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading, var(--font-sans));
 }
 
 /* Custom Scrollbar */
@@ -84,6 +102,77 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Admin Layout Zoom Fixes */
+.admin-layout {
+  /* Increase brightness of muted/gray text for better contrast at 85% zoom */
+  .text-gray-400 {
+    color: #cbd5e1 !important; /* gray-300 */
+  }
+  .text-gray-500 {
+    color: #e2e8f0 !important; /* gray-200 */
+  }
+  .text-gray-600 {
+    color: #f1f5f9 !important; /* gray-100 */
+  }
+  .text-gaming-muted {
+    color: #cbd5e1 !important;
+  }
+
+  /* Slightly boost ultra-small fonts to remain readable */
+  .text-\[10px\], .text-xs {
+    font-size: 12.5px !important;
+  }
+  .text-\[9px\] {
+    font-size: 11.5px !important;
+  }
+  .text-\[8px\] {
+    font-size: 10.5px !important;
+  }
+
+  /* Improve mono labels contrast and readability */
+  .font-mono {
+    letter-spacing: 0.05em;
+    font-weight: 500;
+    filter: brightness(1.2);
+  }
+
+  /* Boost icon visibility slightly */
+  svg {
+    stroke-width: 2.5;
+  }
+}
+
+/* Invoice Modal Responsive Scaling */
+.invoice-modal > div {
+  transform-origin: top center;
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 850px) {
+  .invoice-modal > div {
+    transform: scale(0.9);
+  }
+}
+
+@media (max-width: 768px) {
+  .invoice-modal > div {
+    transform: scale(0.85);
+  }
+}
+
+@media (max-width: 640px) {
+  .invoice-modal > div {
+    transform: scale(0.75);
+  }
+}
+
+@media (max-width: 480px) {
+  .invoice-modal > div {
+    transform: scale(0.45);
+    margin-top: -20%;
+  }
 }
 
 @media print {

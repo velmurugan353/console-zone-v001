@@ -81,7 +81,7 @@ const categoryEfficiency = [
 
 export default function AdminAnalytics() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-6 lg:p-10 space-y-8">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-8">
         <div>

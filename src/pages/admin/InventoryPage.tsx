@@ -9,7 +9,7 @@ export default function InventoryPage() {
     const [activeTab, setActiveTab] = useState<'matrix' | 'settings'>('matrix');
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-6 lg:p-10 space-y-8">
+        <div className="space-y-8">
             {/* Breadcrumbs / Back */}
             <div className="flex items-center justify-between">
                 <Link 

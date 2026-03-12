@@ -78,11 +78,11 @@ export default function Home() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#050505] overflow-hidden">
+        <div className="min-h-dvh bg-gaming-bg overflow-hidden">
             {/* Hero Section */}
-            <section className="relative h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden">
+            <section className="relative h-dvh flex flex-col items-center justify-center text-center px-4 overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/50 via-[#050505]/80 to-[#050505] z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-gaming-bg/50 via-gaming-bg/80 to-gaming-bg z-10" />
                     <EditableImage
                         pageKey="home"
                         itemKey="hero_bg"
@@ -105,7 +105,7 @@ export default function Home() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4, duration: 0.8 }}
-                        className="text-gray-300 text-lg md:text-xl font-mono uppercase tracking-widest max-w-2xl mx-auto"
+                        className="text-gaming-text opacity-80 text-lg md:text-xl font-mono uppercase tracking-widest max-w-2xl mx-auto"
                     >
                         <EditableText pageKey="home" itemKey="hero_subtitle" defaultText="Premium Console Rentals Delivered to Your Doorstep" />
                     </motion.p>
@@ -117,7 +117,7 @@ export default function Home() {
                         className="flex flex-col sm:flex-row gap-6 justify-center mt-8"
                     >
                         <Link to="/rentals" className="group">
-                            <button className="px-12 py-5 bg-[#A855F7] text-white font-black uppercase tracking-[0.2em] rounded-none skew-x-[-20deg] flex items-center gap-3 hover:bg-[#9333ea] transition-colors">
+                            <button className="px-12 py-5 bg-gaming-accent text-black font-black uppercase tracking-[0.2em] rounded-none skew-x-[-20deg] flex items-center gap-3 hover:opacity-90 transition-all">
                                 <span className="skew-x-[20deg] block text-lg font-black">RENTALS</span>
                                 <ArrowRight className="w-6 h-6 skew-x-[20deg]" strokeWidth={3} />
                             </button>
@@ -135,7 +135,7 @@ export default function Home() {
             {/* Flash Sale Banner */}
             <section className="px-4 sm:px-6 lg:px-8 w-full mx-auto mb-24 -mt-20 relative z-30" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
                 <div className="relative group overflow-hidden rounded-[3rem] bg-gradient-to-r from-gaming-accent to-gaming-secondary p-1" style={{ borderRadius: 'var(--layout-border-radius, 3rem)' }}>
-                    <div className="relative bg-[#0A0A0A] rounded-[2.9rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden" style={{ borderRadius: 'calc(var(--layout-border-radius, 3rem) - 0.1rem)' }}>
+                    <div className="relative bg-gaming-card rounded-[2.9rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden" style={{ borderRadius: 'calc(var(--layout-border-radius, 3rem) - 0.1rem)' }}>
                         {/* Decorative Background Element */}
                         <div className="absolute top-0 right-0 w-96 h-96 bg-gaming-accent/10 blur-[100px] -translate-y-1/2 translate-x-1/2" />
 
@@ -152,14 +152,14 @@ export default function Home() {
                             <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase leading-[0.9]">
                                 <EditableText pageKey="home" itemKey="flash_sale_title" defaultText="GET 20% OFF ON YOUR FIRST RENTAL" />
                             </h2>
-                            <p className="text-gray-400 font-mono text-sm uppercase tracking-widest max-w-md">
+                            <p className="text-gaming-muted font-mono text-sm uppercase tracking-widest max-w-md">
                                 <EditableText pageKey="home" itemKey="flash_sale_subtitle" defaultText="Use code GAMER20 at checkout. Mission ends in 48 hours." />
                             </p>
                         </div>
 
                         <div className="relative z-10 w-full md:w-auto">
                             <Link to="/rentals">
-                                <button className="w-full md:w-auto px-12 py-6 bg-white text-black font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-gaming-accent hover:text-white transition-all shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_50px_rgba(168,85,247,0.3)]" style={{ borderRadius: 'var(--layout-border-radius, 1rem)' }}>
+                                <button className="w-full md:w-auto px-12 py-6 bg-white text-black font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-gaming-accent hover:text-white transition-all shadow-[0_20px_50px_rgba(0,0,0,0.3)]" style={{ borderRadius: 'var(--layout-border-radius, 1rem)' }}>
                                     <EditableText pageKey="home" itemKey="flash_sale_btn" defaultText="CLAIM DISCOUNT" />
                                 </button>
                             </Link>
@@ -172,7 +172,7 @@ export default function Home() {
             <VaultPassSection />
 
             {/* Featured Products Section ("Slay Style") */}
-            <section className="py-24 px-4 sm:px-6 lg:px-8 w-full mx-auto border-t border-white/5" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+            <section className="py-24 px-4 sm:px-6 lg:px-8 w-full mx-auto border-t border-gaming-border" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
                 <div className="text-center mb-16 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
                     <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4">
                         <EditableText pageKey="home" itemKey="featured_title" defaultText="START SHOPPING" />
@@ -182,9 +182,9 @@ export default function Home() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 mb-24 mx-auto w-full" style={{ gap: 'var(--layout-grid-gap, 2rem)', maxWidth: 'var(--layout-max-width, 1280px)' }}>
                     {featuredProducts.map((item) => (
-                        <div key={item.id} className="group bg-[#0A0A0A] border border-white/5 overflow-hidden flex flex-col p-6 space-y-6 hover:border-gaming-accent/50 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
-                            <div className="relative aspect-square w-full bg-[#121212] overflow-hidden flex items-center justify-center p-8" style={{ borderRadius: 'calc(var(--layout-border-radius, 2.5rem) - 0.5rem)' }}>
-                                <span className="absolute top-4 left-4 bg-gaming-accent text-white text-[8px] font-black px-3 py-1 rounded uppercase tracking-[0.2em] z-10">
+                        <div key={item.id} className="group bg-gaming-card border border-gaming-border overflow-hidden flex flex-col p-6 space-y-6 hover:border-gaming-accent/50 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
+                            <div className="relative aspect-square w-full bg-gaming-bg overflow-hidden flex items-center justify-center p-8" style={{ borderRadius: 'calc(var(--layout-border-radius, 2.5rem) - 0.5rem)' }}>
+                                <span className="absolute top-4 left-4 bg-gaming-accent text-black text-[8px] font-black px-3 py-1 rounded uppercase tracking-[0.2em] z-10">
                                     FEATURED
                                 </span>
                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -192,14 +192,14 @@ export default function Home() {
 
                             <div className="space-y-4 px-2">
                                 <h3 className="text-xl font-black text-white uppercase tracking-tight">{item.name}</h3>
-                                <p className="text-gray-500 text-xs line-clamp-2">{item.desc}</p>
+                                <p className="text-gaming-muted text-xs line-clamp-2">{item.desc}</p>
                                 <div className="flex gap-2">
-                                    <span className="text-[9px] font-black uppercase px-3 py-1 rounded border border-white/10 text-gray-400">{item.badge1}</span>
-                                    <span className="text-[9px] font-black uppercase px-3 py-1 rounded border border-[#A855F7]/30 text-[#A855F7]">{item.badge2}</span>
+                                    <span className="text-[9px] font-black uppercase px-3 py-1 rounded border border-gaming-border text-gaming-muted">{item.badge1}</span>
+                                    <span className="text-[9px] font-black uppercase px-3 py-1 rounded border border-gaming-accent/30 text-gaming-accent">{item.badge2}</span>
                                 </div>
                                 <div className="pt-4 flex items-center justify-between">
                                     <div>
-                                        <div className="text-[9px] text-gray-600 font-bold uppercase">{item.label}</div>
+                                        <div className="text-[9px] text-gaming-muted font-bold uppercase">{item.label}</div>
                                         <div className="text-2xl font-black text-white italic tracking-tighter">{formatCurrency(item.price)}</div>
                                     </div>
                                     <button
@@ -211,7 +211,7 @@ export default function Home() {
                                             quantity: 1,
                                             type: 'buy'
                                         })}
-                                        className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-[#A855F7] transition-all text-white"
+                                        className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-gaming-accent transition-all text-white hover:text-black"
                                     >
                                         <ShoppingBag size={20} />
                                     </button>
@@ -230,26 +230,26 @@ export default function Home() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 mb-24 mx-auto w-full" style={{ gap: 'var(--layout-grid-gap, 2rem)', maxWidth: 'var(--layout-max-width, 1280px)' }}>
                     {rentalProducts.map((item) => (
-                        <div key={item.id} className="group bg-[#0A0A0A] border border-white/5 overflow-hidden flex flex-col p-6 space-y-6 hover:border-gaming-accent/50 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
-                            <div className="relative aspect-square w-full bg-[#121212] overflow-hidden flex items-center justify-center p-8" style={{ borderRadius: 'calc(var(--layout-border-radius, 2.5rem) - 0.5rem)' }}>
+                        <div key={item.id} className="group bg-gaming-card border border-gaming-border overflow-hidden flex flex-col p-6 space-y-6 hover:border-gaming-accent/50 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
+                            <div className="relative aspect-square w-full bg-gaming-bg overflow-hidden flex items-center justify-center p-8" style={{ borderRadius: 'calc(var(--layout-border-radius, 2.5rem) - 0.5rem)' }}>
                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                             </div>
 
                             <div className="space-y-4 px-2">
                                 <h3 className="text-xl font-black text-white uppercase tracking-tight">{item.name}</h3>
-                                <p className="text-gray-500 text-xs line-clamp-2">{item.desc}</p>
+                                <p className="text-gaming-muted text-xs line-clamp-2">{item.desc}</p>
                                 <div className="flex gap-2">
-                                    <span className="text-[9px] font-black uppercase px-3 py-1 rounded border border-white/10 text-gray-400">{item.badge1}</span>
-                                    <span className="text-[9px] font-black uppercase px-3 py-1 rounded border border-[#A855F7]/30 text-[#A855F7]">{item.badge2}</span>
+                                    <span className="text-[9px] font-black uppercase px-3 py-1 rounded border border-gaming-border text-gaming-muted">{item.badge1}</span>
+                                    <span className="text-[9px] font-black uppercase px-3 py-1 rounded border border-gaming-accent/30 text-gaming-accent">{item.badge2}</span>
                                 </div>
                                 <div className="pt-4 flex items-center justify-between">
                                     <div>
-                                        <div className="text-[9px] text-gray-600 font-bold uppercase">{item.label}</div>
-                                        <div className="text-2xl font-black text-white italic tracking-tighter">{formatCurrency(item.price)}<span className="text-sm text-gray-500 font-normal">/day</span></div>
+                                        <div className="text-[9px] text-gaming-muted font-bold uppercase">{item.label}</div>
+                                        <div className="text-2xl font-black text-white italic tracking-tighter">{formatCurrency(item.price)}<span className="text-sm text-gaming-muted font-normal">/day</span></div>
                                     </div>
                                     <Link
                                         to={`/product/${item.id}`}
-                                        className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-[#A855F7] transition-all text-white"
+                                        className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-gaming-accent transition-all text-white hover:text-black"
                                     >
                                         <ArrowRight size={20} />
                                     </Link>
@@ -263,7 +263,7 @@ export default function Home() {
                 <AIConcierge />
 
                 {/* User Reviews Section */}
-                <div className="pt-24 border-t border-white/5 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+                <div className="pt-24 border-t border-gaming-border mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
                     <div className="text-center mb-16 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
                         <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4">
                             <EditableText pageKey="home" itemKey="reviews_title" defaultText="WHAT GAMERS SAY" />
@@ -277,14 +277,14 @@ export default function Home() {
                             { name: "Sarah K.", rating: 5, comment: "Sold my old PS4 for a great price. Payout was instant as promised. Best place to sell gear.", location: "Bangalore" },
                             { name: "Vivek M.", rating: 5, comment: "The 144Hz monitor rental changed my weekend tournament experience. Professional service!", location: "Mumbai" }
                         ].map((review, i) => (
-                            <div key={i} className="bg-[#0A0A0A] border border-white/5 p-8 rounded-[2.5rem] space-y-6 relative group overflow-hidden hover:border-gaming-accent/30 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
+                            <div key={i} className="bg-gaming-card border border-gaming-border p-8 rounded-[2.5rem] space-y-6 relative group overflow-hidden hover:border-gaming-accent/30 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
                                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <Gamepad2 size={80} className="text-white" />
                                 </div>
                                 <div className="flex text-gaming-accent gap-1">
                                     {[...Array(review.rating)].map((_, i) => <span key={i} className="text-xl">★</span>)}
                                 </div>
-                                <p className="text-gray-400 text-sm leading-relaxed italic">
+                                <p className="text-gaming-muted text-sm leading-relaxed italic">
                                     <EditableText pageKey="home" itemKey={`review_comment_${i}`} defaultText={review.comment} />
                                 </p>
                                 <div className="flex items-center gap-4">
@@ -293,7 +293,7 @@ export default function Home() {
                                     </div>
                                     <div>
                                         <div className="text-white font-bold text-sm uppercase tracking-wider">{review.name}</div>
-                                        <div className="text-gray-600 text-[10px] font-bold uppercase tracking-[0.2em]">{review.location}</div>
+                                        <div className="text-gaming-muted text-[10px] font-bold uppercase tracking-[0.2em]">{review.location}</div>
                                     </div>
                                 </div>
                             </div>
@@ -307,8 +307,8 @@ export default function Home() {
                         <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4">
                             MISSION SUPPORT
                         </h2>
-                        <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">Everything you need to know about ConsoleZone</p>
-                        <div className="h-1 w-20 bg-[#A855F7] mx-auto rounded-full mt-4" />
+                        <p className="text-gaming-muted font-mono text-sm uppercase tracking-widest">Everything you need to know about ConsoleZone</p>
+                        <div className="h-1 w-20 bg-gaming-accent mx-auto rounded-full mt-4" />
                     </div>
 
                     <div className="max-w-3xl mx-auto space-y-4">
@@ -318,12 +318,12 @@ export default function Home() {
                             { q: "Do you offer doorstep delivery?", a: "Yes! We offer same-day doorstep delivery and pickup across all major areas of Chennai." },
                             { q: "Can I buy a console I'm currently renting?", a: "Absolutely! We offer special conversion prices if you decide to permanently own your rental gear." }
                         ].map((faq, i) => (
-                            <div key={i} className="bg-[#0A0A0A] border border-white/5 rounded-2xl p-6 hover:border-[#A855F7]/30 transition-all cursor-pointer group">
+                            <div key={i} className="bg-gaming-card border border-gaming-border rounded-2xl p-6 hover:border-gaming-accent/30 transition-all cursor-pointer group">
                                 <h3 className="text-white font-black uppercase text-sm tracking-widest flex items-center justify-between">
                                     {faq.q}
-                                    <ArrowRight size={16} className="text-[#A855F7] group-hover:translate-x-1 transition-transform" />
+                                    <ArrowRight size={16} className="text-gaming-accent group-hover:translate-x-1 transition-transform" />
                                 </h3>
-                                <p className="mt-4 text-gray-500 text-xs leading-relaxed group-hover:text-gray-400 transition-colors">{faq.a}</p>
+                                <p className="mt-4 text-gaming-muted text-xs leading-relaxed group-hover:text-gaming-text transition-colors">{faq.a}</p>
                             </div>
                         ))}
                     </div>

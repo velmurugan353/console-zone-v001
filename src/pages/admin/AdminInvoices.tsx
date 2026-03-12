@@ -490,7 +490,7 @@ export default function AdminInvoices() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-5xl max-h-[95vh] overflow-hidden flex flex-col shadow-[0_0_100px_rgba(168,85,247,0.15)]"
+              className="bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-5xl max-h-[] overflow-hidden flex flex-col shadow-[0_0_100px_rgba(168,85,247,0.15)]"
             >
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
                 <div>
@@ -599,10 +599,13 @@ export default function AdminInvoices() {
 
                     <input
                       type="text"
-                      placeholder="Contact Phone"
+                      maxLength={10}
+                      placeholder="Contact Phone (10 Digits)"
                       value={manualInvoice.customerPhone}
-                      onChange={(e) => setManualInvoice(prev => ({ ...prev, customerPhone: e.target.value }))}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                      onChange={(e) => setManualInvoice(prev => ({ ...prev, customerPhone: e.target.value.replace(/\D/g, '') }))}
+                      className={`w-full bg-black border rounded-xl px-4 py-3 font-mono text-xs focus:outline-none transition-colors ${
+                        (manualInvoice.customerPhone.length === 10) ? 'border-emerald-500/50 text-emerald-500' : 'border-white/10 text-white focus:border-[#A855F7]'
+                      }`}
                     />
                     <textarea
                       placeholder="Physical Distribution Address"

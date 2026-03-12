@@ -54,7 +54,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <div className="w-64 bg-[#111] border-r border-white/10 h-screen fixed left-0 top-0 flex flex-col">
+    <div className="w-64 bg-[#111] border-r border-white/10 h-dvh fixed left-0 top-0 flex flex-col">
       <div className="p-6 border-b border-white/10">
         <Link to="/" className="flex items-center space-x-2">
           <div className="p-2 bg-[#A855F7]/10 rounded-lg">

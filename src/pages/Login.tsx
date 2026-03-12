@@ -35,7 +35,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gaming-bg flex items-center justify-center relative overflow-hidden p-4">
+    <div className="min-h-dvh bg-gaming-bg flex items-center justify-center relative overflow-hidden p-4">
       {/* Mobile Back Button */}
       <div className="md:hidden fixed top-6 left-6 z-20">
         <button onClick={() => navigate('/')} className="text-white flex items-center gap-1 text-xs font-bold uppercase tracking-widest bg-white/10 px-3 py-2 rounded-full border border-white/10">

@@ -11,9 +11,9 @@ export default function Consoles() {
   const featuredConsole = consoles[0]; // PS5 Pro
 
   return (
-    <div className="bg-[#050505] min-h-screen pb-24">
+    <div className="bg-[#050505] min-h-dvh pb-24">
       {/* Hero Section */}
-      <section className="relative h-[70vh] flex items-center overflow-hidden border-b border-white/5">
+      <section className="relative h-[] flex items-center overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent z-10" />
           <img 

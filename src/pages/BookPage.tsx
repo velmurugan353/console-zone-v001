@@ -152,7 +152,7 @@ export default function BookPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] flex flex-col pt-16 md:flex-row">
+    <main className="min-h-dvh bg-[#050505] flex flex-col pt-16 md:flex-row">
       {/* Left Panel: Visuals & Context */}
       <div className="md:w-1/2 lg:w-5/12 bg-[#0A0A0A] relative overflow-hidden flex flex-col justify-center p-8 md:p-12 lg:p-20">
         {/* Background */}
@@ -207,7 +207,7 @@ export default function BookPage() {
       </div>
 
       {/* Right Panel: Enhanced Booking */}
-      <div className="md:w-1/2 lg:w-7/12 bg-[#050505] flex flex-col justify-center p-4 md:p-8 lg:p-12 relative overflow-y-auto max-h-screen">
+      <div className="md:w-1/2 lg:w-7/12 bg-[#050505] flex flex-col justify-center p-4 md:p-8 lg:p-12 relative overflow-y-auto max-h-dvh">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

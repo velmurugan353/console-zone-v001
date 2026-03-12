@@ -52,6 +52,22 @@ import { collection, onSnapshot, query, doc, updateDoc, orderBy, setDoc } from '
 import { db } from '../../lib/firebase';
 import { invoiceService } from '../../services/invoiceService';
 import InvoiceModal from '../../components/admin/InvoiceModal';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  AreaChart,
+  Area
+} from 'recharts';
 
 type RentalStatus = 'active' | 'completed' | 'late' | 'pending';
 
@@ -526,6 +542,93 @@ export default function AdminRentals() {
         </div>
       </div>
 
+      {/* Operational Intelligence Matrix */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Fleet Deployment Chart */}
+        <div className="lg:col-span-2 bg-[#0a0a0a] border border-white/10 rounded-3xl p-8">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-lg font-black text-white uppercase italic tracking-tighter">Deployment_Velocity</h3>
+              <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">Daily rental activation volume // 14-day window</p>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">
+              <Activity size={12} className="text-[#A855F7]" />
+              <span className="text-[10px] font-mono text-white">LIVE_FEED</span>
+            </div>
+          </div>
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={[
+                { date: '01/03', count: 4 }, { date: '02/03', count: 7 },
+                { date: '03/03', count: 5 }, { date: '04/03', count: 9 },
+                { date: '05/03', count: 12 }, { date: '06/03', count: 8 },
+                { date: '07/03', count: 15 }, { date: '08/03', count: 11 },
+                { date: '09/03', count: 18 }, { date: '10/03', count: 14 },
+                { date: '11/03', count: 22 }, { date: '12/03', count: 19 }
+              ]}>
+                <defs>
+                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#A855F7" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#A855F7" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 10}} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 10}} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                  itemStyle={{ color: '#A855F7', fontSize: '10px', textTransform: 'uppercase' }}
+                />
+                <Area type="monotone" dataKey="count" stroke="#A855F7" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Fleet Composition */}
+        <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8">
+          <h3 className="text-lg font-black text-white uppercase italic tracking-tighter mb-2">Fleet_Integrity</h3>
+          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-8">Status distribution manifest</p>
+          <div className="h-[200px] relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Active', value: rentals.filter(r => r.status === 'active').length },
+                    { name: 'Pending', value: rentals.filter(r => r.status === 'pending').length },
+                    { name: 'Late', value: rentals.filter(r => r.status === 'late').length },
+                    { name: 'Completed', value: rentals.filter(r => r.status === 'completed').length }
+                  ]}
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  <Cell fill="#3b82f6" />
+                  <Cell fill="#f59e0b" />
+                  <Cell fill="#ef4444" />
+                  <Cell fill="#10b981" />
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-2xl font-black text-white">{rentals.length}</span>
+              <span className="text-[8px] font-mono text-gray-500 uppercase">Total Nodes</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-6">
+            <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              <span className="text-[9px] font-mono text-gray-400 uppercase">Active</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-[9px] font-mono text-gray-400 uppercase">Return</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Fleet Utilization Heatmap */}
       <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
@@ -965,7 +1068,7 @@ export default function AdminRentals() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[] overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
             >
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
                 <div>
@@ -1107,10 +1210,13 @@ export default function AdminRentals() {
                         {isEditing ? (
                           <input
                             type="text"
+                            maxLength={10}
                             value={editForm.phone || ''}
-                            onChange={(e) => handleEditChange('phone', e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded px-2 py-1 text-gray-400 font-mono text-xs focus:outline-none focus:border-[#A855F7]"
-                            placeholder="Phone Number"
+                            onChange={(e) => handleEditChange('phone', e.target.value.replace(/\D/g, ''))}
+                            className={`w-full bg-black border rounded px-2 py-1 font-mono text-xs focus:outline-none transition-colors ${
+                              (editForm.phone?.length === 10) ? 'border-emerald-500/50 text-emerald-500' : 'border-white/10 text-gray-400 focus:border-[#A855F7]'
+                            }`}
+                            placeholder="10-Digit Mobile"
                           />
                         ) : (
                           <p className="text-gray-500 font-mono text-xs">{selectedRental.phone}</p>

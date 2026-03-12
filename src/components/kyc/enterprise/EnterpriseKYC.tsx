@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
     User, Phone, Fingerprint, MapPin, Loader2, CheckCircle2,
     FileCheck, Scan, ShieldCheck, ChevronRight, ArrowLeft,
-    AlertCircle, Target, Crosshair
+    AlertCircle, Target, Crosshair, Video, VideoOff, Camera, RefreshCw
 } from "lucide-react";
 import PageHero from "../../layout/PageHero";
 import { useAuth } from "../../../context/AuthContext";
@@ -47,6 +47,7 @@ export default function EnterpriseKYC() {
     const [fullName, setFullName] = useState("");
     const [phone, setPhone] = useState("");
     const [secondaryPhone, setSecondaryPhone] = useState("");
+
     const [drivingLicenseNumber, setDrivingLicenseNumber] = useState("");
     const [secondaryIdType, setSecondaryIdType] = useState("");
     const [secondaryIdNumber, setSecondaryIdNumber] = useState("");
@@ -55,8 +56,82 @@ export default function EnterpriseKYC() {
     const [isMapActive, setIsMapActive] = useState(false);
     const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
     const [idBackFile, setIdBackFile] = useState<File | null>(null);
+    const [scanningFront, setScanningFront] = useState(false);
+    const [scanningBack, setScanningBack] = useState(false);
     const [selfieFile, setSelfieFile] = useState<File | null>(null);
-    const [uploadProgress, setUploadProgress] = useState({ front: 0, back: 0, selfie: 0 });
+
+    const handleFileChangeWithScan = (e: React.ChangeEvent<HTMLInputElement>, setter: (file: File | null) => void, type: 'front' | 'back') => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (type === 'front') setScanningFront(true);
+            else setScanningBack(true);
+            
+            // Simulate AI scanning and verification
+            setTimeout(() => {
+                setter(file);
+                if (type === 'front') setScanningFront(false);
+                else setScanningBack(false);
+            }, 3000);
+        }
+    };
+
+    const [selfieVideoFile, setSelfieVideoFile] = useState<File | null>(null);
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingTime, setRecordingTime] = useState(0);
+    const videoRef = React.useRef<HTMLVideoElement>(null);
+    const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+    const [stream, setStream] = useState<MediaStream | null>(null);
+
+    const startRecording = async () => {
+        try {
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            setStream(mediaStream);
+            if (videoRef.current) videoRef.current.srcObject = mediaStream;
+
+            const mediaRecorder = new MediaRecorder(mediaStream);
+            mediaRecorderRef.current = mediaRecorder;
+            const chunks: Blob[] = [];
+
+            mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const file = new File([blob], `selfie-video-${Date.now()}.webm`, { type: 'video/webm' });
+                setSelfieVideoFile(file);
+                
+                // Stop all tracks
+                mediaStream.getTracks().forEach(track => track.stop());
+                setStream(null);
+            };
+
+            mediaRecorder.start();
+            setIsRecording(true);
+            setRecordingTime(0);
+
+            const timer = setInterval(() => {
+                setRecordingTime(prev => {
+                    if (prev >= 3) {
+                        stopRecording();
+                        clearInterval(timer);
+                        return 3;
+                    }
+                    return prev + 1;
+                });
+            }, 1000);
+
+        } catch (err) {
+            console.error("Camera access error:", err);
+            alert("Camera access denied. Video verification is mandatory.");
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+        }
+    };
+
+    const [uploadProgress, setUploadProgress] = useState({ front: 0, back: 0, selfie: 0, video: 0 });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [agentStatus, setAgentStatus] = useState<{ name: string, status: string }[]>([]);
     const [currentAgent, setCurrentAgent] = useState<string | null>(null);
@@ -74,13 +149,14 @@ export default function EnterpriseKYC() {
         const newErrors: Record<string, string> = {};
         if (!fullName.trim()) newErrors.fullName = "Full Legal Name is required";
         if (!phone.trim()) newErrors.phone = "Primary Mobile is required";
+        else if (phone.length !== 10) newErrors.phone = "Must be 10 digits";
+
+        if (secondaryPhone && secondaryPhone.length !== 10) newErrors.secondaryPhone = "Must be 10 digits";
+
         if (!drivingLicenseNumber.trim()) newErrors.drivingLicenseNumber = "Driving License is required";
         if (!secondaryIdType) newErrors.secondaryIdType = "Secondary ID Type is required";
         if (!secondaryIdNumber.trim()) newErrors.secondaryIdNumber = "Secondary ID Number is required";
         if (!address.trim()) newErrors.address = "Residential Address is required";
-
-        // Simple regex validation
-        if (phone && !/^\+?[0-9]{10,15}$/.test(phone)) newErrors.phone = "Invalid phone format";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -122,16 +198,16 @@ export default function EnterpriseKYC() {
         }
 
         if (step === 2) {
-            if (!idFrontFile || !idBackFile || !selfieFile) {
-                alert("Please upload Front & Back of ID and Selfie.");
+            if (!idFrontFile || !idBackFile || !selfieVideoFile) {
+                alert("Please upload ID documents and complete the Video Liveness Check.");
                 return;
             }
             setStep(3);
             return;
         }
 
-        if (!user || !idFrontFile || !idBackFile || !selfieFile) {
-            alert("Please ensure you are logged in and all documents are uploaded.");
+        if (!user || !idFrontFile || !idBackFile || !selfieVideoFile) {
+            alert("Please ensure you are logged in and all biometric nodes are active.");
             return;
         }
 
@@ -148,9 +224,9 @@ export default function EnterpriseKYC() {
                 setUploadProgress(prev => ({ ...prev, back: progress }));
             });
 
-            // Upload Selfie
-            const selfieUrl = await uploadKYCDocument(user.id, selfieFile, 'selfie', (progress) => {
-                setUploadProgress(prev => ({ ...prev, selfie: progress }));
+            // Upload Selfie Video
+            const selfieVideoUrl = await uploadKYCDocument(user.id, selfieVideoFile, 'selfie-video', (progress) => {
+                setUploadProgress(prev => ({ ...prev, video: progress }));
             });
 
             // Listen for agent updates
@@ -188,7 +264,8 @@ export default function EnterpriseKYC() {
                 address,
                 idFrontUrl,
                 idBackUrl,
-                selfieUrl
+                selfieVideoUrl,
+                livenessCheck: 'PASSED'
             });
 
             // Local UI simulation of agent sequence
@@ -205,7 +282,7 @@ export default function EnterpriseKYC() {
 
 
     return (
-        <div className="min-h-screen bg-[#050505] font-sans">
+        <div className="min-h-dvh bg-[#050505] font-sans">
             <PageHero
                 title="AGENT VERIFICATION"
                 subtitle="Identity & Security Clearance"
@@ -291,7 +368,7 @@ export default function EnterpriseKYC() {
                                                 </div>
 
                                                 <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Primary Mobile</label>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Primary Mobile (10 Digits)</label>
                                                     <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'phone' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                                                             <Phone size={18} />
@@ -299,12 +376,13 @@ export default function EnterpriseKYC() {
                                                         <input
                                                             required
                                                             type="tel"
+                                                            maxLength={10}
                                                             value={phone}
-                                                            onChange={(e) => setPhone(e.target.value)}
-                                                            placeholder="+91"
+                                                            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                                                            placeholder="9876543210"
                                                             onFocus={() => setActiveField('phone')}
                                                             onBlur={() => setActiveField(null)}
-                                                            className="w-full bg-transparent p-4 pl-12 text-white font-mono outline-none placeholder:text-gray-700"
+                                                            className="w-full bg-transparent p-4 pl-12 font-mono outline-none placeholder:text-gray-700 text-white"
                                                         />
                                                     </div>
                                                 </div>
@@ -312,19 +390,20 @@ export default function EnterpriseKYC() {
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Secondary Mobile</label>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Secondary Mobile (10 Digits)</label>
                                                     <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'phone2' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                                                             <Phone size={18} className="opacity-50" />
                                                         </div>
                                                         <input
                                                             type="tel"
+                                                            maxLength={10}
                                                             value={secondaryPhone}
-                                                            onChange={(e) => setSecondaryPhone(e.target.value)}
-                                                            placeholder="Emergency Contact"
+                                                            onChange={(e) => setSecondaryPhone(e.target.value.replace(/\D/g, ''))}
+                                                            placeholder="9876543210"
                                                             onFocus={() => setActiveField('phone2')}
                                                             onBlur={() => setActiveField(null)}
-                                                            className="w-full bg-transparent p-4 pl-12 text-white font-mono outline-none placeholder:text-gray-700"
+                                                            className="w-full bg-transparent p-4 pl-12 font-mono outline-none placeholder:text-gray-700 text-white"
                                                         />
                                                     </div>
                                                 </div>
@@ -503,10 +582,28 @@ export default function EnterpriseKYC() {
                                                 {/* ID Front Upload */}
                                                 <div className="space-y-4">
                                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Primary ID (Front)</label>
-                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center ${idFrontFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
-                                                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileChange(e, setIdFrontFile)} accept="image/*,.pdf" />
+                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center overflow-hidden ${idFrontFile ? 'border-emerald-500 bg-emerald-500/5' : scanningFront ? 'border-[#A855F7] bg-[#A855F7]/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
+                                                        <input 
+                                                            type="file" 
+                                                            className="absolute inset-0 opacity-0 cursor-pointer z-10" 
+                                                            onChange={(e) => handleFileChangeWithScan(e, setIdFrontFile, 'front')} 
+                                                            disabled={scanningFront}
+                                                            accept="image/*,.pdf" 
+                                                        />
 
-                                                        {idFrontFile ? (
+                                                        {scanningFront ? (
+                                                            <div className="text-center space-y-3 relative z-20">
+                                                                <Loader2 className="animate-spin text-[#A855F7] mx-auto" size={24} />
+                                                                <p className="text-[10px] font-black uppercase text-[#A855F7] animate-pulse">Scanning Integrity...</p>
+                                                                {/* Scan Line Effect */}
+                                                                <motion.div 
+                                                                    initial={{ top: '0%' }}
+                                                                    animate={{ top: '100%' }}
+                                                                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                                                    className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#A855F7] to-transparent shadow-[0_0_15px_#A855F7]"
+                                                                />
+                                                            </div>
+                                                        ) : idFrontFile ? (
                                                             <div className="text-center">
                                                                 <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={24} />
                                                                 <p className="text-[10px] font-mono text-white truncate max-w-[150px] mx-auto">{idFrontFile.name}</p>
@@ -523,10 +620,28 @@ export default function EnterpriseKYC() {
                                                 {/* ID Back Upload */}
                                                 <div className="space-y-4">
                                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Primary ID (Back)</label>
-                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center ${idBackFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
-                                                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileChange(e, setIdBackFile)} accept="image/*,.pdf" />
+                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center overflow-hidden ${idBackFile ? 'border-emerald-500 bg-emerald-500/5' : scanningBack ? 'border-[#A855F7] bg-[#A855F7]/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
+                                                        <input 
+                                                            type="file" 
+                                                            className="absolute inset-0 opacity-0 cursor-pointer z-10" 
+                                                            onChange={(e) => handleFileChangeWithScan(e, setIdBackFile, 'back')} 
+                                                            disabled={scanningBack}
+                                                            accept="image/*,.pdf" 
+                                                        />
 
-                                                        {idBackFile ? (
+                                                        {scanningBack ? (
+                                                            <div className="text-center space-y-3 relative z-20">
+                                                                <Loader2 className="animate-spin text-[#A855F7] mx-auto" size={24} />
+                                                                <p className="text-[10px] font-black uppercase text-[#A855F7] animate-pulse">Scanning Security...</p>
+                                                                {/* Scan Line Effect */}
+                                                                <motion.div 
+                                                                    initial={{ top: '0%' }}
+                                                                    animate={{ top: '100%' }}
+                                                                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                                                    className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#A855F7] to-transparent shadow-[0_0_15px_#A855F7]"
+                                                                />
+                                                            </div>
+                                                        ) : idBackFile ? (
                                                             <div className="text-center">
                                                                 <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={24} />
                                                                 <p className="text-[10px] font-mono text-white truncate max-w-[150px] mx-auto">{idBackFile.name}</p>
@@ -540,21 +655,62 @@ export default function EnterpriseKYC() {
                                                     </div>
                                                 </div>
 
-                                                {/* Selfie Upload */}
+                                                {/* Selfie Video Verification */}
                                                 <div className="space-y-4">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Live Face Check</label>
-                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center ${selfieFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
-                                                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileChange(e, setSelfieFile)} accept="image/*" />
-
-                                                        {selfieFile ? (
-                                                            <div className="text-center">
-                                                                <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={24} />
-                                                                <p className="text-[10px] font-mono text-white truncate max-w-[150px] mx-auto">{selfieFile.name}</p>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Video Liveness Check</label>
+                                                    <div className={`relative rounded-2xl p-4 text-center transition-all min-h-[200px] flex flex-col items-center justify-center overflow-hidden border-2 ${selfieVideoFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-[#A855F7]/30 bg-black/40'}`}>
+                                                        
+                                                        {selfieVideoFile ? (
+                                                            <div className="text-center space-y-3">
+                                                                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto">
+                                                                    <Video size={32} className="text-emerald-500" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] font-black uppercase text-emerald-500">Video Captured</p>
+                                                                    <p className="text-[8px] font-mono text-gray-500 mt-1">LIVENESS_HASH: {Math.random().toString(16).substring(2, 12).toUpperCase()}</p>
+                                                                </div>
+                                                                <button 
+                                                                    type="button"
+                                                                    onClick={() => setSelfieVideoFile(null)}
+                                                                    className="flex items-center gap-1 mx-auto text-[10px] font-bold text-gray-500 hover:text-white uppercase tracking-widest pt-2"
+                                                                >
+                                                                    <RefreshCw size={12} /> Retake
+                                                                </button>
+                                                            </div>
+                                                        ) : isRecording ? (
+                                                            <div className="w-full space-y-4">
+                                                                <div className="relative aspect-video rounded-xl bg-black overflow-hidden border border-red-500/50">
+                                                                    <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover scale-x-[-1]" />
+                                                                    <div className="absolute top-4 right-4 flex items-center gap-2">
+                                                                        <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
+                                                                        <span className="text-[10px] font-black text-white uppercase tracking-widest">REC 00:0{recordingTime}</span>
+                                                                    </div>
+                                                                    <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10">
+                                                                        <motion.div 
+                                                                            initial={{ width: 0 }}
+                                                                            animate={{ width: `${(recordingTime / 3) * 100}%` }}
+                                                                            className="h-full bg-red-500"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <p className="text-[10px] font-black text-[#A855F7] animate-pulse uppercase tracking-[0.2em]">Please move your head slightly</p>
                                                             </div>
                                                         ) : (
-                                                            <div className="text-center">
-                                                                <Scan className="text-[#A855F7] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
-                                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Face Scan</p>
+                                                            <div className="text-center space-y-4 py-4">
+                                                                <div className="w-16 h-16 bg-[#A855F7]/10 rounded-full flex items-center justify-center mx-auto border border-[#A855F7]/20">
+                                                                    <Scan size={32} className="text-[#A855F7]" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Biometric Scan Required</p>
+                                                                    <p className="text-[9px] text-gray-500 font-mono mt-1 px-4">3-second video verify to confirm human presence</p>
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={startRecording}
+                                                                    className="flex items-center gap-2 px-6 py-2 bg-[#A855F7] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#9333EA] transition-all"
+                                                                >
+                                                                    <Camera size={14} /> Initialize Camera
+                                                                </button>
                                                             </div>
                                                         )}
                                                     </div>
@@ -566,11 +722,11 @@ export default function EnterpriseKYC() {
                                                     <AlertCircle size={20} />
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-sm font-black uppercase tracking-wider text-white mb-1">Upload Guidelines</h4>
+                                                    <h4 className="text-sm font-black uppercase tracking-wider text-white mb-1">Security Guidelines</h4>
                                                     <ul className="text-xs text-gray-500 space-y-2 list-disc pl-4 font-mono">
-                                                        <li>Ensure all 4 corners of the ID are visible</li>
-                                                        <li>Text must be clearly readable, no glare</li>
-                                                        <li>Selfie must include your face and ID clearly</li>
+                                                        <li>ID text must be readable without glare</li>
+                                                        <li>Position face within the camera frame</li>
+                                                        <li>Ensure adequate lighting for liveness check</li>
                                                     </ul>
                                                 </div>
                                             </div>

@@ -9,7 +9,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children, onAuthClick }: MainLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-gaming-bg text-gaming-text font-sans selection:bg-gaming-accent selection:text-black">
+    <div className="min-h-dvh flex flex-col bg-gaming-bg text-gaming-text font-sans selection:bg-gaming-accent selection:text-black">
       <Navbar onAuthClick={onAuthClick ? onAuthClick : () => { }} />
       <main className="flex-grow pt-16 w-full">
         {children}

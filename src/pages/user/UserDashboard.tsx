@@ -190,7 +190,9 @@ export default function UserDashboard() {
 
         {/* Quick Actions Matrix */}
         <div className="bg-gaming-card border border-gaming-border rounded-3xl p-8 space-y-6">
-          <h2 className="text-xl font-bold text-white uppercase tracking-tight mb-4">Command Actions</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white uppercase tracking-tight">Command Actions</h2>
+          </div>
           <div className="grid grid-cols-1 gap-3">
             {[
               { label: 'Manage Identity (KYC)', icon: Shield, path: '/dashboard/kyc', color: 'text-emerald-400' },

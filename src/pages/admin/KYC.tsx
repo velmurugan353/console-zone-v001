@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     ShieldCheck, FileText, CheckCircle2, XCircle, Clock,
     Search, Filter, ExternalLink, Eye, ChevronDown, ChevronUp,
-    AlertTriangle, Zap, Fingerprint, Activity, Terminal, Scan, X, Check
+    AlertTriangle, Zap, Fingerprint, Activity, Terminal, Scan, X, Check,
+    Video, VideoOff
 } from 'lucide-react';
 import { updateKYCStatus, KYCData } from '../../services/kyc';
 
@@ -64,7 +65,7 @@ export default function AdminKYC() {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-6 lg:p-10 space-y-8 font-sans">
+        <div className="space-y-8 font-sans">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-8">
                 <div>
@@ -176,6 +177,15 @@ export default function AdminKYC() {
                                     >
                                         {expandedId === docItem.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                                     </button>
+                                    <button
+                                        onClick={() => handleAction(docItem.id, 'APPROVED')}
+                                        disabled={docItem.status === 'APPROVED'}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-[#A855F7]/10 text-[#A855F7] rounded-xl border border-[#A855F7]/20 hover:bg-[#A855F7] hover:text-white transition-all disabled:opacity-30 text-[10px] font-black uppercase tracking-widest"
+                                        title="Manual Verification"
+                                    >
+                                        <ShieldCheck size={16} />
+                                        PROVED
+                                    </button>
                                     <div className="h-8 w-[1px] bg-white/10 mx-2" />
                                     <button
                                         onClick={() => handleAction(docItem.id, 'APPROVED')}
@@ -208,7 +218,7 @@ export default function AdminKYC() {
                                             {/* Documents */}
                                             <div className="space-y-4">
                                                 <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Evidence Assets</h4>
-                                                <div className="grid grid-cols-3 gap-2">
+                                                <div className="grid grid-cols-4 gap-2">
                                                     <div className="space-y-2">
                                                         <p className="text-[8px] font-mono text-gray-600 uppercase text-center">ID Front</p>
                                                         <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative">
@@ -222,6 +232,22 @@ export default function AdminKYC() {
                                                         <p className="text-[8px] font-mono text-gray-600 uppercase text-center">ID Back</p>
                                                         <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative">
                                                             <img src={docItem.idBackUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
+                                                                <Eye size={14} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <p className="text-[8px] font-mono text-gray-600 uppercase text-center">Bio-Video Sync</p>
+                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-[#A855F7]/30 overflow-hidden group cursor-pointer relative flex items-center justify-center">
+                                                            {docItem.selfieVideoUrl ? (
+                                                                <div className="text-center">
+                                                                    <Video size={20} className="text-[#A855F7] mx-auto mb-1" />
+                                                                    <p className="text-[7px] font-black text-[#A855F7] uppercase">Liveness Video</p>
+                                                                </div>
+                                                            ) : (
+                                                                <VideoOff size={20} className="text-gray-700" />
+                                                            )}
                                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
                                                                 <Eye size={14} />
                                                             </div>

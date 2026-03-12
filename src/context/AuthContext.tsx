@@ -72,6 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const isTrueAdmin = firebaseUser.email && ADMIN_EMAILS.some(e => e.toLowerCase() === firebaseUser.email?.toLowerCase());
           const resolvedRole = isTrueAdmin ? 'admin' : (savedMeta.role || 'user');
 
+          console.log(`[AUTH] User: ${firebaseUser.email} | Resolved Role: ${resolvedRole} | IsHardcoded: ${isTrueAdmin}`);
+
           setUser({
             id: firebaseUser.uid,
             name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',

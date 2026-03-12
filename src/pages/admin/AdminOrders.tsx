@@ -657,7 +657,7 @@ export default function AdminOrders() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[] overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
             >
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
                 <div>
@@ -823,10 +823,13 @@ export default function AdminOrders() {
                         {isEditing ? (
                           <input
                             type="text"
+                            maxLength={10}
                             value={editForm.phone || ''}
-                            onChange={(e) => handleEditChange('phone', e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded px-2 py-1 text-gray-400 font-mono text-xs focus:outline-none focus:border-[#A855F7]"
-                            placeholder="Phone Number"
+                            onChange={(e) => handleEditChange('phone', e.target.value.replace(/\D/g, ''))}
+                            className={`w-full bg-black border rounded px-2 py-1 font-mono text-xs focus:outline-none transition-colors ${
+                              (editForm.phone?.length === 10) ? 'border-emerald-500/50 text-emerald-500' : 'border-white/10 text-gray-400 focus:border-[#A855F7]'
+                            }`}
+                            placeholder="10-Digit Mobile"
                           />
                         ) : (
                           <p className="text-gray-500 font-mono text-xs">{selectedOrder.phone}</p>

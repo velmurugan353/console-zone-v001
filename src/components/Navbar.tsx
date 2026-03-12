@@ -65,15 +65,17 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
             </Link>
 
             {user ? (
-              <Link
-                to="/dashboard"
-                className="flex items-center space-x-2 text-sm font-medium text-gaming-text hover:text-gaming-accent transition-colors"
-              >
-                <div className="h-8 w-8 rounded-full bg-gaming-card border border-gaming-border flex items-center justify-center overflow-hidden">
-                  {user.avatar ? <img src={user.avatar} alt={user.name} /> : <User className="h-4 w-4" />}
-                </div>
-                <span>{user.name}</span>
-              </Link>
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center space-x-2 text-sm font-medium text-gaming-text hover:text-gaming-accent transition-colors"
+                >
+                  <div className="h-8 w-8 rounded-full bg-gaming-card border border-gaming-border flex items-center justify-center overflow-hidden">
+                    {user.avatar ? <img src={user.avatar} alt={user.name} /> : <User className="h-4 w-4" />}
+                  </div>
+                  <span>{user.name}</span>
+                </Link>
+              </div>
             ) : (
               <button
                 onClick={onAuthClick}

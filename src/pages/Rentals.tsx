@@ -124,7 +124,7 @@ export default function Rentals() {
         price: config.daily.price, 
         features: config.daily.features, 
         extraController: ctrlPricing.DAILY, 
-        color: "bg-[#1a1a1a]", 
+        color: "bg-gaming-card", 
         recommended: false,
         available: currentStock,
         deposit: currentDeposit
@@ -134,7 +134,7 @@ export default function Rentals() {
         price: config.weekly.price, 
         features: config.weekly.features, 
         extraController: ctrlPricing.WEEKLY, 
-        color: "bg-[#A855F7]", 
+        color: "bg-gaming-accent", 
         recommended: true,
         available: currentStock,
         deposit: currentDeposit
@@ -144,7 +144,7 @@ export default function Rentals() {
         price: config.monthly.price, 
         features: config.monthly.features, 
         extraController: ctrlPricing.MONTHLY, 
-        color: "bg-[#1a1a1a]", 
+        color: "bg-gaming-card", 
         recommended: false,
         available: currentStock,
         deposit: currentDeposit
@@ -154,18 +154,18 @@ export default function Rentals() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <RefreshCw className="h-8 w-8 text-[#A855F7] animate-spin" />
+      <div className="min-h-dvh bg-gaming-bg flex items-center justify-center">
+        <RefreshCw className="h-8 w-8 text-gaming-accent animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050505]">
+    <div className="min-h-dvh bg-gaming-bg">
       {/* Hero Section */}
-      <section className="relative h-[60vh] flex flex-col items-center justify-center text-center px-4 overflow-hidden">
+      <section className="relative h-[] flex flex-col items-center justify-center text-center px-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/30 via-[#050505]/80 to-[#050505] z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-gaming-bg/30 via-gaming-bg/80 to-gaming-bg z-10" />
           <img
             src={activeStock?.image}
             alt="Background"
@@ -183,7 +183,7 @@ export default function Rentals() {
           >
             {activeStock ? activeStock.name.split(' ').slice(0, 2).join(' ') : "RENTALS"}
           </motion.h1>
-          <p className="text-gray-300 text-lg md:text-xl font-mono uppercase tracking-widest max-w-2xl mx-auto">
+          <p className="text-gaming-muted text-lg md:text-xl font-mono uppercase tracking-widest max-w-2xl mx-auto opacity-80">
             <EditableText pageKey="rentals" itemKey="hero_subtitle" defaultText="Select from our elite fleet of current-gen and classic consoles" />
           </p>
 
@@ -193,7 +193,7 @@ export default function Rentals() {
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={`px-6 md:px-10 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all whitespace-nowrap ${activeTab === item.id
-                  ? 'bg-[#A855F7] text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]'
+                  ? 'bg-gaming-accent text-black shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]'
                   : 'text-gray-400 hover:text-white'
                   }`}
               >
@@ -215,14 +215,14 @@ export default function Rentals() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ delay: index * 0.1 }}
-                className={`group relative bg-[#0a0a0a] border border-white/10 rounded-3xl overflow-hidden hover:border-[#A855F7]/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(168,85,247,0.15)] flex flex-col ${plan.recommended ? 'ring-2 ring-[#A855F7] shadow-[0_0_40px_rgba(168,85,247,0.2)]' : ''}`}
+                className={`group relative bg-gaming-card border border-gaming-border rounded-3xl overflow-hidden hover:border-gaming-accent/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(var(--accent-rgb),0.15)] flex flex-col ${plan.recommended ? 'ring-2 ring-gaming-accent shadow-[0_0_40px_rgba(var(--accent-rgb),0.2)]' : ''}`}
               >
                 {plan.recommended && (
-                  <div className="absolute top-0 inset-x-0 h-1.5 bg-[#A855F7] shadow-[0_0_15px_rgba(168,85,247,0.8)] z-20" />
+                  <div className="absolute top-0 inset-x-0 h-1.5 bg-gaming-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)] z-20" />
                 )}
 
-                <div className={`p-10 ${plan.color} text-white text-center relative overflow-hidden`}>
-                  <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+                <div className={`p-10 ${plan.color} ${plan.recommended ? 'text-black' : 'text-white'} text-center relative overflow-hidden`}>
+                  <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px]" />
 
                   <h3 className="font-display text-2xl font-black uppercase tracking-widest relative z-10">{plan.duration}</h3>
                   <div className="mt-4 relative z-10 flex flex-col items-center justify-center gap-1">
@@ -237,19 +237,19 @@ export default function Rentals() {
                   )}
                 </div>
 
-                <div className="p-8 flex-1 flex flex-col bg-gradient-to-b from-[#0a0a0a] to-[#050505]">
+                <div className="p-8 flex-1 flex flex-col bg-gradient-to-b from-gaming-card to-gaming-bg">
                   <ul className="space-y-4 mb-10 flex-1">
                     {plan.features.map((feature: string, i: number) => (
-                      <li key={i} className="flex items-start gap-3 text-gray-300 group/item">
-                        <div className={`mt-1 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${plan.recommended ? 'bg-[#06B6D4]/10 text-[#06B6D4]' : 'bg-[#8B5CF6]/10 text-[#8B5CF6]'}`}>
+                      <li key={i} className="flex items-start gap-3 text-gaming-text opacity-80 group/item">
+                        <div className={`mt-1 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${plan.recommended ? 'bg-gaming-accent/10 text-gaming-accent' : 'bg-gaming-secondary/10 text-gaming-secondary'}`}>
                           <Check size={12} strokeWidth={4} />
                         </div>
-                        <span className="text-sm font-medium group-hover/item:text-white transition-colors">{feature}</span>
+                        <span className="text-sm font-medium group-hover/item:opacity-100 transition-opacity">{feature}</span>
                       </li>
                     ))}
-                    <li className="flex items-center gap-3 text-gray-500 pt-6 border-t border-white/5">
+                    <li className="flex items-center gap-3 text-gaming-muted pt-6 border-t border-gaming-border">
                       <ArrowRight size={18} className="shrink-0 opacity-50" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Extra Controller: <span className="text-white">{formatCurrency(plan.extraController)}</span></span>
+                      <span className="text-xs font-bold uppercase tracking-wider">Extra Controller: <span className="text-gaming-text">{formatCurrency(plan.extraController)}</span></span>
                     </li>
                   </ul>
 
@@ -257,8 +257,8 @@ export default function Rentals() {
                     <Link
                       to={`/rentals/${activeStock?.slug}/book`}
                       className={`group/btn relative overflow-hidden block w-full text-center py-5 rounded-2xl font-black text-lg transition-all ${plan.available > 0
-                        ? (plan.recommended ? 'bg-[#A855F7] text-white shadow-[0_0_25px_rgba(168,85,247,0.4)] hover:shadow-[0_0_35px_rgba(168,85,247,0.6)]' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-[#A855F7]/50')
-                        : 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed grayscale'
+                        ? (plan.recommended ? 'bg-gaming-accent text-black shadow-[0_0_25px_rgba(var(--accent-rgb),0.4)] hover:opacity-90' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-gaming-accent/50')
+                        : 'bg-white/5 text-gaming-muted border border-white/5 cursor-not-allowed grayscale'
                         }`}
                     >
                       <span className="relative z-10 flex items-center justify-center gap-2 tracking-widest uppercase">
@@ -280,23 +280,23 @@ export default function Rentals() {
             <h2 className="text-3xl font-bold text-white mb-4">
               <EditableText pageKey="rentals" itemKey="games_title" defaultText="INCLUDED GAMES LIBRARY" />
             </h2>
-            <p className="text-gray-400">
+            <p className="text-gaming-muted">
               <EditableText pageKey="rentals" itemKey="games_subtitle" defaultText="All rentals come with access to our massive library of top-tier titles." />
             </p>
           </div>
 
-          <div className="bg-[#0a0a0a] border border-[#8B5CF6]/30 rounded-3xl p-8 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[#8B5CF6]/5 rounded-3xl" />
+          <div className="bg-gaming-card border border-gaming-secondary/30 rounded-3xl p-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gaming-secondary/5 rounded-3xl" />
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
               {GAMES_LIST.map((game, i) => (
-                <div key={i} className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
+                <div key={i} className="flex items-center gap-3 text-gaming-text opacity-80 hover:opacity-100 transition-opacity">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gaming-secondary" />
                   <span className="text-sm font-medium">{game}</span>
                 </div>
               ))}
             </div>
             <div className="mt-8 text-center">
-              <span className="inline-block px-4 py-1 rounded-full bg-white/10 text-xs text-gray-400 uppercase tracking-widest">And many more...</span>
+              <span className="inline-block px-4 py-1 rounded-full bg-white/10 text-xs text-gaming-muted uppercase tracking-widest">And many more...</span>
             </div>
           </div>
         </div>

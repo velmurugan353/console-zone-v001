@@ -1,64 +1,92 @@
 import { useState, useEffect } from 'react';
 import { formatCurrency } from '../../lib/utils';
-import { Wrench, CheckCircle, Clock, XCircle, Search, Filter, AlertTriangle, Activity, ShieldCheck, Zap, User, Edit2, Save } from 'lucide-react';
+import { Wrench, CheckCircle, Clock, XCircle, Search, Filter, AlertTriangle, Activity, ShieldCheck, Zap, User, Edit2, Save, Mail, Phone, Plus, Package, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { automationService } from '../../services/automationService';
 import { notificationService } from '../../services/notificationService';
 import { aiService } from '../../services/aiService';
-import { collection, onSnapshot, query, doc, updateDoc, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, doc, updateDoc, orderBy, setDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 
-type RepairStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-type RepairPriority = 'low' | 'medium' | 'high';
+type RepairStatus = 'pending' | 'diagnosing' | 'awaiting_parts' | 'in_progress' | 'testing' | 'completed' | 'cancelled';
+type RepairPriority = 'low' | 'medium' | 'high' | 'critical';
+
+interface RepairPart {
+  id: string;
+  name: string;
+  cost: number;
+  quantity: number;
+}
+
+interface RepairLog {
+  date: string;
+  action: string;
+  note?: string;
+  user: string;
+}
 
 interface RepairRequest {
   id: string;
   customer: string;
   email: string;
+  phone?: string;
   device: string;
+  serialNumber?: string;
   issue: string;
   date: string;
   status: RepairStatus;
   priority: RepairPriority;
   technician?: string;
   estimatedCost?: number;
+  laborCost?: number;
+  parts?: RepairPart[];
+  history?: RepairLog[];
+  completionDate?: string;
+  warrantyPeriod?: number; // months
 }
+
+const TECHNICIANS = [
+  { id: 'T1', name: 'Mike Tech', specialty: 'Consoles' },
+  { id: 'T2', name: 'Sarah Fix', specialty: 'Controllers' },
+  { id: 'T3', name: 'Dave Repair', specialty: 'Handhelds' },
+  { id: 'T4', name: 'Alex Matrix', specialty: 'Microsoldering' }
+];
 
 const MOCK_REPAIRS: RepairRequest[] = [
   {
     id: 'REP-2001',
     customer: 'John Doe',
     email: 'john@example.com',
+    phone: '9876543210',
     device: 'PlayStation 5',
+    serialNumber: 'SN-PS5-8821',
     issue: 'HDMI Port Replacement',
     date: '2023-10-25',
     status: 'in_progress',
     priority: 'high',
     technician: 'Mike Tech',
-    estimatedCost: 85.00
+    estimatedCost: 8500,
+    laborCost: 3500,
+    parts: [{ id: 'P1', name: 'PS5 HDMI Port', cost: 1200, quantity: 1 }],
+    history: [
+      { date: '2023-10-25 10:00', action: 'Ticket Created', user: 'System' },
+      { date: '2023-10-25 14:00', action: 'Technician Assigned', note: 'Assigned to Mike Tech', user: 'Admin' }
+    ]
   },
   {
     id: 'REP-2002',
     customer: 'Sarah Smith',
     email: 'sarah@example.com',
+    phone: '9988776655',
     device: 'Nintendo Switch',
     issue: 'JoyCon Drift',
     date: '2023-10-24',
     status: 'pending',
     priority: 'medium',
-    estimatedCost: 45.00
-  },
-  {
-    id: 'REP-2003',
-    customer: 'Alex Gamer',
-    email: 'alex@example.com',
-    device: 'Xbox Series X',
-    issue: 'Overheating',
-    date: '2023-10-22',
-    status: 'completed',
-    priority: 'low',
-    technician: 'Sarah Fix',
-    estimatedCost: 60.00
+    estimatedCost: 4500,
+    history: [
+      { date: '2023-10-24 09:30', action: 'Ticket Created', user: 'System' }
+    ]
   }
 ];
 
@@ -83,10 +111,6 @@ export default function AdminRepairs() {
   };
 
   useEffect(() => {
-    // Initial fallback for empty DB or connectivity issues in dev
-    setRepairs(MOCK_REPAIRS);
-    setLoading(false);
-
     const q = query(collection(db, 'repairs'), orderBy('date', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetchedRepairs = snapshot.docs.map(doc => ({
@@ -94,9 +118,7 @@ export default function AdminRepairs() {
         id: doc.id
       })) as RepairRequest[];
       
-      if (fetchedRepairs.length > 0) {
-        setRepairs(fetchedRepairs);
-      }
+      setRepairs(fetchedRepairs);
       setLoading(false);
     }, (error) => {
       console.error("Firestore error in AdminRepairs:", error);
@@ -105,13 +127,68 @@ export default function AdminRepairs() {
     return () => unsubscribe();
   }, []);
 
+  const handleSeedRepairs = async () => {
+    if (!confirm('This will seed the Repair Matrix with mock data. Proceed?')) return;
+    setLoading(true);
+    try {
+      for (const repair of MOCK_REPAIRS) {
+        await setDoc(doc(db, 'repairs', repair.id), repair);
+      }
+      alert('Repair Matrix seeded successfully.');
+    } catch (error) {
+      console.error("Error seeding repairs:", error);
+      alert('Failed to seed repairs.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!confirm('CRITICAL ACTION: This will permanently delete ALL repair tickets. Proceed?')) return;
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'repairs'));
+      const snapshot = await getDocs(q);
+      for (const d of snapshot.docs) {
+        await deleteDoc(doc(db, 'repairs', d.id));
+      }
+      alert('Repair Matrix cleared successfully.');
+    } catch (error) {
+      console.error("Error clearing repairs:", error);
+      alert('Failed to clear repairs.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEditToggle = async () => {
     if (isEditing) {
       if (selectedRepair) {
         const updatedRepair = { ...selectedRepair, ...editForm } as RepairRequest;
+        
+        // Log changes if status or technician changed
+        const newLogs: RepairLog[] = [...(selectedRepair.history || [])];
+        if (editForm.status && editForm.status !== selectedRepair.status) {
+          newLogs.push({
+            date: new Date().toLocaleString(),
+            action: 'Protocol Update',
+            note: `Status shifted to ${editForm.status.replace('_', ' ')}`,
+            user: 'Admin'
+          });
+        }
+        if (editForm.technician && editForm.technician !== selectedRepair.technician) {
+          newLogs.push({
+            date: new Date().toLocaleString(),
+            action: 'Technician Assigned',
+            note: `Linked to ${editForm.technician}`,
+            user: 'Admin'
+          });
+        }
+
+        const finalUpdate = { ...editForm, history: newLogs };
         try {
-          await updateDoc(doc(db, 'repairs', updatedRepair.id), editForm);
-          setSelectedRepair(updatedRepair);
+          await updateDoc(doc(db, 'repairs', updatedRepair.id), finalUpdate);
+          setSelectedRepair({ ...updatedRepair, history: newLogs });
         } catch (error) {
           console.error('Failed to update repair:', error);
           alert('Failed to save changes to database.');
@@ -121,6 +198,40 @@ export default function AdminRepairs() {
     } else {
       setEditForm(selectedRepair || {});
       setIsEditing(true);
+    }
+  };
+
+  const handleAppendPart = async () => {
+    if (!selectedRepair) return;
+    const partName = prompt('Enter part name:');
+    const partCost = parseFloat(prompt('Enter part cost (₹):') || '0');
+    if (!partName) return;
+
+    const newPart: RepairPart = {
+      id: `P-${Date.now()}`,
+      name: partName,
+      cost: partCost,
+      quantity: 1
+    };
+
+    const updatedParts = [...(selectedRepair.parts || []), newPart];
+    const newLog: RepairLog = {
+      date: new Date().toLocaleString(),
+      action: 'Part Allocated',
+      note: `Added ${partName} to manifest`,
+      user: 'Admin'
+    };
+
+    const updatedHistory = [...(selectedRepair.history || []), newLog];
+
+    try {
+      await updateDoc(doc(db, 'repairs', selectedRepair.id), {
+        parts: updatedParts,
+        history: updatedHistory
+      });
+      setSelectedRepair({ ...selectedRepair, parts: updatedParts, history: updatedHistory });
+    } catch (error) {
+      console.error('Failed to add part:', error);
     }
   };
 
@@ -148,6 +259,9 @@ export default function AdminRepairs() {
 
     try {
       await updateDoc(doc(db, 'repairs', id), { status: newStatus });
+      if (selectedRepair && selectedRepair.id === id) {
+        setSelectedRepair({ ...repair, status: newStatus });
+      }
     } catch (error) {
       console.error('Failed to update status:', error);
       alert('Failed to update status in database.');
@@ -167,6 +281,21 @@ export default function AdminRepairs() {
         repairId: id,
         device: repair.device
       });
+    }
+  };
+
+  const handlePriorityChange = async (id: string, newPriority: RepairPriority) => {
+    const repair = repairs.find(r => r.id === id);
+    if (!repair) return;
+
+    try {
+      await updateDoc(doc(db, 'repairs', id), { priority: newPriority });
+      if (selectedRepair && selectedRepair.id === id) {
+        setSelectedRepair({ ...repair, priority: newPriority });
+      }
+    } catch (error) {
+      console.error('Failed to update priority:', error);
+      alert('Failed to update priority in database.');
     }
   };
 
@@ -207,11 +336,36 @@ export default function AdminRepairs() {
 
   const getStatusColor = (status: RepairStatus) => {
     switch (status) {
-      case 'in_progress': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+      case 'pending': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+      case 'diagnosing': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+      case 'awaiting_parts': return 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+      case 'in_progress': return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20';
+      case 'testing': return 'text-orange-400 bg-orange-500/10 border-orange-500/20';
       case 'completed': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
       case 'cancelled': return 'text-red-400 bg-red-500/10 border-red-500/20';
-      case 'pending': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
       default: return 'text-gray-400 bg-gray-500/10 border-gray-500/20';
+    }
+  };
+
+  const getPriorityColor = (priority: RepairPriority) => {
+    switch (priority) {
+      case 'critical': return 'text-white bg-red-600 border-red-600';
+      case 'high': return 'text-red-400 bg-red-500/10 border-red-500/20';
+      case 'medium': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+      case 'low': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+      default: return 'text-gray-400 bg-gray-500/10 border-gray-500/20';
+    }
+  };
+
+  const getStatusIcon = (status: RepairStatus) => {
+    switch (status) {
+      case 'pending': return <Clock size={14} />;
+      case 'diagnosing': return <Activity size={14} />;
+      case 'awaiting_parts': return <Package size={14} />;
+      case 'in_progress': return <Wrench size={14} />;
+      case 'testing': return <Zap size={14} />;
+      case 'completed': return <CheckCircle size={14} />;
+      case 'cancelled': return <XCircle size={14} />;
     }
   };
 
@@ -225,186 +379,362 @@ export default function AdminRepairs() {
 
   return (
     <div className="space-y-8">
-      {/* Detail Modal */}
+      {/* Repair Command Center Modal */}
       <AnimatePresence>
         {selectedRepair && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 overflow-y-auto">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.9, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-md p-8 shadow-2xl"
+              exit={{ opacity: 0, scale: 0.9, y: 40 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col my-8"
             >
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <h3 className="text-xs font-mono uppercase tracking-widest text-[#A855F7]">Repair_Protocol</h3>
-                  <p className="text-2xl font-bold text-white tracking-tighter uppercase italic">Ticket Details</p>
+              {/* Modal Header */}
+              <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-2xl ${getStatusColor(selectedRepair.status)}`}>
+                    {getStatusIcon(selectedRepair.status)}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-white tracking-tighter uppercase italic flex items-center gap-3">
+                      Repair_Command_Center
+                      <span className="text-gray-600 not-italic font-mono text-xs tracking-widest bg-white/5 px-2 py-1 rounded">#{selectedRepair.id}</span>
+                    </h3>
+                    <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">Operational Matrix v4.2 // Active Node</p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-3">
                   <button
                     onClick={handleEditToggle}
-                    className={`p-2 rounded-full transition-colors ${isEditing ? 'bg-[#A855F7]/20 text-[#A855F7]' : 'hover:bg-white/5 text-gray-500 hover:text-white'}`}
-                    title={isEditing ? "Save Changes" : "Edit Repair"}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isEditing ? 'bg-[#A855F7] text-black shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}`}
                   >
-                    {isEditing ? <Save className="h-5 w-5" /> : <Edit2 className="h-5 w-5" />}
+                    {isEditing ? <><Save size={14} /> Save Protocol</> : <><Edit2 size={14} /> Modify Node</>}
                   </button>
                   <button
                     onClick={closeRepairModal}
-                    className="text-gray-500 hover:text-white transition-colors"
+                    className="p-2 bg-white/5 text-gray-500 hover:text-white rounded-xl transition-colors"
                   >
-                    <XCircle className="h-6 w-6" />
+                    <XCircle size={24} />
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl space-y-2">
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editForm.device || ''}
-                      onChange={(e) => handleEditChange('device', e.target.value)}
-                      className="w-full bg-black border border-white/10 rounded px-2 py-1 text-white font-bold text-lg focus:outline-none focus:border-[#A855F7]"
-                      placeholder="Device Name"
-                    />
-                  ) : (
-                    <h4 className="font-bold text-white text-lg uppercase tracking-tight">{selectedRepair.device}</h4>
-                  )}
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editForm.issue || ''}
-                      onChange={(e) => handleEditChange('issue', e.target.value)}
-                      className="w-full bg-black border border-white/10 rounded px-2 py-1 text-[#A855F7] font-mono text-xs focus:outline-none focus:border-[#A855F7]"
-                      placeholder="Issue Description"
-                    />
-                  ) : (
-                    <p className="text-[#A855F7] font-mono text-xs uppercase mt-1">{selectedRepair.issue}</p>
-                  )}
-                  <div className="flex items-center space-x-2 mt-4">
-                    <User className="h-3 w-3 text-gray-500" />
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.customer || ''}
-                        onChange={(e) => handleEditChange('customer', e.target.value)}
-                        className="w-full bg-black border border-white/10 rounded px-2 py-1 text-gray-400 font-mono text-[10px] focus:outline-none focus:border-[#A855F7]"
-                        placeholder="Customer Name"
-                      />
-                    ) : (
-                      <span className="text-gray-400 font-mono text-[10px] uppercase">{selectedRepair.customer}</span>
-                    )}
-                  </div>
-                </div>
+              <div className="flex-1 overflow-y-auto p-8 lg:p-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                  
+                  {/* LEFT: Identity & Hardware */}
+                  <div className="lg:col-span-1 space-y-8">
+                    <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2">Node_Identity</h4>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 group">
+                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#A855F7]">
+                            <User size={24} />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[8px] font-mono text-gray-600 uppercase mb-1">Customer</p>
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={editForm.customer || ''}
+                                onChange={(e) => handleEditChange('customer', e.target.value)}
+                                className="w-full bg-black border border-white/10 rounded-lg px-2 py-1 text-sm text-white font-bold"
+                              />
+                            ) : (
+                              <p className="text-sm font-black text-white uppercase">{selectedRepair.customer}</p>
+                            )}
+                          </div>
+                        </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/[0.02] p-4 border border-white/5 rounded-xl">
-                    <span className="text-gray-500 block text-[10px] font-mono uppercase mb-1">Priority</span>
-                    {isEditing ? (
-                      <select
-                        value={editForm.priority || 'medium'}
-                        onChange={(e) => handleEditChange('priority', e.target.value)}
-                        className="w-full bg-black border border-white/10 rounded px-2 py-1 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
-                      >
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                      </select>
-                    ) : (
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded border uppercase tracking-tighter ${selectedRepair.priority === 'high' ? 'text-red-400 border-red-500/20 bg-red-500/10' :
-                        selectedRepair.priority === 'medium' ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' :
-                          'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
-                        }`}>
-                        {selectedRepair.priority}
-                      </span>
-                    )}
-                  </div>
-                  <div className="bg-white/[0.02] p-4 border border-white/5 rounded-xl">
-                    <span className="text-gray-500 block text-[10px] font-mono uppercase mb-1">Status Protocol</span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500">
+                            <Mail size={20} />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[8px] font-mono text-gray-600 uppercase mb-1">Email_Anchor</p>
+                            <p className="text-xs font-mono text-gray-400">{selectedRepair.email}</p>
+                          </div>
+                        </div>
 
-                    <div className="flex flex-wrap items-center justify-between w-full">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded border uppercase tracking-tighter ${getStatusColor(selectedRepair.status)}`}>
-                        {selectedRepair.status.replace('_', ' ')}
-                      </span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500">
+                            <Phone size={20} />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[8px] font-mono text-gray-600 uppercase mb-1">Comm_Link</p>
+                            <p className="text-xs font-mono text-gray-400">{selectedRepair.phone || '987XXXXXXX'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6 pt-4">
+                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2">Hardware_Specs</h4>
+                      <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-4">
+                        <div>
+                          <p className="text-[8px] font-mono text-gray-600 uppercase mb-1">Host_Device</p>
+                          <p className="text-lg font-black text-white uppercase italic tracking-tighter">{selectedRepair.device}</p>
+                        </div>
+                        <div>
+                          <p className="text-[8px] font-mono text-gray-600 uppercase mb-1">Serial_Manifest</p>
+                          <p className="text-xs font-mono text-[#A855F7] tracking-widest">{selectedRepair.serialNumber || 'SN-UNKNOWN-X'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[8px] font-mono text-gray-600 uppercase mb-1">Fault_Detection</p>
+                          <p className="text-xs text-gray-400 leading-relaxed font-medium">{selectedRepair.issue}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CENTER: Status & AI */}
+                  <div className="lg:col-span-1 space-y-8">
+                    <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2">Operational_Status</h4>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[8px] font-mono text-gray-600 uppercase ml-1">Priority_Level</label>
+                          <select
+                            value={isEditing ? (editForm.priority || selectedRepair.priority) : selectedRepair.priority}
+                            onChange={(e) => {
+                              const newPriority = e.target.value as RepairPriority;
+                              if (isEditing) {
+                                handleEditChange('priority', newPriority);
+                              } else {
+                                handlePriorityChange(selectedRepair.id, newPriority);
+                              }
+                            }}
+                            className={`w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none transition-all ${getPriorityColor(isEditing ? (editForm.priority || selectedRepair.priority) : selectedRepair.priority)}`}
+                          >
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[8px] font-mono text-gray-600 uppercase ml-1">Current_Protocol</label>
+                          <select
+                            value={isEditing ? (editForm.status || selectedRepair.status) : selectedRepair.status}
+                            onChange={(e) => {
+                              const newStatus = e.target.value as RepairStatus;
+                              if (isEditing) {
+                                handleEditChange('status', newStatus);
+                              } else {
+                                handleStatusChange(selectedRepair.id, newStatus);
+                              }
+                            }}
+                            className={`w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none transition-all ${getStatusColor(isEditing ? (editForm.status || selectedRepair.status) : selectedRepair.status)}`}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="diagnosing">Diagnosing</option>
+                            <option value="awaiting_parts">Awaiting Parts</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="testing">Testing</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[8px] font-mono text-gray-600 uppercase ml-1">Assigned_Technician</label>
+                        <div className="flex gap-2">
+                          <select
+                            value={editForm.technician || selectedRepair.technician || ''}
+                            onChange={(e) => handleEditChange('technician', e.target.value)}
+                            disabled={!isEditing}
+                            className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white focus:outline-none focus:border-[#A855F7]"
+                          >
+                            <option value="">Unassigned</option>
+                            {TECHNICIANS.map(t => (
+                              <option key={t.id} value={t.name}>{t.name} ({t.specialty})</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6 pt-4">
+                      <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                        <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">AI_Diagnosis_Matrix</h4>
+                        <button
+                          onClick={handleAIDiagnosis}
+                          disabled={isAnalyzing}
+                          className="text-[9px] font-black text-[#A855F7] hover:text-white transition-colors flex items-center gap-1 uppercase tracking-widest disabled:opacity-50"
+                        >
+                          <Zap size={10} className={isAnalyzing ? 'animate-pulse' : ''} />
+                          {isAnalyzing ? 'Processing...' : 'Run Analysis'}
+                        </button>
+                      </div>
+                      
+                      <div className="relative min-h-[150px] bg-black/40 border border-[#A855F7]/20 rounded-2xl p-6 overflow-hidden group">
+                        <div className="absolute inset-0 bg-[#A855F7]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        
+                        {diagnosis ? (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-[10px] font-mono text-gray-300 leading-relaxed space-y-2"
+                          >
+                            <p className="text-[#A855F7] font-black uppercase tracking-tighter">Diagnostic Report Output:</p>
+                            <div className="whitespace-pre-wrap">{diagnosis}</div>
+                          </motion.div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-full text-center space-y-3">
+                            <Activity className="text-gray-800" size={32} />
+                            <p className="text-[9px] font-mono text-gray-600 uppercase tracking-widest">Awaiting Fault Analysis Scan</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* RIGHT: Parts & Financials */}
+                  <div className="lg:col-span-1 space-y-8">
+                    <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2">Parts_Manifest</h4>
+                      
+                      <div className="space-y-3">
+                        {selectedRepair.parts && selectedRepair.parts.length > 0 ? (
+                          selectedRepair.parts.map(part => (
+                            <div key={part.id} className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-xl">
+                              <div>
+                                <p className="text-[10px] font-black text-white uppercase">{part.name}</p>
+                                <p className="text-[8px] font-mono text-gray-600">Qty: {part.quantity} @ {formatCurrency(part.cost)}</p>
+                              </div>
+                              <p className="text-[10px] font-bold text-gray-400">{formatCurrency(part.cost * part.quantity)}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-4 border border-dashed border-white/5 rounded-xl text-center">
+                            <p className="text-[9px] font-mono text-gray-700 uppercase tracking-widest">No Parts Allocated</p>
+                          </div>
+                        )}
+                        
+                        {isEditing && (
+                          <button 
+                            onClick={handleAppendPart}
+                            className="w-full py-2 border border-dashed border-[#A855F7]/30 text-[#A855F7]/50 hover:text-[#A855F7] hover:border-[#A855F7] transition-all rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                          >
+                            <Plus size={12} /> Append Part Node
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-6 pt-4">
+                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2">Financial_Ledger</h4>
+                      <div className="bg-[#A855F7]/5 border border-[#A855F7]/10 rounded-2xl p-6 space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-mono text-gray-500 uppercase">Parts Total</span>
+                          <span className="text-xs font-bold text-white">
+                            {formatCurrency(selectedRepair.parts?.reduce((sum, p) => sum + (p.cost * p.quantity), 0) || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-mono text-gray-500 uppercase">Labor_Node</span>
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              value={editForm.laborCost || 0}
+                              onChange={(e) => handleEditChange('laborCost', parseFloat(e.target.value))}
+                              className="w-20 bg-black border border-white/10 rounded px-2 py-1 text-xs text-right text-white font-bold"
+                            />
+                          ) : (
+                            <span className="text-xs font-bold text-white">{formatCurrency(selectedRepair.laborCost || 0)}</span>
+                          )}
+                        </div>
+                        <div className="pt-4 border-t border-[#A855F7]/20 flex justify-between items-end">
+                          <div>
+                            <p className="text-[10px] font-black text-[#A855F7] uppercase tracking-[0.2em]">Total_Valuation</p>
+                            <p className="text-[8px] font-mono text-gray-600 uppercase mt-1">Final Invoice Estimator</p>
+                          </div>
+                          <span className="text-2xl font-black text-white tracking-tighter italic">
+                            {formatCurrency((selectedRepair.parts?.reduce((sum, p) => sum + (p.cost * p.quantity), 0) || 0) + (editForm.laborCost || selectedRepair.laborCost || 0))}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex space-x-2 mt-4 pt-4 border-t border-white/10">
+                {/* BOTTOM: Event History Log */}
+                <div className="mt-12 space-y-6">
+                  <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2">Activity_Timeline_Manifest</h4>
+                  <div className="space-y-4">
+                    {(selectedRepair.history || []).map((log, i) => (
+                      <div key={i} className="flex gap-4 items-start relative group">
+                        {i !== (selectedRepair.history?.length || 0) - 1 && (
+                          <div className="absolute left-2 top-6 bottom-[-16px] w-[1px] bg-white/5" />
+                        )}
+                        <div className="w-4 h-4 rounded-full bg-white/10 border border-white/10 flex-shrink-0 mt-1 z-10 group-hover:bg-[#A855F7] transition-colors" />
+                        <div className="flex-1 pb-4">
+                          <div className="flex justify-between items-start">
+                            <p className="text-[10px] font-black text-white uppercase tracking-wider">{log.action}</p>
+                            <span className="text-[8px] font-mono text-gray-600 uppercase">{log.date}</span>
+                          </div>
+                          <p className="text-[10px] text-gray-500 font-medium mt-1 leading-relaxed">{log.note || 'No additional telemetry data recorded.'}</p>
+                          <p className="text-[8px] font-mono text-[#A855F7]/50 uppercase mt-1">Authorized By: {log.user}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Bar Footer */}
+              <div className="p-6 bg-white/[0.02] border-t border-white/10 flex justify-between items-center">
+                <div className="flex gap-2">
                   <button
                     onClick={() => handleManualNotification('update')}
-                    className="flex-1 py-2 bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500/20 transition-colors rounded-xl flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest font-bold"
+                    className="px-4 py-2 bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500/20 transition-all rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
                   >
-                    <Activity className="h-4 w-4" /> Push Status
+                    <Activity size={14} /> Push Status Update
                   </button>
                   <button
                     onClick={() => handleManualNotification('quote')}
-                    className="flex-1 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors rounded-xl flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest font-bold"
+                    className="px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
                   >
-                    <ShieldCheck className="h-4 w-4" /> Send Quote
-                  </button>
-                </div>
-
-                <div className="bg-white/[0.02] p-4 border border-white/5 rounded-xl">
-                  <span className="text-gray-500 block text-[10px] font-mono uppercase mb-1">Estimated Cost</span>
-                  {isEditing ? (
-                    <input
-                      type="number"
-                      value={editForm.estimatedCost || ''}
-                      onChange={(e) => handleEditChange('estimatedCost', parseFloat(e.target.value))}
-                      className="w-full bg-black border border-white/10 rounded px-2 py-1 text-white font-mono text-sm focus:outline-none focus:border-[#A855F7]"
-                      placeholder="Cost"
-                    />
-                  ) : (
-                    <span className="text-white font-mono text-sm font-bold">{selectedRepair.estimatedCost ? formatCurrency(selectedRepair.estimatedCost) : 'TBD'}</span>
-                  )}
-                </div>
-
-              {/* AI Diagnosis Tool */}
-              <div className="space-y-3 pb-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">AI_Diagnosis_Matrix</h4>
-                  <button
-                    onClick={handleAIDiagnosis}
-                    disabled={isAnalyzing}
-                    className="text-[9px] font-black text-[#A855F7] hover:text-white transition-colors flex items-center gap-1 uppercase tracking-widest disabled:opacity-50"
-                  >
-                    <Zap size={10} className={isAnalyzing ? 'animate-pulse' : ''} />
-                    {isAnalyzing ? 'Processing...' : 'Run Diagnostics'}
+                    <ShieldCheck size={14} /> Dispatch Quote
                   </button>
                 </div>
                 
-                {diagnosis && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-[#A855F7]/5 border border-[#A855F7]/20 rounded-xl text-[10px] font-mono text-gray-300 leading-relaxed max-h-40 overflow-y-auto whitespace-pre-wrap prose prose-invert prose-p:my-1 prose-headings:my-2"
-                  >
-                    {diagnosis}
-                  </motion.div>
-                )}
-              </div>
-
-              <div className="pt-6 border-t border-white/10 space-y-3">
-                <h4 className="text-[10px] font-mono font-bold text-gray-500 mb-4 uppercase tracking-[0.3em]">Execution_Protocols</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    {selectedRepair.status === 'pending' && (
-                      <button
-                        onClick={() => handleStatusChange(selectedRepair.id, 'in_progress')}
-                        className="col-span-2 py-3 bg-[#A855F7] text-black font-bold rounded-xl text-xs uppercase tracking-widest hover:bg-[#9333EA] transition-all flex items-center justify-center gap-2"
-                      >
-                        <Wrench className="h-4 w-4" /> Start Repair
-                      </button>
-                    )}
-                    {selectedRepair.status === 'in_progress' && (
-                      <button
-                        onClick={() => handleStatusChange(selectedRepair.id, 'completed')}
-                        className="col-span-2 py-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold rounded-xl text-xs uppercase tracking-widest hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-2"
-                      >
-                        <CheckCircle className="h-4 w-4" /> Finalize Repair
-                      </button>
-                    )}
-                  </div>
+                <div className="flex gap-2">
+                  {selectedRepair.status === 'pending' && (
+                    <button
+                      onClick={() => handleStatusChange(selectedRepair.id, 'diagnosing')}
+                      className="px-4 py-2 bg-blue-500 text-black font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] flex items-center gap-2"
+                    >
+                      <Activity size={14} /> Start Diagnosis
+                    </button>
+                  )}
+                  {selectedRepair.status === 'diagnosing' && (
+                    <button
+                      onClick={() => handleStatusChange(selectedRepair.id, 'in_progress')}
+                      className="px-4 py-2 bg-cyan-500 text-black font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-cyan-400 transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] flex items-center gap-2"
+                    >
+                      <Wrench size={14} /> Begin Repair
+                    </button>
+                  )}
+                  {selectedRepair.status === 'in_progress' && (
+                    <button
+                      onClick={() => handleStatusChange(selectedRepair.id, 'testing')}
+                      className="px-4 py-2 bg-orange-500 text-black font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-orange-400 transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] flex items-center gap-2"
+                    >
+                      <Zap size={14} /> QC Testing
+                    </button>
+                  )}
+                  {['diagnosing', 'in_progress', 'testing', 'awaiting_parts'].includes(selectedRepair.status) && (
+                    <button
+                      onClick={() => handleStatusChange(selectedRepair.id, 'completed')}
+                      className="px-6 py-3 bg-[#A855F7] text-black font-black rounded-2xl text-xs uppercase tracking-[0.2em] hover:bg-[#9333EA] transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)] flex items-center gap-2"
+                    >
+                      <CheckCircle size={18} /> Finalize Protocol
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -438,13 +768,13 @@ export default function AdminRepairs() {
         </div>
         <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">In Progress</p>
-          <p className="text-3xl font-bold text-blue-500 tracking-tighter">{repairs.filter(r => r.status === 'in_progress').length}</p>
+          <p className="text-3xl font-bold text-blue-500 tracking-tighter">{repairs.filter(r => ['diagnosing', 'in_progress', 'testing', 'awaiting_parts'].includes(r.status)).length}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Active Matrix</p>
         </div>
         <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
-          <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">High Priority</p>
-          <p className="text-3xl font-bold text-red-500 tracking-tighter">{repairs.filter(r => r.priority === 'high' && r.status !== 'completed').length}</p>
-          <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Critical Status</p>
+          <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Critical Status</p>
+          <p className="text-3xl font-bold text-red-500 tracking-tighter">{repairs.filter(r => r.priority === 'critical' || (r.priority === 'high' && r.status !== 'completed')).length}</p>
+          <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Immediate Attention</p>
         </div>
       </div>
 
@@ -460,19 +790,19 @@ export default function AdminRepairs() {
             className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] w-full"
           />
         </div>
-        <div className="flex items-center space-x-3">
-          <Filter className="h-4 w-4 text-gray-500" />
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="bg-black border border-white/10 rounded-xl px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+        <div className="flex items-center space-x-3 overflow-x-auto pb-2 md:pb-0">
+          <Filter className="h-4 w-4 text-gray-500 flex-shrink-0" />
+          {(['all', 'pending', 'diagnosing', 'in_progress', 'awaiting_parts', 'completed'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all whitespace-nowrap ${
+                filter === f ? 'bg-[#A855F7] text-white border-[#A855F7]' : 'bg-black text-gray-500 border-white/10 hover:border-white/20'
+              }`}
+            >
+              {f.replace('_', ' ')}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -484,11 +814,10 @@ export default function AdminRepairs() {
               <tr>
                 <th className="px-6 py-4">Ticket ID</th>
                 <th className="px-6 py-4">Identity / Date</th>
-                <th className="px-6 py-4">Priority</th>
                 <th className="px-6 py-4">Hardware & Issue</th>
+                <th className="px-6 py-4">Priority</th>
                 <th className="px-6 py-4">Technician</th>
-                <th className="px-6 py-4">Valuation</th>
-                <th className="px-6 py-4">Protocol Status</th>
+                <th className="px-6 py-4">Status Protocol</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -503,75 +832,68 @@ export default function AdminRepairs() {
                     transition: { duration: 0.8, ease: "easeInOut" }
                   } : {}}
                 >
-                  <td className="px-6 py-4 text-[#A855F7] font-bold tracking-tighter">[{repair.id}]</td>
+                  <td className="px-6 py-4">
+                    <span className="text-[#A855F7] font-bold tracking-tighter block">[{repair.id}]</span>
+                    <span className="text-[8px] text-gray-600 mt-1 block uppercase">Matrix_Node</span>
+                  </td>
                   <td className="px-6 py-4">
                     <div className="text-white uppercase font-bold">{repair.customer}</div>
                     <div className="text-[10px] text-gray-600">{repair.date}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 text-[9px] font-bold rounded border uppercase tracking-tighter ${repair.priority === 'high' ? 'text-red-400 border-red-500/20 bg-red-500/10' :
-                      repair.priority === 'medium' ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' :
-                        'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
-                      }`}>
+                    <div className="text-gray-300 uppercase font-bold tracking-tight">{repair.device}</div>
+                    <div className="text-[10px] text-gray-600 uppercase truncate max-w-[150px]">{repair.issue}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-0.5 text-[9px] font-black rounded border uppercase tracking-widest ${getPriorityColor(repair.priority)}`}>
                       {repair.priority}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-gray-300 uppercase font-bold tracking-tight">{repair.device}</div>
-                    <div className="text-[10px] text-gray-600 uppercase">{repair.issue}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] text-gray-500 font-bold uppercase">
+                        {repair.technician ? repair.technician[0] : '?'}
+                      </div>
+                      <span className="text-[10px] text-white uppercase font-bold">{repair.technician || 'Unassigned'}</span>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
-                    <select
-                      className="bg-black border border-white/10 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#A855F7] uppercase"
-                      value={repair.technician || ''}
-                      onChange={async (e) => {
-                        try {
-                          await updateDoc(doc(db, 'repairs', repair.id), { technician: e.target.value });
-                        } catch (error) {
-                          console.error('Failed to assign technician:', error);
-                          alert('Failed to assign technician in database.');
-                        }
-                      }}
-                    >
-                      <option value="">Unassigned</option>
-                      <option value="Mike Tech">Mike Tech</option>
-                      <option value="Sarah Fix">Sarah Fix</option>
-                      <option value="Dave Repair">Dave Repair</option>
-                    </select>
-                  </td>
-                  <td className="px-6 py-4 font-bold text-white">
-                    {repair.estimatedCost ? formatCurrency(repair.estimatedCost) : '-'}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 text-[9px] font-bold rounded border uppercase tracking-tighter ${getStatusColor(repair.status)}`}>
-                      {repair.status.replace('_', ' ')}
-                    </span>
+                    <div className="relative inline-block">
+                      <select
+                        value={repair.status}
+                        onChange={(e) => handleStatusChange(repair.id, e.target.value as RepairStatus)}
+                        className={`appearance-none px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest cursor-pointer outline-none transition-all pr-8 ${getStatusColor(repair.status)}`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="diagnosing">Diagnosing</option>
+                        <option value="awaiting_parts">Awaiting Parts</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="testing">Testing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                        <ChevronDown size={10} />
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end space-x-2">
-                      {repair.status === 'pending' && (
-                        <button
-                          onClick={() => handleStatusChange(repair.id, 'in_progress')}
-                          className="p-2 bg-[#A855F7]/10 text-[#A855F7] hover:bg-[#A855F7]/20 border border-[#A855F7]/20 rounded transition-all"
-                          title="Start Protocol"
-                        >
-                          <Wrench className="h-4 w-4" />
-                        </button>
-                      )}
-                      {repair.status === 'in_progress' && (
+                      {['diagnosing', 'in_progress', 'testing', 'awaiting_parts'].includes(repair.status) && (
                         <button
                           onClick={() => handleStatusChange(repair.id, 'completed')}
-                          className="p-2 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20 rounded transition-all"
-                          title="Complete Protocol"
+                          className="p-2 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 border border-emerald-500/20 rounded-xl transition-all"
+                          title="Quick Complete"
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <CheckCircle size={14} />
                         </button>
                       )}
                       <button
                         onClick={() => setSelectedRepair(repair)}
-                        className="p-2 hover:bg-white/5 rounded transition-colors text-gray-600 hover:text-white border border-transparent hover:border-white/10"
+                        className="p-2 bg-white/5 hover:bg-[#A855F7]/20 border border-white/5 hover:border-[#A855F7]/30 text-gray-400 hover:text-white rounded-xl transition-all group/btn"
+                        title="Open Command Center"
                       >
-                        <Zap className="h-4 w-4" />
+                        <Zap className="h-4 w-4 group-hover/btn:fill-[#A855F7]" />
                       </button>
                     </div>
                   </td>
@@ -582,8 +904,33 @@ export default function AdminRepairs() {
         </div>
 
         {filteredRepairs.length === 0 && (
-          <div className="text-center py-12 text-gray-600 font-mono text-xs uppercase tracking-widest">
-            Repair Matrix Empty // No matching records
+          <div className="text-center py-12 space-y-4">
+            <p className="text-gray-600 font-mono text-xs uppercase tracking-widest">
+              Repair Matrix Empty // No matching records
+            </p>
+            {repairs.length === 0 ? (
+              <button
+                onClick={handleSeedRepairs}
+                className="px-6 py-2 bg-[#A855F7] text-black rounded-xl font-black uppercase tracking-widest hover:bg-[#9333EA] transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+              >
+                Seed Mock Repairs
+              </button>
+            ) : (
+              <div className="flex flex-col gap-4 items-center mt-4">
+                <button
+                  onClick={() => { setFilter('all'); setSearch(''); }}
+                  className="text-[10px] font-black text-[#A855F7] uppercase tracking-widest hover:underline"
+                >
+                  Reset Matrix Filters
+                </button>
+                <button
+                  onClick={handleClearAll}
+                  className="px-4 py-2 bg-red-500/10 text-red-500 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
+                >
+                  Clear All Repairs (Reset Matrix)
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { collection, onSnapshot, query, doc, updateDoc, addDoc, setDoc, where, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, query, doc, updateDoc, addDoc, setDoc, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { RENTAL_CONSOLES } from '../../constants/rentals';
 import {
@@ -300,6 +300,7 @@ const HealthBar = ({ health }: { health: number }) => {
 export default function AdminInventory() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [rentals, setRentals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -321,15 +322,27 @@ export default function AdminInventory() {
         ...doc.data()
       }));
       setProducts(fetchedProducts);
-      setLoading(false);
     }, (error) => {
       console.error("Firestore error in unsubProd:", error);
+    });
+
+    const qRent = query(collection(db, 'rentals'));
+    const unsubRent = onSnapshot(qRent, (snapshot) => {
+      const fetchedRentals = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setRentals(fetchedRentals);
+      setLoading(false);
+    }, (error) => {
+      console.error("Firestore error in unsubRent:", error);
       setLoading(false);
     });
 
     return () => {
       unsubInv();
       unsubProd();
+      unsubRent();
     };
   }, []);
 
@@ -348,6 +361,11 @@ export default function AdminInventory() {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showWarrantyModal, setShowWarrantyModal] = useState(false);
   const [showDepreciationModal, setShowDepreciationModal] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showCheckinModal, setShowCheckinModal] = useState(false);
+  const [checkoutRentalId, setCheckoutRentalId] = useState('');
+  const [checkinCondition, setCheckinCondition] = useState<InventoryStatus>('Available');
+  const [checkinNotes, setCheckinNotes] = useState('');
   const [scheduledMaintenances, setScheduledMaintenances] = useState<ScheduledMaintenance[]>([]);
   const [transferForm, setTransferForm] = useState({ toLocation: '', notes: '', transferredBy: '' });
   const [warrantyForm, setWarrantyForm] = useState({ warrantyExpiry: '', insurancePolicy: '', insuranceExpiry: '', depreciationRate: 10 });
@@ -388,7 +406,7 @@ export default function AdminInventory() {
       basePricePerDay: template?.price || editForm.basePricePerDay || 25,
       dynamicPricingEnabled: editForm.dynamicPricingEnabled || false,
       image: template?.image || editForm.image || 'https://images.unsplash.com/photo-1605902711622-cfb39c443f05?auto=format&fit=crop&q=80&w=200',
-      purchasePrice: 45000,
+      purchasePrice: editForm.purchasePrice || 45000,
       totalRevenue: 0,
       kitRequired: template?.included || ['Console', 'Controller', 'Power Cable'],
       kitStatus: (template?.included || ['Console', 'Controller', 'Power Cable']).reduce((acc: any, item: string) => ({ ...acc, [item]: true }), {}),
@@ -402,6 +420,23 @@ export default function AdminInventory() {
     await setDoc(doc(db, 'inventory', itemId), newItem);
     setIsAdding(false);
     setEditForm({});
+  };
+
+  const handleSeedInventory = async () => {
+    if (!confirm('This will seed the hardware matrix with 35+ mock assets for demonstration purposes. Proceed?')) return;
+    
+    setLoading(true);
+    try {
+      for (const item of MOCK_INVENTORY) {
+        await setDoc(doc(db, 'inventory', item.id), item);
+      }
+      alert('Hardware Matrix successfully seeded with mock assets.');
+    } catch (error) {
+      console.error("Error seeding inventory:", error);
+      alert('Critical failure during matrix seeding.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditChange = (field: keyof InventoryItem, value: any) => {
@@ -439,10 +474,121 @@ export default function AdminInventory() {
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selectedIds.length} assets? This cannot be undone.`)) return;
     for (const id of selectedIds) {
-      // In production, you'd delete from Firestore here
+      await deleteDoc(doc(db, 'inventory', id));
     }
     setSelectedIds([]);
     setShowBulkPanel(false);
+  };
+
+  const handleDeleteAsset = async (id: string) => {
+    if (!confirm(`Permanently decommission and delete asset [${id}]?`)) return;
+    try {
+      await deleteDoc(doc(db, 'inventory', id));
+    } catch (error) {
+      console.error("Error deleting asset:", error);
+      alert('Failed to delete asset.');
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!confirm('CRITICAL ACTION: This will permanently delete ALL assets from the hardware matrix. Proceed?')) return;
+    
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'inventory'));
+      const snapshot = await getDocs(q);
+      for (const d of snapshot.docs) {
+        await deleteDoc(doc(db, 'inventory', d.id));
+      }
+      alert('Hardware Matrix successfully cleared.');
+    } catch (error) {
+      console.error("Error clearing inventory:", error);
+      alert('Failed to clear matrix.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!selectedItem || !checkoutRentalId) return;
+    
+    const rental = rentals.find(r => r.id === checkoutRentalId);
+    if (!rental) return;
+
+    const rentalRecord: RentalHistoryRecord = {
+      rentalId: checkoutRentalId,
+      user: rental.user,
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: rental.endDate,
+      price: rental.totalPrice,
+      status: 'active'
+    };
+
+    const updatedHistory = [...(selectedItem.rentalHistory || []), rentalRecord];
+    await updateDoc(doc(db, 'inventory', selectedItem.id), {
+      status: 'Rented',
+      location: 'Deployed - Client',
+      rentalHistory: updatedHistory
+    });
+
+    // Also update the rental document to link this asset
+    await updateDoc(doc(db, 'rentals', checkoutRentalId), {
+      assetId: selectedItem.id,
+      status: 'active'
+    });
+
+    setSelectedItem({ ...selectedItem, status: 'Rented', location: 'Deployed - Client', rentalHistory: updatedHistory });
+    setShowCheckoutModal(false);
+    setCheckoutRentalId('');
+    alert(`Asset [${selectedItem.id}] deployed to Order [${checkoutRentalId}]`);
+  };
+
+  const handleCheckin = async () => {
+    if (!selectedItem) return;
+
+    const lastRentalIdx = selectedItem.rentalHistory.length - 1;
+    if (lastRentalIdx < 0) return;
+
+    const updatedHistory = [...selectedItem.rentalHistory];
+    updatedHistory[lastRentalIdx] = {
+      ...updatedHistory[lastRentalIdx],
+      status: 'completed'
+    };
+
+    const log = {
+      date: new Date().toISOString().split('T')[0],
+      photoUrl: selectedItem.image, // Placeholder
+      notes: `Return Processed: ${checkinNotes}`
+    };
+
+    const finalStatus = checkinCondition === 'Available' ? 'Maintenance' : checkinCondition; // Auto-maintenance on return
+
+    await updateDoc(doc(db, 'inventory', selectedItem.id), {
+      status: finalStatus,
+      location: 'Warehouse - Receiving',
+      rentalHistory: updatedHistory,
+      conditionLogs: [...(selectedItem.conditionLogs || []), log],
+      lastService: new Date().toISOString().split('T')[0]
+    });
+
+    // Update rental status
+    const activeRental = selectedItem.rentalHistory.find(r => r.status === 'active');
+    if (activeRental) {
+      await updateDoc(doc(db, 'rentals', activeRental.rentalId), {
+        status: 'completed'
+      });
+    }
+
+    setSelectedItem({ 
+      ...selectedItem, 
+      status: finalStatus, 
+      location: 'Warehouse - Receiving', 
+      rentalHistory: updatedHistory,
+      conditionLogs: [...(selectedItem.conditionLogs || []), log]
+    });
+    setShowCheckinModal(false);
+    setCheckinNotes('');
+    alert(`Asset [${selectedItem.id}] received. Status set to: ${finalStatus}`);
   };
 
   const handleBulkExport = () => {
@@ -1060,16 +1206,41 @@ export default function AdminInventory() {
           <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/5">
             <Box size={40} className="text-gray-600" />
           </div>
-          <h3 className="text-xl font-bold text-white uppercase italic tracking-tighter">Zero Hardware Nodes Detected</h3>
+          <h3 className="text-xl font-bold text-white uppercase italic tracking-tighter">
+            {inventory.length === 0 ? 'Initial Fleet Provisioning Required' : 'Zero Hardware Nodes Detected'}
+          </h3>
           <p className="text-gray-500 font-mono text-xs uppercase tracking-widest max-w-md mx-auto">
-            The Asset Matrix is currently void of any active entries matching your current filters.
+            {inventory.length === 0 
+              ? 'The hardware database is currently empty. You must provision assets before they can be tracked in the matrix.'
+              : 'The Asset Matrix is currently void of any active entries matching your current filters.'}
           </p>
-          <button
-            onClick={() => { setStatusFilter('All'); setSearch(''); }}
-            className="text-[10px] font-black text-[#A855F7] uppercase tracking-widest hover:underline"
-          >
-            Reset Matrix Filters
-          </button>
+          <div className="flex flex-col items-center gap-4 mt-6">
+            {inventory.length === 0 ? (
+              <button
+                onClick={handleSeedInventory}
+                className="flex items-center space-x-2 px-6 py-3 bg-[#A855F7] text-black rounded-xl text-xs font-black uppercase tracking-[0.2em] hover:bg-[#9333EA] transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+              >
+                <Zap size={16} />
+                <span>Seed Mock Hardware Matrix</span>
+              </button>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => { setStatusFilter('All'); setSearch(''); }}
+                  className="text-[10px] font-black text-[#A855F7] uppercase tracking-widest hover:underline"
+                >
+                  Reset Matrix Filters
+                </button>
+                <button
+                  onClick={handleClearAll}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-500/10 text-red-500 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
+                >
+                  <Trash2 size={12} />
+                  <span>Clear All Assets (Reset Matrix)</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1099,15 +1270,23 @@ export default function AdminInventory() {
                         <StatusBadge status={item.status} />
                       </div>
                       <h3 className="text-xl font-bold text-white group-hover:text-[#A855F7] transition-colors uppercase tracking-tight italic">{item.name}</h3>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="flex items-center gap-1 px-2 py-0.5 bg-white/5 rounded text-[8px] font-mono text-gray-400">
+                        <DollarSign size={8} /> {formatCurrency(item.basePricePerDay || 0)}/Day
+                      </div>
+                      <div className="flex items-center gap-1 px-2 py-0.5 bg-white/5 rounded text-[8px] font-mono text-gray-400">
+                        <Wallet size={8} /> {formatCurrency(item.purchasePrice || 0)}
+                      </div>
                     </div>
-                  </div>
-                  <button
+                    </div>
+                    </div>
+                    <button
                     onClick={() => setSelectedItem(item)}
-                    className="p-2 text-gray-600 hover:text-white transition-colors bg-white/5 rounded-lg"
-                  >
-                    <MoreVertical size={18} />
-                  </button>
-                </div>
+                    className="p-2 text-gray-500 hover:text-white transition-colors"
+                    >
+                    <MoreVertical size={16} />
+                    </button>
+                    </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white/[0.02] p-3 rounded-xl border border-white/5">
@@ -1205,8 +1384,9 @@ export default function AdminInventory() {
                   </th>
                   <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Asset ID</th>
                   <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Name</th>
-                  <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Status</th>
-                  <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Location</th>
+                  <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Daily Rate</th>
+                  <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Asset Value</th>
+                  <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Status</th>                  <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Location</th>
                   <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Last Service</th>
                   <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Health</th>
                   <th className="p-4 text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Yield (ROI)</th>
@@ -1233,6 +1413,12 @@ export default function AdminInventory() {
                     </td>
                     <td className="p-4">
                       <span className="text-xs font-bold text-white uppercase tracking-tight">{item.name}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-[10px] font-mono text-gray-400">{formatCurrency(item.basePricePerDay || 0)}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-[10px] font-mono text-gray-400">{formatCurrency(item.purchasePrice || 0)}</span>
                     </td>
                     <td className="p-4">
                       <div className="relative inline-block">
@@ -1285,12 +1471,22 @@ export default function AdminInventory() {
                       </div>
                     </td>
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => setSelectedItem(item)}
-                        className="p-1.5 text-gray-600 hover:text-white transition-colors bg-white/5 rounded-lg"
-                      >
-                        <MoreVertical size={14} />
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => setSelectedItem(item)}
+                          className="p-1.5 text-gray-600 hover:text-white transition-colors bg-white/5 rounded-lg"
+                          title="View Details"
+                        >
+                          <MoreVertical size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAsset(item.id)}
+                          className="p-1.5 text-gray-600 hover:text-red-500 transition-colors bg-white/5 rounded-lg"
+                          title="Delete Asset"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1339,7 +1535,7 @@ export default function AdminInventory() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[] overflow-hidden flex flex-col shadow-2xl"
             >
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
                 <div className="flex items-center gap-4">
@@ -1493,6 +1689,25 @@ export default function AdminInventory() {
 
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-4">
+                        <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.3em]">Operational Actions</h3>
+                        <div className="grid grid-cols-1 gap-3">
+                          {selectedItem.status === 'Available' || selectedItem.status === 'Maintenance' ? (
+                            <button
+                              onClick={() => setShowCheckoutModal(true)}
+                              className="w-full flex items-center justify-center gap-2 py-4 bg-[#A855F7] text-black rounded-xl font-black uppercase tracking-[0.2em] hover:bg-[#9333EA] transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                            >
+                              <Truck size={18} /> Process Checkout
+                            </button>
+                          ) : selectedItem.status === 'Rented' ? (
+                            <button
+                              onClick={() => setShowCheckinModal(true)}
+                              className="w-full flex items-center justify-center gap-2 py-4 bg-emerald-500 text-black rounded-xl font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                            >
+                              <Repeat size={18} /> Process Return
+                            </button>
+                          ) : null}
+                        </div>
+
                         <h3 className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.3em]">Status Controls</h3>
                         <div className="grid grid-cols-1 gap-2">
                           {(['Available', 'Rented', 'Maintenance', 'Retired'] as InventoryStatus[]).map(status => (
@@ -1976,14 +2191,24 @@ export default function AdminInventory() {
                     value={editForm.name || ''}
                     onChange={(e) => {
                       const template = products.find(p => p.name === e.target.value);
+                      const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
                       if (template) {
+                        const prefix = template.name.includes('PS5') ? 'PS5' : 
+                                     template.name.includes('Xbox') ? 'XBX' : 
+                                     template.name.includes('Switch') ? 'SWT' : 'HW';
                         setEditForm({
                           ...editForm,
                           name: template.name,
-                          category: template.category
+                          category: template.category,
+                          basePricePerDay: template.price,
+                          image: template.image,
+                          serialNumber: `SN-${prefix}-${randomSuffix}`
                         });
                       } else {
                         handleEditChange('name', e.target.value);
+                        if (e.target.value === 'custom') {
+                           handleEditChange('serialNumber', `SN-GEN-${randomSuffix}`);
+                        }
                       }
                     }}
                     className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] appearance-none"
@@ -1995,28 +2220,101 @@ export default function AdminInventory() {
                     <option value="custom">-- Custom Entry --</option>
                   </select>
                 </div>
-                {editForm.name === 'custom' && (
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Custom Asset Name</label>
-                    <input
-                      required
-                      type="text"
-                      onChange={(e) => handleEditChange('name', e.target.value)}
-                      className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
-                      placeholder="e.g. Custom Hardware"
-                    />
-                  </div>
+
+                {(editForm.name === 'custom' || !products.find(p => p.name === editForm.name)) && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Asset Name</label>
+                      <input
+                        required
+                        type="text"
+                        value={editForm.name === 'custom' ? '' : editForm.name}
+                        onChange={(e) => handleEditChange('name', e.target.value)}
+                        className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                        placeholder="e.g. PlayStation 5 Pro"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Console Category</label>
+                      <select
+                        required
+                        value={editForm.category || ''}
+                        onChange={(e) => handleEditChange('category', e.target.value)}
+                        className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] appearance-none"
+                      >
+                        <option value="">-- Select Category --</option>
+                        <option value="Sony PlayStation 5">Sony PlayStation 5</option>
+                        <option value="Xbox Series X">Xbox Series X</option>
+                        <option value="PlayStation 4 Pro">PlayStation 4 Pro</option>
+                        <option value="Nintendo Switch OLED">Nintendo Switch OLED</option>
+                        <option value="VR Gear">VR Gear</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Asset Image URL</label>
+                      <input
+                        type="text"
+                        value={editForm.image || ''}
+                        onChange={(e) => handleEditChange('image', e.target.value)}
+                        className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                        placeholder="https://images.unsplash.com/..."
+                      />
+                      {editForm.image && (
+                        <div className="mt-2 w-full aspect-video rounded-lg border border-white/10 overflow-hidden bg-black/50">
+                          <img src={editForm.image} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Daily Rate (₹)</label>
+                        <input
+                          required
+                          type="number"
+                          value={editForm.basePricePerDay || ''}
+                          onChange={(e) => handleEditChange('basePricePerDay', parseFloat(e.target.value))}
+                          className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                          placeholder="500"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Purchase Price (₹)</label>
+                        <input
+                          required
+                          type="number"
+                          value={editForm.purchasePrice || ''}
+                          onChange={(e) => handleEditChange('purchasePrice', parseFloat(e.target.value))}
+                          className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                          placeholder="50000"
+                        />
+                      </div>
+                    </div>
+                  </>
                 )}
                 <div className="space-y-2">
                   <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Serial Number</label>
-                  <input
-                    required
-                    type="text"
-                    value={editForm.serialNumber || ''}
-                    onChange={(e) => handleEditChange('serialNumber', e.target.value)}
-                    className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
-                    placeholder="e.g. SN-12345"
-                  />
+                  <div className="relative">
+                    <input
+                      required
+                      type="text"
+                      value={editForm.serialNumber || ''}
+                      onChange={(e) => handleEditChange('serialNumber', e.target.value)}
+                      className="w-full bg-black border border-white/10 rounded-lg pl-3 pr-10 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                      placeholder="e.g. SN-12345"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+                        handleEditChange('serialNumber', `SN-AUTO-${randomSuffix}`);
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A855F7] hover:text-white transition-colors"
+                      title="Regenerate ID"
+                    >
+                      <Repeat size={14} />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Location</label>
@@ -2310,6 +2608,136 @@ export default function AdminInventory() {
                     className="px-6 py-2 bg-[#A855F7] text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA]"
                   >
                     Schedule New
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Checkout Modal */}
+      <AnimatePresence>
+        {showCheckoutModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#0a0a0a] border border-[#A855F7]/30 rounded-2xl w-full max-w-md overflow-hidden"
+            >
+              <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#A855F7]/5">
+                <div className="flex items-center gap-3">
+                  <Truck size={20} className="text-[#A855F7]" />
+                  <h3 className="text-lg font-bold text-white uppercase italic">Deploy Asset</h3>
+                </div>
+                <button onClick={() => setShowCheckoutModal(false)} className="text-gray-500 hover:text-white">
+                  <XCircle size={24} />
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Link to Rental Order</label>
+                  <select
+                    value={checkoutRentalId}
+                    onChange={(e) => setCheckoutRentalId(e.target.value)}
+                    className="w-full bg-black border border-white/10 rounded-lg px-3 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] appearance-none"
+                  >
+                    <option value="">-- Select Active Order --</option>
+                    {rentals.filter(r => r.status === 'pending' || r.status === 'active').map(r => (
+                      <option key={r.id} value={r.id}>{r.user} - {r.product} (#{r.id.slice(-6)})</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-3">
+                  <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Asset Assignment</p>
+                  <div className="flex items-center gap-3">
+                    <img src={selectedItem?.image} className="w-10 h-10 rounded border border-white/10 object-cover" alt="" />
+                    <div>
+                      <p className="text-xs font-bold text-white">{selectedItem?.name}</p>
+                      <p className="text-[10px] font-mono text-[#A855F7]">{selectedItem?.id}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="pt-4 flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowCheckoutModal(false)}
+                    className="px-6 py-2 bg-white/5 text-gray-400 rounded-xl font-mono text-[10px] uppercase tracking-widest hover:bg-white/10"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCheckout}
+                    disabled={!checkoutRentalId}
+                    className="px-6 py-2 bg-[#A855F7] text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Confirm Deployment
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Check-in Modal */}
+      <AnimatePresence>
+        {showCheckinModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#0a0a0a] border border-emerald-500/30 rounded-2xl w-full max-w-md overflow-hidden"
+            >
+              <div className="p-6 border-b border-white/10 flex justify-between items-center bg-emerald-500/5">
+                <div className="flex items-center gap-3">
+                  <Repeat size={20} className="text-emerald-500" />
+                  <h3 className="text-lg font-bold text-white uppercase italic">Process Return</h3>
+                </div>
+                <button onClick={() => setShowCheckinModal(false)} className="text-gray-500 hover:text-white">
+                  <XCircle size={24} />
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Operational Condition</label>
+                  <select
+                    value={checkinCondition}
+                    onChange={(e) => setCheckinCondition(e.target.value as any)}
+                    className="w-full bg-black border border-white/10 rounded-lg px-3 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] appearance-none"
+                  >
+                    <option value="Available">Perfect (Ready for Fleet)</option>
+                    <option value="Maintenance">Needs Inspection / Cleaning</option>
+                    <option value="Retired">Decommission (Damaged)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Receiving Notes</label>
+                  <textarea
+                    value={checkinNotes}
+                    onChange={(e) => setCheckinNotes(e.target.value)}
+                    className="w-full h-24 bg-black border border-white/10 rounded-lg px-3 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] resize-none"
+                    placeholder="Describe any wear, tear, or missing kit items..."
+                  />
+                </div>
+                <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
+                  <p className="text-[9px] font-mono text-emerald-500/70 leading-relaxed">
+                    Note: All returns are auto-flagged for 'Maintenance' status for a 24hr sanitization and health check protocol before returning to 'Available'.
+                  </p>
+                </div>
+                <div className="pt-4 flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowCheckinModal(false)}
+                    className="px-6 py-2 bg-white/5 text-gray-400 rounded-xl font-mono text-[10px] uppercase tracking-widest hover:bg-white/10"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCheckin}
+                    className="px-6 py-2 bg-emerald-500 text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                  >
+                    Complete Return
                   </button>
                 </div>
               </div>

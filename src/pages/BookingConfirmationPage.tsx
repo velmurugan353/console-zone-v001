@@ -50,7 +50,7 @@ export default function BookingConfirmationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00d4ff]"></div>
       </div>
     );
@@ -58,7 +58,7 @@ export default function BookingConfirmationPage() {
 
   if (!consoleData) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">Booking not found</h1>
           <Link to="/rentals" className="text-[#A855F7] hover:underline">Back to Rentals</Link>
@@ -72,7 +72,7 @@ export default function BookingConfirmationPage() {
   const endDate = bookingData?.endDate ? new Date(bookingData.endDate) : new Date();
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-dvh bg-[#050505] text-white pt-32 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-12 text-center">
         {/* Success Header */}
         <div className="flex flex-col items-center space-y-6">

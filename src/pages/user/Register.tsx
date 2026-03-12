@@ -1,9 +1,13 @@
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Gamepad2, User, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Gamepad2, User, Mail, Lock, ArrowRight, Phone, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { notificationService } from '../../services/notificationService';
 
 export default function Register() {
+  const [phone, setPhone] = useState('');
+
   return (
-    <div className="min-h-screen bg-gaming-bg flex items-center justify-center relative overflow-hidden pt-20 pb-12">
+    <div className="min-h-dvh bg-gaming-bg flex items-center justify-center relative overflow-hidden pt-20 pb-12">
       {/* Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gaming-accent/20 rounded-full blur-[100px]" />
@@ -19,7 +23,7 @@ export default function Register() {
           <p className="text-gaming-muted">Join the ultimate gaming community</p>
         </div>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
           <div className="space-y-2">
             <label className="text-sm font-medium text-gaming-muted">Full Name</label>
             <div className="relative">
@@ -28,6 +32,21 @@ export default function Register() {
                 type="text" 
                 className="w-full bg-gaming-bg border border-gaming-border rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:border-gaming-accent transition-colors"
                 placeholder="John Doe"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gaming-muted">Mobile Number (10 Digits)</label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gaming-muted" />
+              <input 
+                type="tel" 
+                maxLength={10}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                className="w-full bg-gaming-bg border border-gaming-border focus:border-gaming-accent rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none transition-colors"
+                placeholder="9876543210"
               />
             </div>
           </div>
@@ -56,18 +75,6 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gaming-muted">Confirm Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gaming-muted" />
-              <input 
-                type="password" 
-                className="w-full bg-gaming-bg border border-gaming-border rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:border-gaming-accent transition-colors"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-
           <div className="flex items-center space-x-2 pt-2">
             <input type="checkbox" id="terms" className="rounded bg-gaming-bg border-gaming-border text-gaming-accent focus:ring-gaming-accent" />
             <label htmlFor="terms" className="text-sm text-gaming-muted">
@@ -77,7 +84,7 @@ export default function Register() {
 
           <button
             type="submit"
-            className="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center group mt-6"
+            className="w-full py-4 font-bold rounded-xl transition-colors flex items-center justify-center group mt-6 bg-white text-black hover:bg-gray-200"
           >
             Create Account
             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

@@ -20,7 +20,9 @@ export interface KYCData {
     address: string;
     idFrontUrl: string;
     idBackUrl: string;
-    selfieUrl: string;
+    selfieUrl?: string;
+    selfieVideoUrl: string;
+    livenessCheck?: 'PASSED' | 'FAILED';
     status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'MANUAL_REVIEW';
     submittedAt?: string;
     agentReports?: AgentFeedback[];
@@ -44,7 +46,7 @@ export const getKYCStatus = (userId: string): KYCData | null => {
 export const uploadKYCDocument = async (
     userId: string,
     file: File,
-    type: 'id-front' | 'id-back' | 'selfie',
+    type: 'id-front' | 'id-back' | 'selfie' | 'selfie-video',
     onProgress?: (progress: number) => void
 ): Promise<string> => {
     // Simulate upload delay and progress

@@ -6,7 +6,7 @@ export default function AdminPlaceholder() {
   const pageName = location.pathname.split('/').pop();
 
   return (
-    <div className="flex flex-col items-center justify-center h-[60vh] text-center">
+    <div className="flex flex-col items-center justify-center h-[] text-center">
       <div className="p-6 bg-gaming-card rounded-full mb-6 border border-gaming-border">
         <Construction className="h-12 w-12 text-gaming-accent" />
       </div>

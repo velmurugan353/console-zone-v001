@@ -100,6 +100,9 @@ class NotificationService {
         ...doc.data()
       })) as AppNotification[];
       callback(notifications);
+    }, (error) => {
+      console.error("[NOTIFICATION_SERVICE] Subscription error:", error);
+      callback([]); // Return empty array on error to prevent UI crash
     });
   }
 

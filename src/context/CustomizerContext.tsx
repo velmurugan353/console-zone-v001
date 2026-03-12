@@ -8,6 +8,8 @@ export interface ThemePalette {
   text: string;
   muted: string;
   border: string;
+  headingFont: string;
+  bodyFont: string;
 }
 
 export interface LayoutSettings {
@@ -15,6 +17,10 @@ export interface LayoutSettings {
   borderRadius: string;
   gridGap: string;
   fullWidthNavbar: boolean;
+  glassmorphismBlur: string;
+  shadowIntensity: string;
+  animationSpeed: string;
+  customCSS: string;
 }
 
 export interface SiteContent {
@@ -31,6 +37,8 @@ interface CustomizerContextType {
   updateLayout: (newLayout: Partial<LayoutSettings>) => void;
   updateContent: (pageKey: string, key: string, value: any) => void;
   resetToDefault: () => void;
+  exportConfig: () => void;
+  importConfig: (jsonString: string) => boolean;
 }
 
 const DEFAULT_THEME: ThemePalette = {
@@ -41,6 +49,8 @@ const DEFAULT_THEME: ThemePalette = {
   text: '#e0e0e0',
   muted: '#a0a0a0',
   border: '#2a2a2a',
+  headingFont: 'Inter',
+  bodyFont: 'Inter',
 };
 
 const DEFAULT_LAYOUT: LayoutSettings = {
@@ -48,6 +58,10 @@ const DEFAULT_LAYOUT: LayoutSettings = {
   borderRadius: '1rem',
   gridGap: '2rem',
   fullWidthNavbar: true,
+  glassmorphismBlur: '12px',
+  shadowIntensity: '0.1',
+  animationSpeed: '0.3s',
+  customCSS: '',
 };
 
 const CustomizerContext = createContext<CustomizerContextType | undefined>(undefined);
@@ -104,15 +118,14 @@ export const CustomizerProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // Apply theme colors to CSS variables
     const root = document.documentElement;
     Object.entries(theme).forEach(([key, value]) => {
-      root.style.setProperty(`--color-gaming-${key}`, value);
+      if (key !== 'headingFont' && key !== 'bodyFont') {
+        root.style.setProperty(`--${key}`, value);
+      }
     });
-    // Also update generic names if they differ
-    root.style.setProperty('--color-gaming-accent', theme.accent);
-    root.style.setProperty('--color-gaming-bg', theme.bg);
-    root.style.setProperty('--color-gaming-card', theme.card);
-    root.style.setProperty('--color-gaming-text', theme.text);
-    root.style.setProperty('--color-gaming-muted', theme.muted);
-    root.style.setProperty('--color-gaming-border', theme.border);
+    
+    // Apply typography
+    root.style.setProperty('--font-heading', `"${theme.headingFont}", sans-serif`);
+    root.style.setProperty('--font-body', `"${theme.bodyFont}", sans-serif`);
     
     localStorage.setItem('gv_custom_theme', JSON.stringify(theme));
   }, [theme]);
@@ -122,7 +135,19 @@ export const CustomizerProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     root.style.setProperty('--layout-max-width', layout.maxWidth);
     root.style.setProperty('--layout-border-radius', layout.borderRadius);
     root.style.setProperty('--layout-grid-gap', layout.gridGap);
+    root.style.setProperty('--layout-blur', layout.glassmorphismBlur);
+    root.style.setProperty('--layout-shadow-intensity', layout.shadowIntensity);
+    root.style.setProperty('--layout-transition', layout.animationSpeed);
     
+    // Inject Custom CSS
+    let styleEl = document.getElementById('gv-custom-css');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'gv-custom-css';
+      document.head.appendChild(styleEl);
+    }
+    styleEl.innerHTML = layout.customCSS || '';
+
     localStorage.setItem('gv_custom_layout', JSON.stringify(layout));
   }, [layout]);
 
@@ -157,6 +182,30 @@ export const CustomizerProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     localStorage.removeItem('gv_custom_content');
   };
 
+  const exportConfig = () => {
+    const config = { theme, layout, content };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "consolezone-config.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
+  const importConfig = (jsonString: string) => {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (parsed.theme) setTheme({ ...DEFAULT_THEME, ...parsed.theme });
+      if (parsed.layout) setLayout({ ...DEFAULT_LAYOUT, ...parsed.layout });
+      if (parsed.content) setContent(parsed.content);
+      return true;
+    } catch (e) {
+      console.error("Failed to parse config:", e);
+      return false;
+    }
+  };
+
   return (
     <CustomizerContext.Provider value={{
       theme,
@@ -167,7 +216,9 @@ export const CustomizerProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       updateTheme,
       updateLayout,
       updateContent,
-      resetToDefault
+      resetToDefault,
+      exportConfig,
+      importConfig
     }}>
       {children}
     </CustomizerContext.Provider>

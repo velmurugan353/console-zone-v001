@@ -20,7 +20,7 @@ export default function RequireAuth({ children, onLoginRequired }: RequireAuthPr
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[50vh]">
+            <div className="flex items-center justify-center min-h-[]">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gaming-accent"></div>
             </div>
         );
@@ -29,7 +29,7 @@ export default function RequireAuth({ children, onLoginRequired }: RequireAuthPr
     if (!isAuthenticated) {
         if (onLoginRequired) {
             return (
-                <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+                <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
                     <div className="text-center space-y-6 p-8 bg-white/5 border border-white/10 rounded-3xl max-w-md mx-auto">
                         <div className="w-16 h-16 bg-[#A855F7]/10 rounded-2xl flex items-center justify-center mx-auto">
                             <ShieldCheck className="h-8 w-8 text-[#A855F7]" />

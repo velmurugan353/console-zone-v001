@@ -41,7 +41,7 @@ export default function UserLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-gaming-bg pt-24 pb-12">
+    <div className="min-h-dvh bg-gaming-bg pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
@@ -91,32 +91,6 @@ export default function UserLayout() {
                   <span>Terminate Session</span>
                 </button>
               </nav>
-
-              {/* System Diagnostics */}
-              <div className="mt-8 pt-8 border-t border-gaming-border space-y-4">
-                <div className="flex items-center justify-between text-[10px] font-mono text-gaming-muted uppercase tracking-widest">
-                  <span>Neural Link</span>
-                  <span className="text-emerald-500 animate-pulse">Stable</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[9px] font-mono text-gray-500 uppercase">
-                    <span>CPU Core</span>
-                    <span>42%</span>
-                  </div>
-                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gaming-accent/40 w-[42%]" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[9px] font-mono text-gray-500 uppercase">
-                    <span>Memory Link</span>
-                    <span>89%</span>
-                  </div>
-                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gaming-secondary/40 w-[89%]" />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 

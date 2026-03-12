@@ -16,12 +16,16 @@ import { formatCurrency } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../lib/firebase';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { invoiceService } from '../../services/invoiceService';
+import InvoiceModal from '../../components/admin/InvoiceModal';
 
 export default function MyOrders() {
   const { user } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -46,6 +50,11 @@ export default function MyOrders() {
 
     return () => unsubscribe();
   }, [user]);
+
+  const handleShowInvoice = (order: any) => {
+    setSelectedOrder(order);
+    setShowInvoice(true);
+  };
 
   const stats = useMemo(() => {
     const total = orders.reduce((acc, curr) => acc + (curr.total || 0), 0);
@@ -162,8 +171,11 @@ export default function MyOrders() {
                 </p>
               </div>
               <div className="flex items-center gap-4 w-full sm:w-auto">
-                <button className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-white hover:bg-gaming-accent hover:text-black transition-all uppercase tracking-[0.2em]">
-                  <FileText size={14} /> Neural_Invoice
+                <button 
+                  onClick={() => handleShowInvoice(order)}
+                  className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-white hover:bg-gaming-accent hover:text-black transition-all uppercase tracking-[0.2em]"
+                >
+                  <FileText size={14} /> Secure_Invoice
                 </button>
                 <button className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3 bg-gaming-accent text-black rounded-xl text-[10px] font-black hover:scale-105 transition-all uppercase tracking-[0.2em] shadow-[0_10px_20px_rgba(0,240,255,0.2)]">
                   <Zap size={14} /> Trace_Payload
@@ -173,6 +185,16 @@ export default function MyOrders() {
           </div>
         ))}
       </div>
+
+      {/* Invoice Generator Modal */}
+      <AnimatePresence>
+        {showInvoice && selectedOrder && (
+          <InvoiceModal
+            data={invoiceService.formatOrderData(selectedOrder)}
+            onClose={() => setShowInvoice(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

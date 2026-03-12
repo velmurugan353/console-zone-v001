@@ -175,7 +175,7 @@ export default function AdminProducts() {
   );
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-6 lg:p-10 space-y-8">
+    <div className="space-y-8">
       {/* Header */}
       {/* Knowledge Base Overlay */}
       <div className="bg-[#A855F7]/5 border border-[#A855F7]/20 rounded-2xl p-6 flex items-start gap-4">

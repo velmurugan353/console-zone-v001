@@ -20,6 +20,8 @@ const repairSchema = z.object({
   }, {
     message: "Pickup date cannot be in the past. Please select today or a future date."
   }),
+  pickupTime: z.string().min(1, "Please select a preferred pickup time."),
+  phone: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   address: z.string().min(5, "Please provide a complete pickup address (at least 5 characters)."),
 });
 
@@ -119,25 +121,51 @@ export default function Repair() {
               {errors.description && <p className="text-red-500 text-xs">{errors.description.message}</p>}
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gaming-muted">Pickup Address</label>
-              <input 
-                type="text"
-                {...register('address')}
-                placeholder="Full street address"
-                className="w-full bg-gaming-bg border border-gaming-border rounded-lg p-3 text-white focus:border-gaming-accent focus:outline-none"
-              />
-              {errors.address && <p className="text-red-500 text-xs">{errors.address.message}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gaming-muted">Phone Number</label>
+                <input 
+                  type="tel"
+                  maxLength={10}
+                  {...register('phone')}
+                  placeholder="10-digit mobile number"
+                  className="w-full bg-gaming-bg border border-gaming-border rounded-lg p-3 text-white focus:border-gaming-accent focus:outline-none"
+                />
+                {errors.phone && <p className="text-red-500 text-xs">{errors.phone.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gaming-muted">Pickup Address</label>
+                <input 
+                  type="text"
+                  {...register('address')}
+                  placeholder="Full street address"
+                  className="w-full bg-gaming-bg border border-gaming-border rounded-lg p-3 text-white focus:border-gaming-accent focus:outline-none"
+                />
+                {errors.address && <p className="text-red-500 text-xs">{errors.address.message}</p>}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gaming-muted">Preferred Pickup Date</label>
-              <input 
-                type="date"
-                {...register('pickupDate')}
-                className="w-full bg-gaming-bg border border-gaming-border rounded-lg p-3 text-white focus:border-gaming-accent focus:outline-none"
-              />
-              {errors.pickupDate && <p className="text-red-500 text-xs">{errors.pickupDate.message}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gaming-muted">Preferred Pickup Date</label>
+                <input 
+                  type="date"
+                  {...register('pickupDate')}
+                  className="w-full bg-gaming-bg border border-gaming-border rounded-lg p-3 text-white focus:border-gaming-accent focus:outline-none"
+                />
+                {errors.pickupDate && <p className="text-red-500 text-xs">{errors.pickupDate.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gaming-muted">Preferred Pickup Time</label>
+                <input 
+                  type="time"
+                  {...register('pickupTime')}
+                  className="w-full bg-gaming-bg border border-gaming-border rounded-lg p-3 text-white focus:border-gaming-accent focus:outline-none"
+                />
+                {errors.pickupTime && <p className="text-red-500 text-xs">{errors.pickupTime.message}</p>}
+              </div>
             </div>
 
             <button 

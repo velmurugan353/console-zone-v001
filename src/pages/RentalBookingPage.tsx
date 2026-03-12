@@ -20,7 +20,8 @@ import {
   PlusCircle,
   MinusCircle,
   RefreshCw,
-  User
+  User,
+  CheckCircle2
 } from 'lucide-react';
 import { format, addDays, differenceInDays, isBefore, isSameDay, startOfToday, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth } from 'date-fns';
 import { RENTAL_CONSOLES, RentalConsole } from '../constants/rentals';
@@ -304,7 +305,7 @@ export default function RentalBookingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
         <RefreshCw className="h-8 w-8 text-[#00d4ff] animate-spin" />
       </div>
     );
@@ -312,7 +313,7 @@ export default function RentalBookingPage() {
 
   if (!consoleData) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">Console not found</h1>
           <Link to="/rentals" className="text-[#A855F7] hover:underline">Back to Rentals</Link>
@@ -410,7 +411,7 @@ export default function RentalBookingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-dvh bg-[#050505] text-white pt-24 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumbs & Back */}
         <div className="flex items-center justify-between mb-8">
@@ -1077,17 +1078,29 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Contact Phone</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Contact Phone (10 Digits)</label>
                 <div className="relative">
                   <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input
                     type="tel"
-                    placeholder="+1 (555) 000-0000"
+                    maxLength={10}
+                    placeholder="9876543210"
                     value={state.delivery.phone}
-                    onChange={(e) => setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, phone: e.target.value } }))}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-sm focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none transition-all"
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, phone: val } }));
+                    }}
+                    className={`w-full bg-black/40 border rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all ${
+                      state.delivery.phone.length === 10 ? 'border-emerald-500/50 focus:border-emerald-500' : 'border-white/10 focus:border-[#00d4ff]'
+                    }`}
                   />
+                  {state.delivery.phone.length === 10 && (
+                    <CheckCircle2 size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500" />
+                  )}
                 </div>
+                {state.delivery.phone && state.delivery.phone.length !== 10 && (
+                  <p className="text-[8px] text-red-500 font-mono uppercase tracking-widest mt-1">Requires exactly 10 digits</p>
+                )}
               </div>
               
               <div className="space-y-2">

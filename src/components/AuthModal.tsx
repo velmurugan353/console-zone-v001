@@ -8,6 +8,7 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
     const [isRegistering, setIsRegistering] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -155,6 +156,18 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
                                 onChange={(e) => setName(e.target.value)}
                             />
                             <label>Username</label>
+                            <User size={18} className="text-gray-400 absolute top-1/2 right-0 -translate-y-1/2" />
+                        </div>
+
+                        <div className="input-box animation" style={{ '--li': 18.5, '--S': 1.5 } as React.CSSProperties}>
+                            <input
+                                type="tel"
+                                required
+                                maxLength={10}
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                            />
+                            <label>Mobile (10 Digits)</label>
                             <User size={18} className="text-gray-400 absolute top-1/2 right-0 -translate-y-1/2" />
                         </div>
 

@@ -35,7 +35,8 @@ import {
   ShieldCheck,
   RefreshCw,
   AlertCircle,
-  Palette
+  Palette,
+  Wrench
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAdminNotifications } from '../../hooks/useAdminNotifications';
@@ -303,7 +304,7 @@ export default function AdminDashboard() {
                 {[
                   { name: 'Control Center', path: '/admin/controls', icon: Zap },
                   { name: 'Customizer', path: '/admin/customizer', icon: Palette },
-                  { name: 'Rental Status', path: '/admin/rental-status', icon: Activity },
+                  { name: 'Repairs Matrix', path: '/admin/operations?tab=repairs', icon: Wrench },
                   { name: 'KYC Review', path: '/admin/kyc', icon: ShieldCheck },
                   { name: 'Rental Inventory', path: '/admin/inventory', icon: Box },
                 ].map((action) => (

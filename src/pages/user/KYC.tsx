@@ -47,7 +47,7 @@ export default function UserKYC() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0b0b0f] flex flex-col items-center justify-center gap-4">
+            <div className="min-h-dvh bg-[#0b0b0f] flex flex-col items-center justify-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[#8B5CF6]/20 border border-[#8B5CF6]/30 flex items-center justify-center animate-pulse">
                     <Loader2 className="text-[#8B5CF6] animate-spin" size={24} />
                 </div>
@@ -58,13 +58,13 @@ export default function UserKYC() {
 
     if (status) {
         return (
-            <div className="min-h-screen bg-[#0b0b0f] flex flex-col items-center justify-center p-6 text-center">
+            <div className="min-h-dvh bg-[#0b0b0f] flex flex-col items-center justify-center p-6 text-center">
                 <div className="w-20 h-20 bg-[#8B5CF6]/10 rounded-full flex items-center justify-center text-[#8B5CF6] mb-6 purple-glow">
                     <ShieldAlert size={40} />
                 </div>
                 <h1 className="text-2xl font-black text-white uppercase tracking-widest mb-2">Verification Active</h1>
                 <p className="text-gray-400 max-w-md text-sm leading-relaxed mb-8">
-                    Your account is currently in <span className="text-[#8B5CF6] font-bold">{status}</span> status. Our neural governance engine is reviewing your submission.
+                    Your account is currently in <span className="text-[#8B5CF6] font-bold">{status}</span> status. Our automated verification engine is reviewing your submission.
                 </p>
                 <button
                     onClick={() => navigate("/dashboard")}

@@ -11,7 +11,8 @@ import {
   Terminal,
   Settings,
   RefreshCw,
-  Maximize2
+  Maximize2,
+  FileText
 } from 'lucide-react';
 import { formatCurrency } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
@@ -19,12 +20,16 @@ import { db } from '../../lib/firebase';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { differenceInDays, parseISO } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { invoiceService } from '../../services/invoiceService';
+import InvoiceModal from '../../components/admin/InvoiceModal';
 
 export default function MyRentals() {
   const { user } = useAuth();
   const [rentals, setRentals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedAsset, setExpandedAsset] = useState<string | null>(null);
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [selectedRental, setSelectedRental] = useState<any>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -54,6 +59,11 @@ export default function MyRentals() {
 
     return () => unsubscribe();
   }, [user]);
+
+  const handleShowInvoice = (rental: any) => {
+    setSelectedRental(rental);
+    setShowInvoice(true);
+  };
 
   if (loading) {
     return (
@@ -177,8 +187,11 @@ export default function MyRentals() {
                       <button className="px-8 py-4 bg-gaming-accent text-black font-black uppercase text-xs tracking-[0.2em] rounded-xl hover:scale-105 transition-all shadow-[0_10px_30px_rgba(0,240,255,0.2)]">
                         EXTEND_MISSION
                       </button>
-                      <button className="px-8 py-4 bg-white/5 border border-white/10 text-white font-black uppercase text-xs tracking-[0.2em] rounded-xl hover:bg-white/10 transition-all">
-                        LOGISTICS_DATA
+                      <button 
+                        onClick={() => handleShowInvoice(rental)}
+                        className="px-8 py-4 bg-white/5 border border-white/10 text-white font-black uppercase text-xs tracking-[0.2em] rounded-xl hover:bg-white/10 transition-all flex items-center gap-2"
+                      >
+                        <FileText size={16} /> SECURE_INVOICE
                       </button>
                     </>
                   ) : (
@@ -271,6 +284,16 @@ export default function MyRentals() {
           </div>
         ))}
       </div>
+
+      {/* Invoice Generator Modal */}
+      <AnimatePresence>
+        {showInvoice && selectedRental && (
+          <InvoiceModal
+            data={invoiceService.formatRentalData(selectedRental)}
+            onClose={() => setShowInvoice(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

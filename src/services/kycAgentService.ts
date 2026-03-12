@@ -51,15 +51,16 @@ class KYCAgentService {
     private async biometricAgent(data: any): Promise<AgentFeedback> {
         await new Promise(r => setTimeout(r, 2000));
         
-        // Randomly simulate success/failure for the demo
+        const hasVideo = !!data.selfieVideoUrl;
+        const livenessPass = data.livenessCheck === 'PASSED';
         const matchScore = Math.floor(Math.random() * 40) + 60; // 60-100%
         
-        if (matchScore > 75) {
+        if (hasVideo && livenessPass && matchScore > 75) {
             return {
                 agentName: 'Biometric Analyst',
                 status: 'PASS',
                 message: `Facial match successful. Confidence: ${matchScore}%`,
-                details: 'Live selfie matches document photo. No spoofing detected.',
+                details: 'Live video liveness check PASSED. No spoofing detected in biometric stream.',
                 timestamp: new Date().toISOString()
             };
         }
@@ -67,8 +68,8 @@ class KYCAgentService {
         return {
             agentName: 'Biometric Analyst',
             status: 'WARNING',
-            message: `Facial match confidence low: ${matchScore}%`,
-            details: 'Manual verification recommended due to lighting or alignment.',
+            message: `Facial match confidence low or video missing: ${matchScore}%`,
+            details: 'Manual verification recommended. Ensure video quality and movement during check.',
             timestamp: new Date().toISOString()
         };
     }

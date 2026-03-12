@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useCustomizer, ThemePalette, LayoutSettings } from '../../context/CustomizerContext';
 import { 
   Palette, 
@@ -9,9 +9,10 @@ import {
   Save, 
   Eye, 
   EyeOff,
-  Maximize,
-  Grid,
-  Circle
+  Download,
+  Upload,
+  Code,
+  Sparkles
 } from 'lucide-react';
 
 const PRESET_PALETTES = [
@@ -25,6 +26,8 @@ const PRESET_PALETTES = [
       text: '#e0e0e0',
       muted: '#a0a0a0',
       border: '#2a2a2a',
+      headingFont: 'Inter',
+      bodyFont: 'Inter'
     }
   },
   {
@@ -37,6 +40,8 @@ const PRESET_PALETTES = [
       text: '#f8fafc',
       muted: '#94a3b8',
       border: '#1e1b4b',
+      headingFont: 'Inter',
+      bodyFont: 'Inter'
     }
   },
   {
@@ -49,6 +54,8 @@ const PRESET_PALETTES = [
       text: '#f1f5f9',
       muted: '#64748b',
       border: '#1e293b',
+      headingFont: 'Inter',
+      bodyFont: 'Inter'
     }
   },
   {
@@ -61,8 +68,21 @@ const PRESET_PALETTES = [
       text: '#fee2e2',
       muted: '#7f1d1d',
       border: '#450a0a',
+      headingFont: 'Inter',
+      bodyFont: 'Inter'
     }
   }
+];
+
+const GOOGLE_FONTS = [
+  'Inter',
+  'Outfit',
+  'Roboto',
+  'Poppins',
+  'Montserrat',
+  'Oswald',
+  'Space Grotesk',
+  'JetBrains Mono'
 ];
 
 export default function AdminCustomizer() {
@@ -75,8 +95,12 @@ export default function AdminCustomizer() {
     updateTheme, 
     updateLayout, 
     updateContent,
-    resetToDefault 
+    resetToDefault,
+    exportConfig,
+    importConfig
   } = useCustomizer();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleColorChange = (key: keyof ThemePalette, value: string) => {
     updateTheme({ [key]: value });
@@ -84,6 +108,26 @@ export default function AdminCustomizer() {
 
   const handleLayoutChange = (key: keyof LayoutSettings, value: any) => {
     updateLayout({ [key]: value });
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result;
+      if (typeof result === 'string') {
+        const success = importConfig(result);
+        if (success) {
+          alert("Configuration imported successfully!");
+        } else {
+          alert("Failed to import configuration. Invalid file format.");
+        }
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
@@ -94,10 +138,35 @@ export default function AdminCustomizer() {
           <p className="text-gaming-muted font-mono text-xs mt-1">Design & Content Orchestration Matrix</p>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 bg-white/5 p-1 rounded-xl border border-white/10 mr-2">
+            <button
+              onClick={exportConfig}
+              className="p-2 text-gaming-muted hover:text-white transition-colors"
+              title="Export Configuration"
+            >
+              <Download className="h-4 w-4" />
+            </button>
+            <div className="w-[1px] h-4 bg-white/20"></div>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2 text-gaming-muted hover:text-white transition-colors"
+              title="Import Configuration"
+            >
+              <Upload className="h-4 w-4" />
+            </button>
+            <input 
+              type="file" 
+              accept=".json" 
+              ref={fileInputRef} 
+              className="hidden" 
+              onChange={handleImport} 
+            />
+          </div>
+
           <button
             onClick={() => setEditMode(!isEditMode)}
-            className={`px-6 py-3 rounded-xl border transition-all flex items-center space-x-3 group ${isEditMode
+            className={`px-6 py-2.5 rounded-xl border transition-all flex items-center space-x-3 group ${isEditMode
               ? 'bg-gaming-accent text-black border-gaming-accent font-black shadow-[0_0_20px_rgba(0,240,255,0.3)]'
               : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
               }`}
@@ -110,7 +179,7 @@ export default function AdminCustomizer() {
           
           <button
             onClick={resetToDefault}
-            className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl hover:bg-red-500/20 transition-all"
+            className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl hover:bg-red-500/20 transition-all"
             title="Reset to Defaults"
           >
             <RotateCcw className="h-5 w-5" />
@@ -119,18 +188,18 @@ export default function AdminCustomizer() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Site Identity */}
+        
         <div className="bg-gaming-card border border-gaming-border rounded-3xl p-8 space-y-8 lg:col-span-2">
           <div className="flex items-center space-x-3 mb-2">
             <div className="p-2 bg-gaming-accent/10 rounded-lg">
               <Type className="h-5 w-5 text-gaming-accent" />
             </div>
-            <h2 className="text-xl font-bold text-white uppercase tracking-tight">Site Identity</h2>
+            <h2 className="text-xl font-bold text-white uppercase tracking-tight">Identity & Typography</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest text-gaming-muted">Site Display Name</label>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-3 md:col-span-2">
+              <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest">Site Display Name</label>
               <input
                 type="text"
                 value={content['global']?.['site_name'] || 'ConsoleZone'}
@@ -138,8 +207,8 @@ export default function AdminCustomizer() {
                 className="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-white focus:border-gaming-accent outline-none font-bold"
               />
             </div>
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest text-gaming-muted">Support Email</label>
+            <div className="space-y-3 md:col-span-2">
+              <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest">Support Email</label>
               <input
                 type="text"
                 value={content['global']?.['support_email'] || 'support@consolezone.com'}
@@ -147,10 +216,30 @@ export default function AdminCustomizer() {
                 className="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-white focus:border-gaming-accent outline-none font-mono"
               />
             </div>
+
+            <div className="space-y-3 md:col-span-2">
+              <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest">Heading Font</label>
+              <select
+                value={theme.headingFont}
+                onChange={(e) => updateTheme({ headingFont: e.target.value })}
+                className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:border-gaming-accent outline-none"
+              >
+                {GOOGLE_FONTS.map(font => <option key={font} value={font}>{font}</option>)}
+              </select>
+            </div>
+            <div className="space-y-3 md:col-span-2">
+              <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest">Body Font</label>
+              <select
+                value={theme.bodyFont}
+                onChange={(e) => updateTheme({ bodyFont: e.target.value })}
+                className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:border-gaming-accent outline-none"
+              >
+                {GOOGLE_FONTS.map(font => <option key={font} value={font}>{font}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Color Palette Controls */}
         <div className="bg-gaming-card border border-gaming-border rounded-3xl p-8 space-y-8">
           <div className="flex items-center space-x-3 mb-2">
             <div className="p-2 bg-gaming-accent/10 rounded-lg">
@@ -176,8 +265,8 @@ export default function AdminCustomizer() {
             ))}
           </div>
 
-          <div className="space-y-4 pt-4">
-            {Object.entries(theme).map(([key, value]) => (
+          <div className="space-y-4 pt-4 h-96 overflow-y-auto pr-2 custom-scrollbar">
+            {Object.entries(theme).filter(([key]) => !['headingFont', 'bodyFont'].includes(key)).map(([key, value]) => (
               <div key={key} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
                 <div>
                   <h4 className="text-xs font-bold text-white uppercase tracking-wider">{key} Color</h4>
@@ -186,7 +275,7 @@ export default function AdminCustomizer() {
                 <div className="relative">
                   <input
                     type="color"
-                    value={value}
+                    value={value as string}
                     onChange={(e) => handleColorChange(key as keyof ThemePalette, e.target.value)}
                     className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-none"
                   />
@@ -196,14 +285,13 @@ export default function AdminCustomizer() {
           </div>
         </div>
 
-        {/* Layout & Typography Controls */}
         <div className="space-y-8">
           <div className="bg-gaming-card border border-gaming-border rounded-3xl p-8 space-y-8">
             <div className="flex items-center space-x-3 mb-2">
               <div className="p-2 bg-gaming-accent/10 rounded-lg">
-                <Layout className="h-5 w-5 text-gaming-accent" />
+                <Sparkles className="h-5 w-5 text-gaming-accent" />
               </div>
-              <h2 className="text-xl font-bold text-white uppercase tracking-tight">Layout Matrix</h2>
+              <h2 className="text-xl font-bold text-white uppercase tracking-tight">Layout & Effects</h2>
             </div>
 
             <div className="space-y-6">
@@ -244,58 +332,61 @@ export default function AdminCustomizer() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest">Full Width Topbar</label>
-                  <button
-                    onClick={() => handleLayoutChange('fullWidthNavbar', !layout.fullWidthNavbar)}
-                    className={`w-12 h-6 rounded-full transition-all relative ${layout.fullWidthNavbar ? 'bg-gaming-accent' : 'bg-white/10'}`}
-                  >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${layout.fullWidthNavbar ? 'right-1' : 'left-1'}`} />
-                  </button>
+                  <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest">Glassmorphism Blur</label>
+                  <span className="text-[10px] font-mono text-gaming-accent bg-gaming-accent/10 px-2 py-0.5 rounded">{layout.glassmorphismBlur}</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="range"
+                    min="0"
+                    max="40"
+                    step="2"
+                    value={parseInt(layout.glassmorphismBlur)}
+                    onChange={(e) => handleLayoutChange('glassmorphismBlur', `${e.target.value}px`)}
+                    className="flex-grow accent-gaming-accent"
+                  />
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest">Grid Spacing</label>
-                  <span className="text-[10px] font-mono text-gaming-accent bg-gaming-accent/10 px-2 py-0.5 rounded">{layout.gridGap}</span>
+                  <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest">Shadow Intensity</label>
+                  <span className="text-[10px] font-mono text-gaming-accent bg-gaming-accent/10 px-2 py-0.5 rounded">{layout.shadowIntensity}</span>
                 </div>
                 <div className="flex items-center space-x-4">
                   <input
                     type="range"
-                    min="0.5"
-                    max="4"
-                    step="0.5"
-                    value={parseFloat(layout.gridGap)}
-                    onChange={(e) => handleLayoutChange('gridGap', `${e.target.value}rem`)}
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={parseFloat(layout.shadowIntensity)}
+                    onChange={(e) => handleLayoutChange('shadowIntensity', e.target.value)}
                     className="flex-grow accent-gaming-accent"
                   />
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Quick Info */}
-          <div className="bg-gradient-to-br from-gaming-accent/10 to-gaming-secondary/10 border border-gaming-accent/20 rounded-3xl p-8">
-            <h3 className="text-white font-bold mb-4 flex items-center gap-2 uppercase tracking-tighter">
-              <Type className="h-4 w-4 text-gaming-accent" />
-              Live Editing Enabled
-            </h3>
-            <p className="text-sm text-gaming-muted leading-relaxed">
-              When <span className="text-gaming-accent font-bold">Live Edit Mode</span> is active, you can click on any text or image on the site to edit it directly. Changes are saved instantly to your local profile.
-            </p>
-            <div className="mt-6 flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-[10px] font-mono text-gaming-accent">
-                <div className="w-2 h-2 rounded-full bg-gaming-accent animate-pulse" />
-                <span>SYNC_ACTIVE</span>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-gaming-muted uppercase tracking-widest">Animation Speed</label>
+                  <span className="text-[10px] font-mono text-gaming-accent bg-gaming-accent/10 px-2 py-0.5 rounded">{layout.animationSpeed}</span>
+                </div>
+                <select
+                  value={layout.animationSpeed}
+                  onChange={(e) => handleLayoutChange('animationSpeed', e.target.value)}
+                  className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:border-gaming-accent outline-none"
+                >
+                  <option value="0.15s">Fast (0.15s)</option>
+                  <option value="0.3s">Normal (0.3s)</option>
+                  <option value="0.5s">Slow (0.5s)</option>
+                  <option value="0s">Disabled (0s)</option>
+                </select>
               </div>
-              <div className="flex items-center space-x-2 text-[10px] font-mono text-gaming-muted uppercase">
-                <span>LOCAL_STORAGE_ENCRYPTED</span>
-              </div>
+
             </div>
           </div>
         </div>
 
-        {/* Page Content Management Matrix */}
         <div className="bg-gaming-card border border-gaming-border rounded-3xl p-8 space-y-8 lg:col-span-2">
           <div className="flex items-center space-x-3 mb-2">
             <div className="p-2 bg-gaming-accent/10 rounded-lg">
@@ -379,7 +470,6 @@ export default function AdminCustomizer() {
           </div>
         </div>
 
-        {/* Media & Assets Control */}
         <div className="bg-gaming-card border border-gaming-border rounded-3xl p-8 space-y-8 lg:col-span-2">
           <div className="flex items-center space-x-3 mb-2">
             <div className="p-2 bg-gaming-accent/10 rounded-lg">

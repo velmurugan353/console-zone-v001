@@ -52,19 +52,48 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gaming-bg flex items-center justify-center">
+      <div className="min-h-dvh bg-gaming-bg flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gaming-accent"></div>
       </div>
     );
   }
 
-  if (!user || !isAdmin) return null;
+  if (!user || !isAdmin) {
+    return (
+      <div className="min-h-dvh bg-[#050505] flex items-center justify-center p-4">
+        <div className="text-center space-y-6 p-8 bg-white/5 border border-white/10 rounded-3xl max-w-md mx-auto shadow-2xl">
+          <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto">
+            <ShieldCheck className="h-8 w-8 text-red-500" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-tight italic">Access <span className="text-red-500">Denied</span></h2>
+            <p className="text-gray-400 text-sm font-mono uppercase tracking-wider">Restricted Administrator Deployment Zone</p>
+          </div>
+          <div className="space-y-3">
+            <button 
+              onClick={() => navigate('/login')}
+              className="w-full py-4 bg-red-500 text-white font-black uppercase tracking-widest text-xs rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)] transition-all"
+            >
+              Authenticate Admin
+            </button>
+            <button 
+              onClick={() => navigate('/')}
+              className="w-full py-4 bg-white/5 text-gray-400 font-bold uppercase tracking-widest text-[10px] rounded-xl border border-white/10 hover:bg-white/10 transition-all"
+            >
+              Return to Surface
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const sidebarGroups = [
     {
       title: 'Dashboard',
       links: [
         { name: 'Overview', path: '/admin', icon: LayoutDashboard },
+        { name: 'Repair Matrix', path: '/admin/operations?tab=repairs', icon: Wrench },
         { name: 'Control Center', path: '/admin/controls', icon: Zap },
         { name: 'Analytics', path: '/admin/analytics', icon: Activity },
       ]
@@ -113,7 +142,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen flex bg-gaming-bg text-gaming-text font-sans overflow-x-hidden">
+    <div className="min-h-dvh flex bg-[#050505] text-gaming-text font-sans overflow-x-hidden relative admin-layout" style={{ zoom: '0.85' }}>
       {/* Mobile Mach Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-gaming-card border-b border-gaming-border z-50 flex items-center justify-between px-6">
         <Link to="/" className="flex items-center space-x-2">
@@ -139,10 +168,23 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </div>
       </div>
 
+      {/* Sidebar Backdrop - Mobile only */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar - Desktop & Tablet */}
       <aside className={cn(
-        "bg-gaming-card border-r border-gaming-border flex flex-col fixed h-full z-40 transition-all duration-500",
-        mode === 'phone' ? (isMobileMenuOpen ? 'w-full translate-x-0' : 'w-full -translate-x-full') : 
+        "bg-gaming-card border-r border-gaming-border flex flex-col fixed h-dvh z-50 transition-all duration-500",
+        mode === 'phone' ? (isMobileMenuOpen ? 'w-72 translate-x-0' : 'w-72 -translate-x-full') : 
         mode === 'tab' ? 'w-20 translate-x-0' : 'w-64 translate-x-0'
       )}>
         <div className={cn(
@@ -236,8 +278,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
       {/* Main Content */}
       <main className={cn(
-        "flex-grow p-4 md:p-8 transition-all duration-500 min-w-0",
-        mode === 'phone' ? 'ml-0 pt-20' : mode === 'tab' ? 'ml-20' : 'ml-64'
+        "flex-grow p-6 lg:p-10 transition-all duration-500 min-w-0",
+        mode === 'phone' ? 'ml-0 pt-24' : mode === 'tab' ? 'ml-20' : 'ml-64'
       )}>
         {/* Desktop Notification Trigger */}
         <div className="hidden md:flex fixed top-4 right-8 z-50">

@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 export default function FleetPage() {
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-6 lg:p-10 space-y-10">
+        <div className="space-y-10">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-2">

@@ -3,7 +3,7 @@ import { Gamepad2, Mail, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function ForgotPassword() {
   return (
-    <div className="min-h-screen bg-gaming-bg flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-dvh bg-gaming-bg flex items-center justify-center relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gaming-accent/20 rounded-full blur-[100px]" />
