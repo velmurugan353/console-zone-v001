@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { formatCurrency } from '../../lib/utils';
 import {
   Search,
@@ -304,7 +304,7 @@ export default function AdminOrders() {
 
   const renderSortIcon = (key: keyof Order | 'items_count') => {
     if (sortConfig?.key !== key) return <ChevronDown className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />;
-    return sortConfig.direction === 'asc' ? <ChevronUp className="h-3 w-3 text-[#A855F7]" /> : <ChevronDown className="h-3 w-3 text-[#A855F7]" />;
+    return sortConfig.direction === 'asc' ? <ChevronUp className="h-3 w-3 text-[#B000FF]" /> : <ChevronDown className="h-3 w-3 text-[#B000FF]" />;
   };
 
   const getStatusColor = (status: OrderStatus) => {
@@ -320,7 +320,7 @@ export default function AdminOrders() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#A855F7]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B000FF]"></div>
       </div>
     );
   }
@@ -329,9 +329,9 @@ export default function AdminOrders() {
     <div className="space-y-8">
       {/* Stats Matrix */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl relative overflow-hidden group">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Activity className="h-12 w-12 text-[#A855F7]" />
+            <Activity className="h-12 w-12 text-[#B000FF]" />
           </div>
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Total Revenue</p>
           <div className="flex items-end space-x-2">
@@ -342,21 +342,21 @@ export default function AdminOrders() {
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: '75%' }}
-              className="bg-[#A855F7] h-full shadow-[0_0_10px_#A855F7]"
+              className="bg-[#B000FF] h-full shadow-[0_0_10px_#B000FF]"
             />
           </div>
         </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Pending Orders</p>
           <p className="text-3xl font-bold text-amber-500 tracking-tighter">{stats.pending}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Awaiting Protocol</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Total Orders</p>
           <p className="text-3xl font-bold text-white tracking-tighter">{stats.total}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">System Matrix</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Avg Order Value</p>
           <p className="text-3xl font-bold text-blue-500 tracking-tighter">{formatCurrency(stats.avgOrder)}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Efficiency Index</p>
@@ -364,7 +364,7 @@ export default function AdminOrders() {
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-col md:flex-row gap-4 bg-[#0a0a0a] p-4 rounded-2xl border border-white/10">
+      <div className="flex flex-col md:flex-row gap-4 bg-[#080112] p-4 rounded-2xl border border-white/10">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <input
@@ -372,7 +372,7 @@ export default function AdminOrders() {
             placeholder="Search order matrix..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] w-full"
+            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#B000FF] w-full"
           />
         </div>
         <div className="flex items-center space-x-3">
@@ -380,7 +380,7 @@ export default function AdminOrders() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="bg-black border border-white/10 rounded-xl px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+            className="bg-black border border-white/10 rounded-xl px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -393,7 +393,7 @@ export default function AdminOrders() {
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="bg-black border border-white/10 rounded-xl px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+            className="bg-black border border-white/10 rounded-xl px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
           />
           <button
             onClick={handleExportManifest}
@@ -416,17 +416,17 @@ export default function AdminOrders() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="bg-[#A855F7]/10 border border-[#A855F7]/30 rounded-xl p-4 flex items-center justify-between"
+            className="bg-[#B000FF]/10 border border-[#B000FF]/30 rounded-xl p-4 flex items-center justify-between"
           >
             <div className="flex items-center space-x-4">
-              <span className="text-[10px] font-mono text-[#A855F7] uppercase font-bold tracking-widest">
+              <span className="text-[10px] font-mono text-[#B000FF] uppercase font-bold tracking-widest">
                 {selectedIds.length} Orders Selected
               </span>
-              <div className="h-4 w-px bg-[#A855F7]/30"></div>
+              <div className="h-4 w-px bg-[#B000FF]/30"></div>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => bulkUpdateStatus('processing')}
-                  className="px-3 py-1 bg-[#A855F7] text-black text-[9px] font-mono font-bold uppercase rounded hover:bg-[#9333EA] transition-all"
+                  className="px-3 py-1 bg-[#B000FF] text-black text-[9px] font-mono font-bold uppercase rounded hover:bg-[#9333EA] transition-all"
                 >
                   Process
                 </button>
@@ -462,7 +462,7 @@ export default function AdminOrders() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
+              className="bg-[#080112] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
             >
               <div className="p-6 border-b border-white/10 bg-white/[0.02]">
                 <div className="flex items-center space-x-2 mb-2">
@@ -480,7 +480,7 @@ export default function AdminOrders() {
                   <p className="text-[9px] font-mono text-gray-600 uppercase tracking-widest mb-2">Affected Order Matrix</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedIds.slice(0, 5).map(id => (
-                      <span key={id} className="text-[10px] font-mono text-[#A855F7] bg-[#A855F7]/10 px-2 py-0.5 rounded border border-[#A855F7]/20">
+                      <span key={id} className="text-[10px] font-mono text-[#B000FF] bg-[#B000FF]/10 px-2 py-0.5 rounded border border-[#B000FF]/20">
                         {id}
                       </span>
                     ))}
@@ -505,7 +505,7 @@ export default function AdminOrders() {
                 </button>
                 <button
                   onClick={confirmBulkAction}
-                  className="px-6 py-2 bg-[#A855F7] text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                  className="px-6 py-2 bg-[#B000FF] text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]"
                 >
                   Execute Protocol
                 </button>
@@ -516,7 +516,7 @@ export default function AdminOrders() {
       </AnimatePresence>
 
       {/* Table Matrix */}
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="bg-[#080112] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-white/[0.02] text-gray-500 text-[10px] font-mono uppercase tracking-widest">
@@ -526,7 +526,7 @@ export default function AdminOrders() {
                     type="checkbox"
                     checked={selectedIds.length === filteredOrders.length && filteredOrders.length > 0}
                     onChange={toggleAll}
-                    className="rounded border-white/10 bg-black text-[#A855F7] focus:ring-[#A855F7]"
+                    className="rounded border-white/10 bg-black text-[#B000FF] focus:ring-[#B000FF]"
                   />
                 </th>
                 <th className="px-6 py-4 cursor-pointer hover:text-white transition-colors group" onClick={() => requestSort('id')}>
@@ -570,16 +570,16 @@ export default function AdminOrders() {
             </thead>
             <tbody className="divide-y divide-white/5 text-xs font-mono text-gray-400">
               {sortedOrders.map((order) => (
-                <tr key={order.id} className={`hover:bg-white/[0.01] transition-colors group ${selectedIds.includes(order.id) ? 'bg-[#A855F7]/5' : ''}`}>
+                <tr key={order.id} className={`hover:bg-white/[0.01] transition-colors group ${selectedIds.includes(order.id) ? 'bg-[#B000FF]/5' : ''}`}>
                   <td className="px-6 py-4">
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(order.id)}
                       onChange={() => toggleSelection(order.id)}
-                      className="rounded border-white/10 bg-black text-[#A855F7] focus:ring-[#A855F7]"
+                      className="rounded border-white/10 bg-black text-[#B000FF] focus:ring-[#B000FF]"
                     />
                   </td>
-                  <td className="px-6 py-4 text-[#A855F7] font-bold tracking-tighter">[{order.id}]</td>
+                  <td className="px-6 py-4 text-[#B000FF] font-bold tracking-tighter">[{order.id}]</td>
                   <td className="px-6 py-4">
                     <div className="text-white uppercase font-bold tracking-tight">{order.customer}</div>
                     <div className="text-[10px] text-gray-600">{order.paymentMethod}</div>
@@ -657,22 +657,22 @@ export default function AdminOrders() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[] overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+              className="bg-[#080112] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[] overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
             >
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
                 <div>
                   <div className="flex items-center space-x-2 mb-1">
-                    <ShieldCheck className="h-3 w-3 text-[#A855F7]" />
-                    <span className="text-[10px] font-mono text-[#A855F7] uppercase tracking-widest">Order_Protocol_Active</span>
+                    <ShieldCheck className="h-3 w-3 text-[#B000FF]" />
+                    <span className="text-[10px] font-mono text-[#B000FF] uppercase tracking-widest">Order_Protocol_Active</span>
                   </div>
                   <h2 className="text-2xl font-bold text-white tracking-tighter uppercase italic">
-                    Order <span className="text-[#A855F7]">[{selectedOrder.id}]</span>
+                    Order <span className="text-[#B000FF]">[{selectedOrder.id}]</span>
                   </h2>
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={handleEditToggle}
-                    className={`p-2 rounded-full transition-colors ${isEditing ? 'bg-[#A855F7]/20 text-[#A855F7]' : 'hover:bg-white/5 text-gray-500 hover:text-white'}`}
+                    className={`p-2 rounded-full transition-colors ${isEditing ? 'bg-[#B000FF]/20 text-[#B000FF]' : 'hover:bg-white/5 text-gray-500 hover:text-white'}`}
                     title={isEditing ? "Save Changes" : "Edit Order"}
                   >
                     {isEditing ? <Save className="h-5 w-5" /> : <Edit2 className="h-5 w-5" />}
@@ -723,7 +723,7 @@ export default function AdminOrders() {
                       {selectedOrder.status === 'pending' && (
                         <button
                           onClick={() => handleStatusChange(selectedOrder.id, 'processing')}
-                          className="px-4 py-2 bg-[#A855F7] text-black rounded-xl font-bold hover:bg-[#9333EA] transition-all text-[10px] font-mono uppercase tracking-widest"
+                          className="px-4 py-2 bg-[#B000FF] text-black rounded-xl font-bold hover:bg-[#9333EA] transition-all text-[10px] font-mono uppercase tracking-widest"
                         >
                           Initiate Processing
                         </button>
@@ -735,7 +735,7 @@ export default function AdminOrders() {
                             placeholder="Tracking Number"
                             value={shippingTrackingNumber}
                             onChange={(e) => setShippingTrackingNumber(e.target.value)}
-                            className="bg-black border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-[#A855F7]"
+                            className="bg-black border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-[#B000FF]"
                           />
                           <button
                             onClick={() => {
@@ -773,13 +773,13 @@ export default function AdminOrders() {
                         type="text"
                         value={editForm.trackingNumber || ''}
                         onChange={(e) => handleEditChange('trackingNumber', e.target.value)}
-                        className="w-full bg-black border border-white/10 rounded px-2 py-1 text-white font-mono text-sm focus:outline-none focus:border-[#A855F7]"
+                        className="w-full bg-black border border-white/10 rounded px-2 py-1 text-white font-mono text-sm focus:outline-none focus:border-[#B000FF]"
                         placeholder="Enter tracking number"
                       />
                     ) : selectedOrder.trackingNumber ? (
                       <div className="flex items-center justify-between">
                         <span className="text-white font-mono text-sm font-bold">{selectedOrder.trackingNumber}</span>
-                        <ExternalLink className="h-3 w-3 text-[#A855F7] cursor-pointer" />
+                        <ExternalLink className="h-3 w-3 text-[#B000FF] cursor-pointer" />
                       </div>
                     ) : (
                       <span className="text-gray-600 font-mono text-[10px] italic">No Tracking Assigned</span>
@@ -792,7 +792,7 @@ export default function AdminOrders() {
                   <div className="space-y-6">
                     <div className="space-y-4">
                       <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                        <User className="mr-2 h-3 w-3 text-[#A855F7]" /> Customer_Identity
+                        <User className="mr-2 h-3 w-3 text-[#B000FF]" /> Customer_Identity
                       </h3>
                       <div className="bg-white/[0.02] p-6 rounded-2xl border border-white/5 space-y-3">
                         <div className="flex justify-between items-center">
@@ -801,7 +801,7 @@ export default function AdminOrders() {
                               type="text"
                               value={editForm.customer || ''}
                               onChange={(e) => handleEditChange('customer', e.target.value)}
-                              className="w-full bg-black border border-white/10 rounded px-2 py-1 text-white font-bold text-lg focus:outline-none focus:border-[#A855F7]"
+                              className="w-full bg-black border border-white/10 rounded px-2 py-1 text-white font-bold text-lg focus:outline-none focus:border-[#B000FF]"
                               placeholder="Customer Name"
                             />
                           ) : (
@@ -814,7 +814,7 @@ export default function AdminOrders() {
                             type="email"
                             value={editForm.email || ''}
                             onChange={(e) => handleEditChange('email', e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded px-2 py-1 text-gray-400 font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                            className="w-full bg-black border border-white/10 rounded px-2 py-1 text-gray-400 font-mono text-xs focus:outline-none focus:border-[#B000FF]"
                             placeholder="Email Address"
                           />
                         ) : (
@@ -827,7 +827,7 @@ export default function AdminOrders() {
                             value={editForm.phone || ''}
                             onChange={(e) => handleEditChange('phone', e.target.value.replace(/\D/g, ''))}
                             className={`w-full bg-black border rounded px-2 py-1 font-mono text-xs focus:outline-none transition-colors ${
-                              (editForm.phone?.length === 10) ? 'border-emerald-500/50 text-emerald-500' : 'border-white/10 text-gray-400 focus:border-[#A855F7]'
+                              (editForm.phone?.length === 10) ? 'border-emerald-500/50 text-emerald-500' : 'border-white/10 text-gray-400 focus:border-[#B000FF]'
                             }`}
                             placeholder="10-Digit Mobile"
                           />
@@ -835,21 +835,21 @@ export default function AdminOrders() {
                           <p className="text-gray-500 font-mono text-xs">{selectedOrder.phone}</p>
                         )}
                         <div className="pt-4 border-t border-white/5 flex items-center text-gray-400 text-[10px] font-mono uppercase">
-                          <CreditCard className="mr-2 h-3 w-3 text-[#A855F7]" /> {selectedOrder.paymentMethod}
+                          <CreditCard className="mr-2 h-3 w-3 text-[#B000FF]" /> {selectedOrder.paymentMethod}
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-4">
                       <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                        <MapPin className="mr-2 h-3 w-3 text-[#A855F7]" /> Distribution_Node
+                        <MapPin className="mr-2 h-3 w-3 text-[#B000FF]" /> Distribution_Node
                       </h3>
                       <div className="bg-white/[0.02] p-6 rounded-2xl border border-white/5">
                         {isEditing ? (
                           <textarea
                             value={editForm.shippingAddress || ''}
                             onChange={(e) => handleEditChange('shippingAddress', e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded px-2 py-1 text-gray-400 font-mono text-xs focus:outline-none focus:border-[#A855F7] min-h-[80px] resize-none"
+                            className="w-full bg-black border border-white/10 rounded px-2 py-1 text-gray-400 font-mono text-xs focus:outline-none focus:border-[#B000FF] min-h-[80px] resize-none"
                             placeholder="Shipping Address"
                           />
                         ) : (
@@ -865,7 +865,7 @@ export default function AdminOrders() {
                   <div className="space-y-6">
                     <div className="space-y-4">
                       <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                        <Clock className="mr-2 h-3 w-3 text-[#A855F7]" /> Event_Log
+                        <Clock className="mr-2 h-3 w-3 text-[#B000FF]" /> Event_Log
                       </h3>
                       <div className="bg-white/[0.02] p-6 rounded-2xl border border-white/5 space-y-6">
                         {selectedOrder.timeline.map((event, idx) => (
@@ -873,7 +873,7 @@ export default function AdminOrders() {
                             {idx !== selectedOrder.timeline.length - 1 && (
                               <div className="absolute left-[5px] top-4 bottom-[-24px] w-px bg-white/10"></div>
                             )}
-                            <div className={`w-2.5 h-2.5 rounded-full mt-1 z-10 ${idx === selectedOrder.timeline.length - 1 ? 'bg-[#A855F7] shadow-[0_0_8px_#A855F7]' : 'bg-gray-700'
+                            <div className={`w-2.5 h-2.5 rounded-full mt-1 z-10 ${idx === selectedOrder.timeline.length - 1 ? 'bg-[#B000FF] shadow-[0_0_8px_#B000FF]' : 'bg-gray-700'
                               }`}></div>
                             <div className="space-y-1">
                               <p className="text-white text-[10px] font-bold uppercase tracking-tight">{event.note}</p>
@@ -886,11 +886,11 @@ export default function AdminOrders() {
 
                     <div className="space-y-4">
                       <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                        <ClipboardList className="mr-2 h-3 w-3 text-[#A855F7]" /> Internal_Notes
+                        <ClipboardList className="mr-2 h-3 w-3 text-[#B000FF]" /> Internal_Notes
                       </h3>
                       <textarea
                         placeholder="Add internal protocol notes..."
-                        className="w-full bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-[10px] font-mono text-gray-400 focus:outline-none focus:border-[#A855F7]/30 min-h-[100px] resize-none"
+                        className="w-full bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-[10px] font-mono text-gray-400 focus:outline-none focus:border-[#B000FF]/30 min-h-[100px] resize-none"
                       />
                     </div>
                   </div>
@@ -899,7 +899,7 @@ export default function AdminOrders() {
                 {/* Payload Manifest */}
                 <div className="space-y-4">
                   <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                    <Package className="mr-2 h-3 w-3 text-[#A855F7]" /> Payload_Manifest
+                    <Package className="mr-2 h-3 w-3 text-[#B000FF]" /> Payload_Manifest
                   </h3>
                   <div className="bg-white/[0.02] rounded-2xl border border-white/5 overflow-hidden">
                     <table className="w-full text-left">
@@ -922,7 +922,7 @@ export default function AdminOrders() {
                               </div>
                             </td>
                             <td className="px-6 py-4">
-                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase tracking-tighter ${item.type === 'rent' ? 'text-blue-400 border-blue-500/20 bg-blue-500/10' : 'text-[#A855F7] border-[#A855F7]/20 bg-[#A855F7]/10'
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase tracking-tighter ${item.type === 'rent' ? 'text-blue-400 border-blue-500/20 bg-blue-500/10' : 'text-[#B000FF] border-[#B000FF]/20 bg-[#B000FF]/10'
                                 }`}>
                                 {item.type}
                                 {item.type === 'rent' && ` [${item.rentalDuration}D]`}
@@ -947,7 +947,7 @@ export default function AdminOrders() {
                         </tr>
                         <tr className="border-t border-white/10">
                           <td colSpan={4} className="px-6 py-4 text-right text-white font-bold uppercase tracking-widest text-[10px]">Total_Valuation</td>
-                          <td className="px-6 py-4 text-right text-[#A855F7] text-lg font-bold tracking-tighter">{formatCurrency(selectedOrder.total)}</td>
+                          <td className="px-6 py-4 text-right text-[#B000FF] text-lg font-bold tracking-tighter">{formatCurrency(selectedOrder.total)}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -958,14 +958,14 @@ export default function AdminOrders() {
               <div className="p-6 bg-white/[0.02] border-t border-white/10 flex justify-end space-x-3">
                 <button
                   onClick={() => setShowInvoice(true)}
-                  className="px-6 py-2 bg-white/5 text-[#A855F7] rounded-xl font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-colors border border-[#A855F7]/20 flex items-center gap-2"
+                  className="px-6 py-2 bg-white/5 text-[#B000FF] rounded-xl font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-colors border border-[#B000FF]/20 flex items-center gap-2"
                 >
                   <Printer size={12} />
                   Generate Invoice
                 </button>
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="px-6 py-2 bg-[#A855F7] text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] transition-all"
+                  className="px-6 py-2 bg-[#B000FF] text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] transition-all"
                 >
                   Close Matrix
                 </button>
@@ -987,3 +987,4 @@ export default function AdminOrders() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ShieldCheck, FileText, CheckCircle2, XCircle, Clock,
@@ -73,10 +73,10 @@ export default function AdminKYC() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-8">
                 <div>
                     <div className="flex items-center space-x-2 mb-2">
-                        <Terminal className="h-3 w-3 text-[#A855F7] animate-pulse" />
-                        <span className="text-[10px] font-mono text-[#A855F7] uppercase tracking-[0.2em]">Security Protocol // KYC Terminal</span>
+                        <Terminal className="h-3 w-3 text-[#B000FF] animate-pulse" />
+                        <span className="text-[10px] font-mono text-[#B000FF] uppercase tracking-[0.2em]">Security Protocol // KYC Terminal</span>
                     </div>
-                    <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Agent <span className="text-[#A855F7]">Clearance</span></h1>
+                    <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Agent <span className="text-[#B000FF]">Clearance</span></h1>
                     <p className="text-gray-500 font-mono text-xs mt-1">Automated Identity Verification & Document Integrity Matrix</p>
                 </div>
 
@@ -94,9 +94,9 @@ export default function AdminKYC() {
                     { label: 'Total Requests', value: documents.length, icon: FileText, color: 'text-white' },
                     { label: 'Auto Approved', value: documents.filter(d => d.status === 'APPROVED').length, icon: CheckCircle2, color: 'text-emerald-500' },
                     { label: 'Manual Review', value: documents.filter(d => d.status === 'MANUAL_REVIEW').length, icon: AlertTriangle, color: 'text-amber-500' },
-                    { label: 'Avg Trust Score', value: `${Math.round(documents.reduce((acc, d) => acc + (d.trustScore || 0), 0) / (documents.length || 1))}%`, icon: Zap, color: 'text-[#A855F7]' }
+                    { label: 'Avg Trust Score', value: `${Math.round(documents.reduce((acc, d) => acc + (d.trustScore || 0), 0) / (documents.length || 1))}%`, icon: Zap, color: 'text-[#B000FF]' }
                 ].map((stat, i) => (
-                    <div key={i} className="bg-[#0a0a0a] border border-white/5 p-4 rounded-xl flex items-center justify-between">
+                    <div key={i} className="bg-[#080112] border border-white/5 p-4 rounded-xl flex items-center justify-between">
                         <div>
                             <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">{stat.label}</p>
                             <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
@@ -115,7 +115,7 @@ export default function AdminKYC() {
                         placeholder="Search by name or UUID..."
                         value={searchQuery}
                         onChange={(e) => setSearchSearchQuery(e.target.value)}
-                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg py-3 pl-12 pr-4 text-sm focus:border-[#A855F7]/50 transition-all outline-none"
+                        className="w-full bg-[#080112] border border-white/10 rounded-lg py-3 pl-12 pr-4 text-sm focus:border-[#B000FF]/50 transition-all outline-none"
                     />
                 </div>
                 <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
@@ -124,8 +124,8 @@ export default function AdminKYC() {
                             key={f}
                             onClick={() => setFilter(f as any)}
                             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap ${filter === f
-                                ? 'bg-[#A855F7] text-white border-[#A855F7]'
-                                : 'bg-[#0a0a0a] text-gray-500 border-white/10 hover:border-white/20'
+                                ? 'bg-[#B000FF] text-white border-[#B000FF]'
+                                : 'bg-[#080112] text-gray-500 border-white/10 hover:border-white/20'
                                 }`}
                         >
                             {f}
@@ -141,7 +141,7 @@ export default function AdminKYC() {
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`bg-[#0a0a0a] border transition-all duration-300 rounded-xl overflow-hidden ${expandedId === docItem.id ? 'border-[#A855F7]/50 shadow-[0_0_30px_rgba(168,85,247,0.1)]' : 'border-white/5 hover:border-white/10'}`}
+                            className={`bg-[#080112] border transition-all duration-300 rounded-xl overflow-hidden ${expandedId === docItem.id ? 'border-[#B000FF]/50 shadow-[0_0_30px_rgba(168,85,247,0.1)]' : 'border-white/5 hover:border-white/10'}`}
                         >
                             <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div className="flex items-center gap-6 flex-1">
@@ -162,12 +162,12 @@ export default function AdminKYC() {
                                             <span className="text-[9px] font-mono text-gray-600 px-2 py-0.5 bg-white/5 rounded">ID: {docItem.id.substring(0, 8)}</span>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-gray-500">
-                                            <span className="flex items-center gap-1 text-[#A855F7]">
+                                            <span className="flex items-center gap-1 text-[#B000FF]">
                                                 <Fingerprint size={12} /> {docItem.drivingLicenseNumber}
                                             </span>
-                                            <span>•</span>
+                                            <span>â€¢</span>
                                             <span>SUBMITTED: {new Date(docItem.submittedAt || '').toLocaleDateString()}</span>
-                                            <span>•</span>
+                                            <span>â€¢</span>
                                             <span className={`px-2 py-0.5 rounded-full border ${getStatusColor(docItem.status || '')}`}>{docItem.status}</span>
                                         </div>
                                     </div>
@@ -183,7 +183,7 @@ export default function AdminKYC() {
                                     <button
                                         onClick={() => handleAction(docItem.id, 'MANUAL_REVIEW')}
                                         disabled={docItem.status === 'MANUAL_REVIEW'}
-                                        className="flex items-center gap-2 px-4 py-2.5 bg-[#A855F7]/10 text-[#A855F7] rounded-xl border border-[#A855F7]/20 hover:bg-[#A855F7] hover:text-white transition-all disabled:opacity-30 text-[10px] font-black uppercase tracking-widest"
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-[#B000FF]/10 text-[#B000FF] rounded-xl border border-[#B000FF]/20 hover:bg-[#B000FF] hover:text-white transition-all disabled:opacity-30 text-[10px] font-black uppercase tracking-widest"
                                         title="Mark for Manual Review"
                                     >
                                         <ShieldCheck size={16} />
@@ -254,14 +254,14 @@ export default function AdminKYC() {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <p className="text-[8px] font-mono text-gray-600 uppercase text-center">Bio-Video Sync</p>
-                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-[#A855F7]/30 overflow-hidden group cursor-pointer relative flex items-center justify-center">
+                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-[#B000FF]/30 overflow-hidden group cursor-pointer relative flex items-center justify-center">
                                                             {docItem.selfieVideoUrl === 'MANUAL_ENTRY' ? (
                                                                 <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Manual<br/>Entry</span>
                                                             ) : docItem.selfieVideoUrl ? (
                                                                 <>
                                                                     <div className="text-center">
-                                                                        <Video size={20} className="text-[#A855F7] mx-auto mb-1" />
-                                                                        <p className="text-[7px] font-black text-[#A855F7] uppercase">Liveness Video</p>
+                                                                        <Video size={20} className="text-[#B000FF] mx-auto mb-1" />
+                                                                        <p className="text-[7px] font-black text-[#B000FF] uppercase">Liveness Video</p>
                                                                     </div>
                                                                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
                                                                         <Eye size={14} />
@@ -335,7 +335,7 @@ export default function AdminKYC() {
                 ))}
 
                 {filteredDocs.length === 0 && (
-                    <div className="bg-[#0a0a0a] border border-dashed border-white/10 rounded-2xl p-20 text-center">
+                    <div className="bg-[#080112] border border-dashed border-white/10 rounded-2xl p-20 text-center">
                         <Terminal className="mx-auto text-gray-800 mb-4 h-12 w-12" />
                         <h3 className="text-white font-bold text-lg mb-1 italic uppercase tracking-tighter">No Protocol Records Found</h3>
                         <p className="text-gray-600 text-xs font-mono">The matrix is currently empty for the selected filters.</p>
@@ -366,3 +366,4 @@ function User({ className }: { className?: string }) {
         </svg>
     );
 }
+

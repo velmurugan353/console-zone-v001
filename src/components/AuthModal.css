@@ -1,4 +1,4 @@
-/* Scoped CSS specific to Auth modal to map to provided logic */
+﻿/* Scoped CSS specific to Auth modal to map to provided logic */
 .auth-wrapper {
   /* Provide basic font settings globally inside wrapper */
   font-family: 'Poppins', sans-serif;
@@ -9,11 +9,11 @@
   position: relative;
   width: 750px;
   height: 600px;
-  border: 2px solid #A855F7;
-  box-shadow: 0 0 25px #A855F7;
+  border: 2px solid #B000FF;
+  box-shadow: 0 0 25px #B000FF;
   overflow: hidden;
   border-radius: 12px;
-  background: #0a0a0a;
+  background: #080112;
 }
 
 /* Mobile Optimizations */
@@ -131,7 +131,7 @@
 
 .auth-wrapper .input-box input:focus,
 .auth-wrapper .input-box input:valid {
-  border-bottom: 2px solid #A855F7;
+  border-bottom: 2px solid #B000FF;
 }
 
 .auth-wrapper .input-box label {
@@ -148,7 +148,7 @@
 .auth-wrapper .input-box input:focus~label,
 .auth-wrapper .input-box input:valid~label {
   top: -5px;
-  color: #A855F7;
+  color: #B000FF;
 }
 
 .auth-wrapper .input-box svg {
@@ -157,7 +157,7 @@
 
 .auth-wrapper .input-box input:focus~svg,
 .auth-wrapper .input-box input:valid~svg {
-  color: #A855F7;
+  color: #B000FF;
 }
 
 .auth-wrapper .auth-btn {
@@ -169,7 +169,7 @@
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
-  border: 2px solid #A855F7;
+  border: 2px solid #B000FF;
   overflow: hidden;
   z-index: 1;
 }
@@ -179,7 +179,7 @@
   position: absolute;
   height: 300%;
   width: 100%;
-  background: linear-gradient(#0a0a0a, #A855F7, #0a0a0a, #A855F7);
+  background: linear-gradient(#080112, #B000FF, #080112, #B000FF);
   top: -100%;
   left: 0;
   z-index: -1;
@@ -265,7 +265,7 @@
   top: -5px;
   height: 700px;
   width: 850px;
-  background: linear-gradient(45deg, #0a0a0a, #A855F7);
+  background: linear-gradient(45deg, #080112, #B000FF);
   transform: rotate(10deg) skewY(40deg);
   transform-origin: bottom right;
   transition: 1.5s ease;
@@ -283,8 +283,8 @@
   top: 100%;
   height: 700px;
   width: 850px;
-  background: #0a0a0a;
-  border-top: 3px solid #A855F7;
+  background: #080112;
+  border-top: 3px solid #B000FF;
   transform: rotate(0deg) skewY(0deg);
   transform-origin: bottom left;
   transition: 1.5s ease;

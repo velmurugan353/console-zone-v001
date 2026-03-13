@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import { EditableText, EditableImage } from "../Editable";
 
 interface PageHeroProps {
@@ -26,7 +26,7 @@ export default function PageHero({ title, subtitle, images = [], height = "60vh"
           alt={title}
           className="w-full h-full object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080112] via-transparent to-transparent" />
         <div className="absolute inset-0 bg-black/40" />
       </div>
 
@@ -49,3 +49,4 @@ export default function PageHero({ title, subtitle, images = [], height = "60vh"
     </div>
   );
 }
+

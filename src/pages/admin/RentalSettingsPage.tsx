@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import {
@@ -56,13 +56,13 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
             {!hideHeader && (
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black italic tracking-tighter uppercase">Rental <span className="text-[#A855F7]">Management</span></h1>
+                        <h1 className="text-3xl font-black italic tracking-tighter uppercase">Rental <span className="text-[#B000FF]">Management</span></h1>
                         <p className="text-gray-400 text-sm mt-1">Configure console rates, features, and controller pricing.</p>
                     </div>
                     <button
                         id="save-rental-settings"
                         onClick={handleSaveSettings}
-                        className="px-6 py-3 rounded-xl bg-white text-black font-bold uppercase tracking-widest hover:bg-[#A855F7] hover:text-white transition-all flex items-center gap-2"
+                        className="px-6 py-3 rounded-xl bg-white text-black font-bold uppercase tracking-widest hover:bg-[#B000FF] hover:text-white transition-all flex items-center gap-2"
                     >
                         <Save size={18} />
                         Save Changes
@@ -75,7 +75,7 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
                     <button
                         id="save-rental-settings"
                         onClick={handleSaveSettings}
-                        className="px-6 py-3 rounded-xl bg-[#A855F7] text-white font-bold uppercase tracking-widest hover:bg-[#9333EA] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+                        className="px-6 py-3 rounded-xl bg-[#B000FF] text-white font-bold uppercase tracking-widest hover:bg-[#9333EA] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
                     >
                         <Save size={18} />
                         Save All Catalog Changes
@@ -85,7 +85,7 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
 
             <div className="space-y-6">
                 {/* Controller Pricing Settings */}
-                <ControlSection title="Controller Configuration" icon={<Gamepad2 className="text-[#A855F7]" size={20} />}>
+                <ControlSection title="Controller Configuration" icon={<Gamepad2 className="text-[#B000FF]" size={20} />}>
                     <div className="space-y-6">
                         {/* Max Quantity */}
                         <div>
@@ -97,13 +97,13 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
                                     max="10"
                                     value={controllerSettings.maxQuantity}
                                     onChange={(e) => setControllerSettings({ ...controllerSettings, maxQuantity: Number(e.target.value) })}
-                                    className="w-24 bg-white/5 border border-white/10 rounded-xl p-3 text-white text-center font-bold outline-none focus:border-[#A855F7]"
+                                    className="w-24 bg-white/5 border border-white/10 rounded-xl p-3 text-white text-center font-bold outline-none focus:border-[#B000FF]"
                                 />
                                 <p className="text-xs text-gray-400">Customers can select up to this many controllers</p>
 
                                 <button
                                     onClick={handleResetControllerSettings}
-                                    className="ml-auto text-xs text-gray-400 hover:text-[#A855F7] transition-colors flex items-center gap-1"
+                                    className="ml-auto text-xs text-gray-400 hover:text-[#B000FF] transition-colors flex items-center gap-1"
                                 >
                                     <RefreshCw size={12} />
                                     Reset Defaults
@@ -133,7 +133,7 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
                                                             [platform]: { ...controllerSettings.pricing[platform], [plan]: Number(e.target.value) }
                                                         }
                                                     })}
-                                                    className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white text-sm outline-none focus:border-[#A855F7]"
+                                                    className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white text-sm outline-none focus:border-[#B000FF]"
                                                 />
                                             </div>
                                         ))}
@@ -145,13 +145,13 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
                 </ControlSection>
 
                 {/* Catalog Configuration */}
-                <ControlSection title="Catalog Configuration" icon={<Tag className="text-[#A855F7]" size={20} />}>
+                <ControlSection title="Catalog Configuration" icon={<Tag className="text-[#B000FF]" size={20} />}>
                     <div>
                         <div className="flex items-center justify-between mb-4">
                             <label className="text-[10px] text-gray-500 uppercase font-bold">Base Console Rates & Features</label>
                             <button
                                 onClick={handleResetCatalogSettings}
-                                className="text-xs text-gray-400 hover:text-[#A855F7] transition-colors flex items-center gap-1"
+                                className="text-xs text-gray-400 hover:text-[#B000FF] transition-colors flex items-center gap-1"
                             >
                                 <RefreshCw size={12} />
                                 Reset Defaults
@@ -162,7 +162,7 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
                                 <div key={catName} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
                                     <div className="bg-white/[0.03] p-4 border-b border-white/10 flex items-center justify-between">
                                         <h4 className="text-white font-black text-sm uppercase tracking-widest flex items-center gap-2 italic">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#B000FF]" />
                                             {catName}
                                         </h4>
                                         <div className="flex items-center gap-6">
@@ -193,7 +193,7 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
                                                             [catName]: { ...prev[catName], totalStock: newVal }
                                                         }));
                                                     }}
-                                                    className="w-16 bg-black/40 border border-white/10 rounded px-2 py-0.5 text-[#A855F7] text-[10px] font-mono outline-none focus:border-[#A855F7] text-right"
+                                                    className="w-16 bg-black/40 border border-white/10 rounded px-2 py-0.5 text-[#B000FF] text-[10px] font-mono outline-none focus:border-[#B000FF] text-right"
                                                 />
                                             </div>
                                         </div>
@@ -206,7 +206,7 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
                                             return (
                                                 <div key={plan} className="bg-black/20 p-4 rounded-xl border border-white/5 space-y-4">
                                                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                                        <label className="text-[10px] text-[#A855F7] uppercase font-black tracking-tighter">{plan} Protocol</label>
+                                                        <label className="text-[10px] text-[#B000FF] uppercase font-black tracking-tighter">{plan} Protocol</label>
                                                         <div className="flex items-center gap-1">
                                                             <span className="text-[9px] text-gray-500 font-mono italic">Rate:</span>
                                                             <input
@@ -225,7 +225,7 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
                                                                         }
                                                                     }));
                                                                 }}
-                                                                className="w-20 bg-transparent text-white text-xs font-black font-mono outline-none focus:text-[#A855F7] text-right"
+                                                                className="w-20 bg-transparent text-white text-xs font-black font-mono outline-none focus:text-[#B000FF] text-right"
                                                             />
                                                         </div>
                                                     </div>
@@ -247,7 +247,7 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
                                                                     }
                                                                 }));
                                                             }}
-                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-[10px] outline-none focus:border-[#A855F7] resize-none font-mono leading-relaxed"
+                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-[10px] outline-none focus:border-[#B000FF] resize-none font-mono leading-relaxed"
                                                             placeholder="Enter one feature per line..."
                                                         />
                                                     </div>
@@ -267,7 +267,7 @@ export default function RentalSettingsPage({ hideHeader = false }: { hideHeader?
 
 function ControlSection({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) {
     return (
-        <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 relative overflow-hidden">
+        <div className="bg-[#080112] border border-white/10 rounded-2xl p-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
                 {icon}
             </div>
@@ -278,3 +278,4 @@ function ControlSection({ title, icon, children }: { title: string, icon: React.
         </div>
     );
 }
+

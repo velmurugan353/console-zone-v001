@@ -1,4 +1,4 @@
-import {
+﻿import {
   BarChart,
   Bar,
   XAxis,
@@ -53,7 +53,7 @@ const data = [
 ];
 
 const categoryData = [
-  { name: 'Games', value: 45, color: '#A855F7' },
+  { name: 'Games', value: 45, color: '#B000FF' },
   { name: 'Controllers', value: 25, color: '#3B82F6' },
   { name: 'Accessories', value: 20, color: '#10B981' },
   { name: 'VR Gear', value: 10, color: '#F59E0B' },
@@ -76,11 +76,11 @@ const durationDistribution = [
 ];
 
 const StatCard = ({ title, value, change, icon: Icon, trend, subtitle }: any) => (
-  <div className="bg-[#0a0a0a] p-5 rounded-lg border border-white/5 hover:border-[#A855F7]/30 transition-all group relative overflow-hidden">
-    <div className="absolute top-0 left-0 w-1 h-full bg-[#A855F7] opacity-0 group-hover:opacity-100 transition-opacity" />
+  <div className="bg-[#080112] p-5 rounded-lg border border-white/5 hover:border-[#B000FF]/30 transition-all group relative overflow-hidden">
+    <div className="absolute top-0 left-0 w-1 h-full bg-[#B000FF] opacity-0 group-hover:opacity-100 transition-opacity" />
     <div className="flex items-center justify-between mb-4">
-      <div className="p-2 bg-[#A855F7]/10 rounded border border-[#A855F7]/20">
-        <Icon className="h-5 w-5 text-[#A855F7]" />
+      <div className="p-2 bg-[#B000FF]/10 rounded border border-[#B000FF]/20">
+        <Icon className="h-5 w-5 text-[#B000FF]" />
       </div>
       <div className="flex flex-col items-end">
         <span className={`flex items-center text-[10px] font-mono uppercase tracking-wider ${trend === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -95,7 +95,7 @@ const StatCard = ({ title, value, change, icon: Icon, trend, subtitle }: any) =>
       {subtitle && <span className="text-[10px] text-gray-600 font-mono italic">{subtitle}</span>}
     </div>
     <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-      <div className="h-full bg-[#A855F7]/50 w-2/3 animate-pulse" />
+      <div className="h-full bg-[#B000FF]/50 w-2/3 animate-pulse" />
     </div>
   </div>
 );
@@ -111,7 +111,7 @@ const InventoryRow = ({ id, name, status, health, load, location, lastService, o
         <select
           value={status}
           onChange={(e) => onStatusChange?.(id, e.target.value)}
-          className="appearance-none bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] font-mono font-bold uppercase text-[#A855F7] focus:outline-none focus:border-[#A855F7] transition-all cursor-pointer hover:bg-white/10 pr-6"
+          className="appearance-none bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] font-mono font-bold uppercase text-[#B000FF] focus:outline-none focus:border-[#B000FF] transition-all cursor-pointer hover:bg-white/10 pr-6"
         >
           <option value="Active">Active</option>
           <option value="Maintenance">Maintenance</option>
@@ -188,7 +188,7 @@ export default function AdminDashboard() {
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-[0.2em]">System Online // Matrix v4.0.2</span>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Hardware <span className="text-[#A855F7]">Matrix</span></h1>
+          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Hardware <span className="text-[#B000FF]">Matrix</span></h1>
           <p className="text-gray-500 font-mono text-xs mt-1">Deep Inventory & Identity Protocols // Active Session: Admin_Root</p>
         </div>
         <div className="flex items-center space-x-3">
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Net Liquidity"
-          value="₹142,509.22"
+          value="â‚¹142,509.22"
           change="+14.2%"
           trend="up"
           icon={DollarSign}
@@ -241,10 +241,10 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8 overflow-x-auto lg:overflow-x-visible">
           {/* Deep Inventory Protocol */}
-          <div className="bg-[#0a0a0a] rounded-lg border border-white/10 overflow-hidden min-w-[800px] lg:min-w-0">
+          <div className="bg-[#080112] rounded-lg border border-white/10 overflow-hidden min-w-[800px] lg:min-w-0">
             <div className="p-4 bg-white/[0.02] border-b border-white/10 flex justify-between items-center">
               <div className="flex items-center space-x-2">
-                <Box className="h-4 w-4 text-[#A855F7]" />
+                <Box className="h-4 w-4 text-[#B000FF]" />
                 <h3 className="text-xs font-mono uppercase tracking-widest text-white">Deep Inventory Protocol</h3>
               </div>
               <span className="text-[9px] font-mono text-gray-500 italic">Scanning 4,821 assets...</span>
@@ -267,17 +267,17 @@ export default function AdminDashboard() {
                 <InventoryRow id="PS5-002" name="PlayStation 5 Pro // Unit 02" status="Offline" health={12} load="N/A" location="Storage" lastService="2023.11.10" />
               </div>
               <div className="p-4 bg-white/[0.01] flex justify-center">
-                <button className="text-[10px] font-mono uppercase tracking-widest text-[#A855F7] hover:text-white transition-colors">Load Full Matrix View</button>
+                <button className="text-[10px] font-mono uppercase tracking-widest text-[#B000FF] hover:text-white transition-colors">Load Full Matrix View</button>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-[#0a0a0a] p-6 rounded-lg border border-white/10">
+            <div className="bg-[#080112] p-6 rounded-lg border border-white/10">
               <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6">Identity Protocols</h3>
               <div className="space-y-4">
                 {[
-                  { label: 'KYC Verification Rate', value: '94%', color: 'bg-[#A855F7]' },
+                  { label: 'KYC Verification Rate', value: '94%', color: 'bg-[#B000FF]' },
                   { label: 'Auth Success Rate', value: '99.8%', color: 'bg-emerald-500' },
                   { label: 'Security Breaches', value: '0', color: 'bg-emerald-500' },
                   { label: 'Pending Reviews', value: '12', color: 'bg-amber-500' },
@@ -298,22 +298,21 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            <div className="bg-[#0a0a0a] p-6 rounded-lg border border-white/10">
+            <div className="bg-[#080112] p-6 rounded-lg border border-white/10">
               <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6">System Controls</h3>
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { name: 'Control Center', path: '/admin/controls', icon: Zap },
                   { name: 'Customizer', path: '/admin/customizer', icon: Palette },
-                  { name: 'Repairs Matrix', path: '/admin/operations?tab=repairs', icon: Wrench },
                   { name: 'KYC Review', path: '/admin/kyc', icon: ShieldCheck },
                   { name: 'Rental Inventory', path: '/admin/inventory', icon: Box },
                 ].map((action) => (
                   <Link
                     key={action.name}
                     to={action.path}
-                    className="flex flex-col items-center justify-center p-4 bg-white/[0.02] border border-white/5 rounded hover:border-[#A855F7]/50 hover:bg-[#A855F7]/5 transition-all group"
+                    className="flex flex-col items-center justify-center p-4 bg-white/[0.02] border border-white/5 rounded hover:border-[#B000FF]/50 hover:bg-[#B000FF]/5 transition-all group"
                   >
-                    <action.icon className="h-5 w-5 text-gray-500 group-hover:text-[#A855F7] mb-2" />
+                    <action.icon className="h-5 w-5 text-gray-500 group-hover:text-[#B000FF] mb-2" />
                     <span className="text-[9px] font-mono uppercase tracking-tighter text-gray-400 group-hover:text-white text-center">{action.name}</span>
                   </Link>
                 ))}
@@ -327,32 +326,32 @@ export default function AdminDashboard() {
           <CommandMatrix />
 
           {/* Revenue Matrix */}
-          <div className="bg-[#0a0a0a] p-6 rounded-lg border border-white/10">
+          <div className="bg-[#080112] p-6 rounded-lg border border-white/10">
             <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6">Revenue Matrix</h3>
             <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#A855F7" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#A855F7" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#B000FF" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#B000FF" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
                   <XAxis dataKey="name" stroke="#444" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis stroke="#444" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #222', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }}
-                    itemStyle={{ color: '#A855F7' }}
+                    contentStyle={{ backgroundColor: '#080112', border: '1px solid #222', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }}
+                    itemStyle={{ color: '#B000FF' }}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="#A855F7" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="revenue" stroke="#B000FF" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div className="p-3 bg-white/[0.02] border border-white/5 rounded">
                 <p className="text-[9px] font-mono text-gray-500 uppercase">Projected</p>
-                <p className="text-sm font-mono text-white">₹52.4K</p>
+                <p className="text-sm font-mono text-white">â‚¹52.4K</p>
               </div>
               <div className="p-3 bg-white/[0.02] border border-white/5 rounded">
                 <p className="text-[9px] font-mono text-gray-500 uppercase">Variance</p>
@@ -361,7 +360,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-[#0a0a0a] p-6 rounded-lg border border-white/10">
+          <div className="bg-[#080112] p-6 rounded-lg border border-white/10">
             <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6">Distribution Matrix</h3>
             <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -380,7 +379,7 @@ export default function AdminDashboard() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #222', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }}
+                    contentStyle={{ backgroundColor: '#080112', border: '1px solid #222', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -398,7 +397,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-[#A855F7]/20 to-transparent p-6 rounded-lg border border-[#A855F7]/30">
+          <div className="bg-gradient-to-br from-[#B000FF]/20 to-transparent p-6 rounded-lg border border-[#B000FF]/30">
             <h3 className="text-sm font-bold text-white mb-2 uppercase italic tracking-tighter">Emergency Override</h3>
             <p className="text-[10px] font-mono text-gray-400 mb-4">Manual system suspension and global inventory freeze protocols.</p>
             <button className="w-full py-2 bg-red-500/10 border border-red-500/20 rounded text-[10px] font-mono uppercase tracking-widest text-red-500 hover:bg-red-500/20 transition-all">
@@ -410,3 +409,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

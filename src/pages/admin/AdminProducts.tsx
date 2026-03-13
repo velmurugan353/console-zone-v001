@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Product } from '../../lib/data';
 import { formatCurrency } from '../../lib/utils';
 import { collection, onSnapshot, query, doc, deleteDoc, updateDoc, setDoc } from 'firebase/firestore';
@@ -178,25 +178,25 @@ export default function AdminProducts() {
     <div className="space-y-8">
       {/* Header */}
       {/* Knowledge Base Overlay */}
-      <div className="bg-[#A855F7]/5 border border-[#A855F7]/20 rounded-2xl p-6 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-full bg-[#A855F7]/10 flex items-center justify-center text-[#A855F7] shrink-0">
+      <div className="bg-[#B000FF]/5 border border-[#B000FF]/20 rounded-2xl p-6 flex items-start gap-4">
+        <div className="w-10 h-10 rounded-full bg-[#B000FF]/10 flex items-center justify-center text-[#B000FF] shrink-0">
           <HelpCircle size={20} />
         </div>
         <div>
           <h4 className="text-xs font-black uppercase tracking-widest text-white mb-2">Protocol: Product Addition Registry</h4>
           <p className="text-xs text-gray-400 leading-relaxed max-w-2xl font-mono">
-            To integrate new hardware into the sells matrix, use the <span className="text-[#A855F7]">"Add New Item"</span> trigger below. Ensure all technical specs are declared. For Rental items, cross-link with the inventory serial tracker for accurate fleet synchronization.
+            To integrate new hardware into the sells matrix, use the <span className="text-[#B000FF]">"Add New Item"</span> trigger below. Ensure all technical specs are declared. For Rental items, cross-link with the inventory serial tracker for accurate fleet synchronization.
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 bg-[#0a0a0a] p-4 rounded-2xl border border-white/10">
+      <div className="flex flex-col md:flex-row gap-4 bg-[#080112] p-4 rounded-2xl border border-white/10">
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <Box className="h-3 w-3 text-[#A855F7] animate-pulse" />
-            <span className="text-[10px] font-mono text-[#A855F7] uppercase tracking-[0.2em]">Product Maintenance // Master Control</span>
+            <Box className="h-3 w-3 text-[#B000FF] animate-pulse" />
+            <span className="text-[10px] font-mono text-[#B000FF] uppercase tracking-[0.2em]">Product Maintenance // Master Control</span>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Inventory <span className="text-[#A855F7]">Master</span></h1>
+          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Inventory <span className="text-[#B000FF]">Master</span></h1>
           <p className="text-gray-500 font-mono text-xs mt-1">Centralized Control for Rentals, Store & Services</p>
         </div>
 
@@ -229,7 +229,7 @@ export default function AdminProducts() {
               });
               setIsModalOpen(true);
             }}
-            className="bg-[#A855F7] text-black rounded-lg px-6 py-2 flex items-center space-x-2 hover:bg-[#9333EA] transition-colors font-bold"
+            className="bg-[#B000FF] text-black rounded-lg px-6 py-2 flex items-center space-x-2 hover:bg-[#9333EA] transition-colors font-bold"
           >
             <Plus className="h-4 w-4" />
             <span className="text-[10px] font-mono uppercase tracking-widest">Add New Item</span>
@@ -248,16 +248,16 @@ export default function AdminProducts() {
             placeholder={`Search ${activeType} items...`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm font-mono focus:outline-none focus:border-[#A855F7]/50 transition-colors"
+            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm font-mono focus:outline-none focus:border-[#B000FF]/50 transition-colors"
           />
         </div>
         <div className="relative">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <select className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white text-sm font-mono focus:outline-none appearance-none">
-            <option className="bg-[#0a0a0a] text-white">All Categories</option>
-            <option className="bg-[#0a0a0a] text-white">Consoles</option>
-            <option className="bg-[#0a0a0a] text-white">Games</option>
-            <option className="bg-[#0a0a0a] text-white">Accessories</option>
+            <option className="bg-[#080112] text-white">All Categories</option>
+            <option className="bg-[#080112] text-white">Consoles</option>
+            <option className="bg-[#080112] text-white">Games</option>
+            <option className="bg-[#080112] text-white">Accessories</option>
           </select>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 flex items-center justify-between">
@@ -267,7 +267,7 @@ export default function AdminProducts() {
       </div>
 
       {/* Product Grid/Table */}
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden">
+      <div className="bg-[#080112] border border-white/10 rounded-xl overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="bg-white/[0.02] border-b border-white/10">
@@ -301,7 +301,7 @@ export default function AdminProducts() {
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">{product.category}</span>
                     <div className={`text-[8px] font-mono px-2 py-0.5 rounded-full w-fit uppercase tracking-tighter border ${product.type === 'rental'
-                      ? 'bg-[#A855F7]/10 border-[#A855F7]/30 text-[#A855F7]'
+                      ? 'bg-[#B000FF]/10 border-[#B000FF]/30 text-[#B000FF]'
                       : product.type === 'repair'
                         ? 'bg-amber-500/10 border-amber-500/30 text-amber-500'
                         : 'bg-blue-500/10 border-blue-500/30 text-blue-500'
@@ -314,7 +314,7 @@ export default function AdminProducts() {
                   <div className="flex flex-col">
                     <span className="text-sm font-mono text-white font-bold">{formatCurrency(product.price)}</span>
                     {activeType === 'rental' && (
-                      <span className="text-[9px] font-mono text-[#A855F7] uppercase tracking-tighter">Deposit: {formatCurrency(product.securityDeposit || 0)}</span>
+                      <span className="text-[9px] font-mono text-[#B000FF] uppercase tracking-tighter">Deposit: {formatCurrency(product.securityDeposit || 0)}</span>
                     )}
                   </div>
                 </td>
@@ -379,11 +379,11 @@ export default function AdminProducts() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl"
+              className="relative bg-[#080112] border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl"
             >
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
                 <div className="flex items-center space-x-3">
-                  <Activity className="h-4 w-4 text-[#A855F7]" />
+                  <Activity className="h-4 w-4 text-[#B000FF]" />
                   <h3 className="text-sm font-mono uppercase tracking-widest text-white">{editingProductId ? 'Edit Asset' : 'Initialize New Asset'}</h3>
                 </div>
                 <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white">
@@ -399,7 +399,7 @@ export default function AdminProducts() {
                       required
                       value={newProduct.name}
                       onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#A855F7]/50 focus:outline-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#B000FF]/50 focus:outline-none"
                     />
                   </div>
                   <div className="space-y-2">
@@ -407,11 +407,11 @@ export default function AdminProducts() {
                     <select
                       value={newProduct.type}
                       onChange={e => setNewProduct({ ...newProduct, type: e.target.value as any })}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm font-mono focus:border-[#A855F7]/50 focus:outline-none appearance-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm font-mono focus:border-[#B000FF]/50 focus:outline-none appearance-none"
                     >
-                      <option value="store" className="bg-[#0a0a0a] text-white">For Sale (Shop)</option>
-                      <option value="rental" className="bg-[#0a0a0a] text-white">For Rent (Fleet)</option>
-                      <option value="repair" className="bg-[#0a0a0a] text-white">Service (Repair)</option>
+                      <option value="store" className="bg-[#080112] text-white">For Sale (Shop)</option>
+                      <option value="rental" className="bg-[#080112] text-white">For Rent (Fleet)</option>
+                      <option value="repair" className="bg-[#080112] text-white">Service (Repair)</option>
                     </select>
                   </div>
                 </div>
@@ -422,12 +422,12 @@ export default function AdminProducts() {
                     <select
                       value={newProduct.category}
                       onChange={e => setNewProduct({ ...newProduct, category: e.target.value as any })}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm font-mono focus:border-[#A855F7]/50 focus:outline-none appearance-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm font-mono focus:border-[#B000FF]/50 focus:outline-none appearance-none"
                     >
-                      <option value="console" className="bg-[#0a0a0a] text-white">Console</option>
-                      <option value="game" className="bg-[#0a0a0a] text-white">Game</option>
-                      <option value="accessory" className="bg-[#0a0a0a] text-white">Accessory</option>
-                      <option value="vr" className="bg-[#0a0a0a] text-white">VR Gear</option>
+                      <option value="console" className="bg-[#080112] text-white">Console</option>
+                      <option value="game" className="bg-[#080112] text-white">Game</option>
+                      <option value="accessory" className="bg-[#080112] text-white">Accessory</option>
+                      <option value="vr" className="bg-[#080112] text-white">VR Gear</option>
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -437,7 +437,7 @@ export default function AdminProducts() {
                       value={newProduct.image}
                       onChange={e => setNewProduct({ ...newProduct, image: e.target.value })}
                       placeholder="https://images.unsplash.com/..."
-                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#A855F7]/50 focus:outline-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#B000FF]/50 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -445,14 +445,14 @@ export default function AdminProducts() {
                 <div className="grid grid-cols-3 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-mono uppercase tracking-widest text-gray-500">
-                      {newProduct.type === 'repair' ? 'Service Fee' : 'Price (₹)'}
+                      {newProduct.type === 'repair' ? 'Service Fee' : 'Price (â‚¹)'}
                     </label>
                     <input
                       type="number"
                       required
                       value={newProduct.price}
                       onChange={e => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#A855F7]/50 focus:outline-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#B000FF]/50 focus:outline-none"
                     />
                   </div>
                   {newProduct.type !== 'repair' ? (
@@ -463,7 +463,7 @@ export default function AdminProducts() {
                         required
                         value={newProduct.stockCount}
                         onChange={e => setNewProduct({ ...newProduct, stockCount: parseInt(e.target.value) })}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#A855F7]/50 focus:outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#B000FF]/50 focus:outline-none"
                       />
                     </div>
                   ) : (
@@ -472,7 +472,7 @@ export default function AdminProducts() {
                       <input
                         value={newProduct.deviceType}
                         onChange={e => setNewProduct({ ...newProduct, deviceType: e.target.value })}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#A855F7]/50 focus:outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#B000FF]/50 focus:outline-none"
                       />
                     </div>
                   )}
@@ -483,7 +483,7 @@ export default function AdminProducts() {
                         type="number"
                         value={newProduct.securityDeposit}
                         onChange={e => setNewProduct({ ...newProduct, securityDeposit: parseFloat(e.target.value) })}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#A855F7]/50 focus:outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#B000FF]/50 focus:outline-none"
                       />
                     </div>
                   )}
@@ -495,7 +495,7 @@ export default function AdminProducts() {
                     value={newProduct.description}
                     onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
                     rows={3}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#A855F7]/50 focus:outline-none resize-none"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono focus:border-[#B000FF]/50 focus:outline-none resize-none"
                   />
                 </div>
 
@@ -510,7 +510,7 @@ export default function AdminProducts() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-8 py-3 bg-[#A855F7] text-black font-bold rounded-lg text-[10px] font-mono uppercase tracking-widest hover:bg-[#9333EA] transition-all disabled:opacity-50 flex items-center gap-2"
+                    className="px-8 py-3 bg-[#B000FF] text-black font-bold rounded-lg text-[10px] font-mono uppercase tracking-widest hover:bg-[#9333EA] transition-all disabled:opacity-50 flex items-center gap-2"
                   >
                     {isSubmitting ? (
                       <>
@@ -530,3 +530,4 @@ export default function AdminProducts() {
     </div>
   );
 }
+

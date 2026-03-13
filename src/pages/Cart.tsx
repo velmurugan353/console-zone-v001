@@ -1,4 +1,4 @@
-import { useCart } from '../context/CartContext';
+﻿import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../lib/utils';
 import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -236,12 +236,12 @@ export default function Cart() {
                 {(!items.some(i => i.type === 'rent') || user?.kyc_status === 'APPROVED') ? 'Checkout' : 'Verify to Checkout'} <ArrowRight className="ml-2 h-5 w-5" />
               </span>
               {items.some(i => i.type === 'rent') && user?.kyc_status !== 'APPROVED' && (
-                <div className="absolute inset-0 bg-[#A855F7]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <div className="absolute inset-0 bg-[#B000FF]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               )}
             </button>
 
             {items.some(i => i.type === 'rent') && (!user || user.kyc_status !== 'APPROVED') ? (
-              <p className="text-xs text-[#A855F7] font-bold text-center mt-4 tracking-widest uppercase">
+              <p className="text-xs text-[#B000FF] font-bold text-center mt-4 tracking-widest uppercase">
                 Rental KYC Required
               </p>
             ) : (
@@ -255,4 +255,5 @@ export default function Cart() {
     </div>
   );
 }
+
 

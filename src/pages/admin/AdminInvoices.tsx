@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { 
   Search, 
   FileText, 
@@ -350,7 +350,7 @@ export default function AdminInvoices() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tighter uppercase italic">
-            Invoice <span className="text-[#A855F7]">Generator</span>
+            Invoice <span className="text-[#B000FF]">Generator</span>
           </h1>
           <p className="text-gray-500 font-mono text-xs mt-1">Centralized Financial Document Matrix</p>
         </div>
@@ -358,13 +358,13 @@ export default function AdminInvoices() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowManualForm(true)}
-            className="flex items-center gap-2 px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold font-mono text-xs uppercase tracking-widest hover:bg-white/10 transition-all shadow-lg hover:shadow-[#A855F7]/10"
+            className="flex items-center gap-2 px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold font-mono text-xs uppercase tracking-widest hover:bg-white/10 transition-all shadow-lg hover:shadow-[#B000FF]/10"
           >
-            <Plus className="h-4 w-4 text-[#A855F7]" />
+            <Plus className="h-4 w-4 text-[#B000FF]" />
             Manual Invoice
           </button>
-          <div className="bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-2 flex items-center gap-3">
-            <Clock className="h-4 w-4 text-[#A855F7]" />
+          <div className="bg-[#080112] border border-white/10 rounded-xl px-4 py-2 flex items-center gap-3">
+            <Clock className="h-4 w-4 text-[#B000FF]" />
             <span className="text-white font-mono text-[10px] uppercase tracking-widest font-bold">System_Time: {new Date().toLocaleTimeString()}</span>
           </div>
         </div>
@@ -379,14 +379,14 @@ export default function AdminInvoices() {
             placeholder="Search by ID or Customer name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-2xl text-white font-mono text-sm focus:outline-none focus:border-[#A855F7]/50"
+            className="w-full pl-12 pr-4 py-3 bg-[#080112] border border-white/10 rounded-2xl text-white font-mono text-sm focus:outline-none focus:border-[#B000FF]/50"
           />
         </div>
         <div className="flex gap-2">
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as any)}
-            className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-2xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-[#A855F7]/50 appearance-none cursor-pointer"
+            className="flex-1 bg-[#080112] border border-white/10 rounded-2xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-[#B000FF]/50 appearance-none cursor-pointer"
           >
             <option value="all">All Types</option>
             <option value="order">Orders Only</option>
@@ -396,7 +396,7 @@ export default function AdminInvoices() {
           </select>
           <button 
             onClick={() => {setSearch(''); setTypeFilter('all');}}
-            className="p-3 bg-[#0a0a0a] border border-white/10 rounded-2xl text-gray-500 hover:text-white transition-colors"
+            className="p-3 bg-[#080112] border border-white/10 rounded-2xl text-gray-500 hover:text-white transition-colors"
           >
             <RefreshCw className="h-5 w-5" />
           </button>
@@ -407,7 +407,7 @@ export default function AdminInvoices() {
       <div className="grid grid-cols-1 gap-4">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#A855F7]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B000FF]"></div>
           </div>
         ) : filteredTransactions.length > 0 ? (
           filteredTransactions.map((t) => (
@@ -415,7 +415,7 @@ export default function AdminInvoices() {
               key={`${t.type}-${t.id}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-[#A855F7]/30 transition-all group"
+              className="bg-[#080112] border border-white/10 rounded-2xl p-6 hover:border-[#B000FF]/30 transition-all group"
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-start gap-4">
@@ -431,7 +431,7 @@ export default function AdminInvoices() {
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[#A855F7] font-bold font-mono text-sm tracking-tighter">[{t.id}]</span>
+                      <span className="text-[#B000FF] font-bold font-mono text-sm tracking-tighter">[{t.id}]</span>
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
                         t.type === 'order' || t.serviceType === 'order' ? 'text-blue-400 border-blue-500/20 bg-blue-500/5' : 
                         t.type === 'rental' || t.serviceType === 'rental' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' :
@@ -464,7 +464,7 @@ export default function AdminInvoices() {
                     </button>
                     <button
                       onClick={() => handleDownloadInvoice(t)}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#A855F7] text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] transition-all"
+                      className="flex items-center gap-2 px-4 py-2 bg-[#B000FF] text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] transition-all"
                     >
                       <Download className="h-3.5 w-3.5" />
                       PDF
@@ -475,7 +475,7 @@ export default function AdminInvoices() {
             </motion.div>
           ))
         ) : (
-          <div className="text-center py-20 bg-[#0a0a0a] border border-dashed border-white/10 rounded-3xl">
+          <div className="text-center py-20 bg-[#080112] border border-dashed border-white/10 rounded-3xl">
             <Hash className="h-12 w-12 text-gray-800 mx-auto mb-4" />
             <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">No matching records in the matrix</p>
           </div>
@@ -490,11 +490,11 @@ export default function AdminInvoices() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-5xl max-h-[] overflow-hidden flex flex-col shadow-[0_0_100px_rgba(168,85,247,0.15)]"
+              className="bg-[#080112] border border-white/10 rounded-3xl w-full max-w-5xl max-h-[] overflow-hidden flex flex-col shadow-[0_0_100px_rgba(168,85,247,0.15)]"
             >
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
                 <div>
-                  <h2 className="text-2xl font-bold text-white tracking-tighter uppercase italic">Manual <span className="text-[#A855F7]">Invoice_Protocol</span></h2>
+                  <h2 className="text-2xl font-bold text-white tracking-tighter uppercase italic">Manual <span className="text-[#B000FF]">Invoice_Protocol</span></h2>
                   <p className="text-gray-500 font-mono text-[10px] uppercase mt-1">Generate and persist custom documentation</p>
                 </div>
                 <button onClick={() => setShowManualForm(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-500 hover:text-white">
@@ -506,7 +506,7 @@ export default function AdminInvoices() {
                 {/* Service Type Selection */}
                 <div className="space-y-4">
                   <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest flex items-center">
-                    <Zap className="mr-2 h-3 w-3 text-[#A855F7]" /> Select_Service_Context
+                    <Zap className="mr-2 h-3 w-3 text-[#B000FF]" /> Select_Service_Context
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
@@ -520,7 +520,7 @@ export default function AdminInvoices() {
                         onClick={() => setSelectedService(svc.id as ServiceType)}
                         className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 group ${
                           selectedService === svc.id 
-                          ? 'bg-[#A855F7]/10 border-[#A855F7]/50 shadow-[0_0_15px_rgba(168,85,247,0.1)]' 
+                          ? 'bg-[#B000FF]/10 border-[#B000FF]/50 shadow-[0_0_15px_rgba(168,85,247,0.1)]' 
                           : 'bg-white/5 border-white/10 hover:border-white/20'
                         }`}
                       >
@@ -537,7 +537,7 @@ export default function AdminInvoices() {
                   {/* Basic Info */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest flex items-center">
-                      <Hash className="mr-2 h-3 w-3 text-[#A855F7]" /> Document_Meta
+                      <Hash className="mr-2 h-3 w-3 text-[#B000FF]" /> Document_Meta
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
@@ -546,7 +546,7 @@ export default function AdminInvoices() {
                           type="text"
                           value={manualInvoice.invoiceNumber}
                           onChange={(e) => setManualInvoice(prev => ({ ...prev, invoiceNumber: e.target.value }))}
-                          className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                          className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
                         />
                       </div>
                       <div className="space-y-1">
@@ -555,7 +555,7 @@ export default function AdminInvoices() {
                           type="date"
                           value={manualInvoice.date}
                           onChange={(e) => setManualInvoice(prev => ({ ...prev, date: e.target.value }))}
-                          className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                          className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
                         />
                       </div>
                     </div>
@@ -564,7 +564,7 @@ export default function AdminInvoices() {
                   {/* Customer Info with Email Lookup */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest flex items-center justify-between">
-                      <span className="flex items-center"><User className="mr-2 h-3 w-3 text-[#A855F7]" /> Customer_Entity</span>
+                      <span className="flex items-center"><User className="mr-2 h-3 w-3 text-[#B000FF]" /> Customer_Entity</span>
                       <span className="text-[8px] font-mono text-gray-600 uppercase">Auto-fill on Email lookup</span>
                     </h3>
                     
@@ -576,13 +576,13 @@ export default function AdminInvoices() {
                           placeholder="Customer Email Address"
                           value={manualInvoice.customerEmail}
                           onChange={(e) => setManualInvoice(prev => ({ ...prev, customerEmail: e.target.value }))}
-                          className="w-full bg-black border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                          className="w-full bg-black border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
                         />
                       </div>
                       <button 
                         onClick={lookupCustomerByEmail}
                         disabled={isSearchingCustomer}
-                        className="px-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-[#A855F7] disabled:opacity-50"
+                        className="px-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-[#B000FF] disabled:opacity-50"
                         title="Lookup Customer details"
                       >
                         {isSearchingCustomer ? <RefreshCw className="h-4 w-4 animate-spin" /> : <SearchCode className="h-4 w-4" />}
@@ -594,7 +594,7 @@ export default function AdminInvoices() {
                       placeholder="Full Name"
                       value={manualInvoice.customerName}
                       onChange={(e) => setManualInvoice(prev => ({ ...prev, customerName: e.target.value }))}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
                     />
 
                     <input
@@ -604,14 +604,14 @@ export default function AdminInvoices() {
                       value={manualInvoice.customerPhone}
                       onChange={(e) => setManualInvoice(prev => ({ ...prev, customerPhone: e.target.value.replace(/\D/g, '') }))}
                       className={`w-full bg-black border rounded-xl px-4 py-3 font-mono text-xs focus:outline-none transition-colors ${
-                        (manualInvoice.customerPhone.length === 10) ? 'border-emerald-500/50 text-emerald-500' : 'border-white/10 text-white focus:border-[#A855F7]'
+                        (manualInvoice.customerPhone.length === 10) ? 'border-emerald-500/50 text-emerald-500' : 'border-white/10 text-white focus:border-[#B000FF]'
                       }`}
                     />
                     <textarea
                       placeholder="Physical Distribution Address"
                       value={manualInvoice.customerAddress}
                       onChange={(e) => setManualInvoice(prev => ({ ...prev, customerAddress: e.target.value }))}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] min-h-[80px] resize-none"
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF] min-h-[80px] resize-none"
                     />
                   </div>
                 </div>
@@ -624,7 +624,7 @@ export default function AdminInvoices() {
                     </h3>
                     <button
                       onClick={addManualItem}
-                      className="text-[10px] font-mono text-[#A855F7] hover:text-white flex items-center gap-1 uppercase tracking-widest"
+                      className="text-[10px] font-mono text-[#B000FF] hover:text-white flex items-center gap-1 uppercase tracking-widest"
                     >
                       <Plus size={12} /> Add_Item_Entry
                     </button>
@@ -641,13 +641,13 @@ export default function AdminInvoices() {
                                 placeholder="Hardware Asset / Service"
                                 value={item.name}
                                 onChange={(e) => updateManualItem(idx, 'name', e.target.value)}
-                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-2.5 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-2.5 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
                               />
                               <button 
                                 onClick={() => setActiveProductIdx(activeProductIdx === idx ? null : idx)}
-                                className="p-2.5 bg-white/5 rounded-xl hover:bg-[#A855F7]/20 transition-colors border border-white/5"
+                                className="p-2.5 bg-white/5 rounded-xl hover:bg-[#B000FF]/20 transition-colors border border-white/5"
                               >
-                                <ChevronDown className={`h-4 w-4 text-[#A855F7] transition-transform ${activeProductIdx === idx ? 'rotate-180' : ''}`} />
+                                <ChevronDown className={`h-4 w-4 text-[#B000FF] transition-transform ${activeProductIdx === idx ? 'rotate-180' : ''}`} />
                               </button>
                             </div>
 
@@ -660,7 +660,7 @@ export default function AdminInvoices() {
                                     placeholder="Search inventory..."
                                     value={productSearch}
                                     onChange={(e) => setProductSearch(e.target.value)}
-                                    className="w-full bg-black border border-white/5 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-[#A855F7]/50"
+                                    className="w-full bg-black border border-white/5 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-[#B000FF]/50"
                                   />
                                 </div>
                                 <div className="max-h-40 overflow-y-auto space-y-1 scrollbar-hide">
@@ -677,7 +677,7 @@ export default function AdminInvoices() {
                                           <p className="text-[9px] text-gray-500 font-mono">{formatCurrency(p.price)}</p>
                                         </div>
                                       </div>
-                                      <Check className="h-3 w-3 text-[#A855F7] opacity-0 group-hover:opacity-100" />
+                                      <Check className="h-3 w-3 text-[#B000FF] opacity-0 group-hover:opacity-100" />
                                     </button>
                                   ))}
                                 </div>
@@ -690,7 +690,7 @@ export default function AdminInvoices() {
                               placeholder="Condition / Specs"
                               value={item.description}
                               onChange={(e) => updateManualItem(idx, 'description', e.target.value)}
-                              className="w-full bg-black border border-white/5 rounded-xl px-4 py-2.5 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                              className="w-full bg-black border border-white/5 rounded-xl px-4 py-2.5 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
                             />
                           </div>
                           <div className="col-span-1 space-y-1">
@@ -703,7 +703,7 @@ export default function AdminInvoices() {
                             />
                           </div>
                           <div className="col-span-2 space-y-1">
-                            <label className="text-[9px] font-mono text-gray-600 uppercase text-right block mr-2">Price (₹)</label>
+                            <label className="text-[9px] font-mono text-gray-600 uppercase text-right block mr-2">Price (â‚¹)</label>
                             <input
                               type="number"
                               value={item.price}
@@ -729,19 +729,19 @@ export default function AdminInvoices() {
                 <div className="flex flex-col md:flex-row justify-between items-start gap-10">
                   <div className="flex-1 space-y-4 max-w-md w-full">
                     <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest flex items-center">
-                      <CreditCard className="mr-2 h-3 w-3 text-[#A855F7]" /> Payment_Method
+                      <CreditCard className="mr-2 h-3 w-3 text-[#B000FF]" /> Payment_Method
                     </h3>
                     <input
                       type="text"
                       value={manualInvoice.paymentMethod}
                       onChange={(e) => setManualInvoice(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
                     />
                     <textarea
                       placeholder="Optional protocol notes / internal references..."
                       value={manualInvoice.notes}
                       onChange={(e) => setManualInvoice(prev => ({ ...prev, notes: e.target.value }))}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] min-h-[80px] resize-none"
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF] min-h-[80px] resize-none"
                     />
                   </div>
 
@@ -751,27 +751,27 @@ export default function AdminInvoices() {
                       <span className="text-white">{formatCurrency(manualInvoice.subtotal)}</span>
                     </div>
                     <div className="flex justify-between items-center gap-4 text-[10px] font-mono text-gray-500">
-                      <span>TAX_OVERHEAD (₹)</span>
+                      <span>TAX_OVERHEAD (â‚¹)</span>
                       <input
                         type="number"
                         value={manualInvoice.tax}
                         onChange={(e) => setManualInvoice(prev => ({ ...prev, tax: parseFloat(e.target.value) || 0 }))}
-                        className="w-24 bg-black border border-white/10 rounded-lg px-3 py-1.5 text-white text-right focus:outline-none focus:border-[#A855F7]"
+                        className="w-24 bg-black border border-white/10 rounded-lg px-3 py-1.5 text-white text-right focus:outline-none focus:border-[#B000FF]"
                       />
                     </div>
                     <div className="flex justify-between items-center gap-4 text-[10px] font-mono text-gray-500">
-                      <span>LOGISTICS_FEE (₹)</span>
+                      <span>LOGISTICS_FEE (â‚¹)</span>
                       <input
                         type="number"
                         value={manualInvoice.shipping}
                         onChange={(e) => setManualInvoice(prev => ({ ...prev, shipping: parseFloat(e.target.value) || 0 }))}
-                        className="w-24 bg-black border border-white/10 rounded-lg px-3 py-1.5 text-white text-right focus:outline-none focus:border-[#A855F7]"
+                        className="w-24 bg-black border border-white/10 rounded-lg px-3 py-1.5 text-white text-right focus:outline-none focus:border-[#B000FF]"
                       />
                     </div>
                     <div className="h-px bg-white/10 my-4"></div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-mono text-gray-400 italic font-black uppercase">Final_Valuation</span>
-                      <span className="text-2xl font-black text-[#A855F7] tracking-tighter">{formatCurrency(manualInvoice.total)}</span>
+                      <span className="text-2xl font-black text-[#B000FF] tracking-tighter">{formatCurrency(manualInvoice.total)}</span>
                     </div>
                   </div>
                 </div>
@@ -795,7 +795,7 @@ export default function AdminInvoices() {
                 <button
                   disabled={isSaving}
                   onClick={handleSaveManualInvoice}
-                  className="px-10 py-3 bg-[#A855F7] text-black rounded-xl font-black font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)] flex items-center gap-2"
+                  className="px-10 py-3 bg-[#B000FF] text-black rounded-xl font-black font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)] flex items-center gap-2"
                 >
                   {isSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   Persist & Generate
@@ -818,3 +818,4 @@ export default function AdminInvoices() {
     </div>
   );
 }
+

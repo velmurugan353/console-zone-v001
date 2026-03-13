@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { Printer, Download, X } from 'lucide-react';
 import { formatCurrency } from '../../lib/utils';
 import { invoiceService, InvoiceData } from '../../services/invoiceService';
@@ -39,7 +39,7 @@ export default function InvoiceModal({ data, onClose }: InvoiceModalProps) {
           <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-black pb-8 mb-8 gap-6">
             <div>
               <h1 className="text-4xl font-black tracking-tighter uppercase italic mb-2 text-black">
-                Game<span className="text-[#A855F7]">Vault</span>
+                Game<span className="text-[#B000FF]">Vault</span>
               </h1>
               <p className="text-xs font-bold uppercase tracking-widest text-gray-500">Premium Gaming Marketplace</p>
             </div>
@@ -151,7 +151,7 @@ export default function InvoiceModal({ data, onClose }: InvoiceModalProps) {
             </button>
             <button 
               onClick={handlePrint}
-              className="px-6 py-2 bg-[#A855F7] text-white font-bold text-xs uppercase tracking-widest rounded-lg hover:bg-[#9333EA] flex items-center gap-2 shadow-lg shadow-[#A855F7]/20"
+              className="px-6 py-2 bg-[#B000FF] text-white font-bold text-xs uppercase tracking-widest rounded-lg hover:bg-[#9333EA] flex items-center gap-2 shadow-lg shadow-[#B000FF]/20"
             >
               <Printer size={14} />
               Print
@@ -162,3 +162,4 @@ export default function InvoiceModal({ data, onClose }: InvoiceModalProps) {
     </div>
   );
 }
+

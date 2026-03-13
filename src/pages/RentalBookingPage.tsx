@@ -21,7 +21,8 @@ import {
   MinusCircle,
   RefreshCw,
   User,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { format, addDays, differenceInDays, isBefore, isSameDay, startOfToday, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth } from 'date-fns';
 import { RENTAL_CONSOLES, RentalConsole } from '../constants/rentals';
@@ -34,6 +35,7 @@ import { automationService } from '../services/automationService';
 import { razorpayService } from '../services/razorpayService';
 import { getCatalogSettings } from '../services/catalog-settings';
 import { getControllerSettings } from '../services/controller-settings';
+import { rentalService } from '../services/rentalService';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -45,6 +47,7 @@ type Step = 1 | 2 | 3 | 4 | 5;
 
 interface BookingState {
   console: RentalConsole | null;
+  unitId?: string; // Track specific hardware unit
   duration: {
     type: 'daily' | 'weekly' | 'monthly';
     startDate: Date | null;
@@ -124,6 +127,8 @@ export default function RentalBookingPage() {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isFirstBooking, setIsFirstBooking] = useState<boolean>(false);
   const [checkingHistory, setCheckingHistory] = useState(true);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
 
   const [consoleData, setConsoleData] = useState<RentalConsole | null>(null);
   const [loading, setLoading] = useState(true);
@@ -160,13 +165,11 @@ export default function RentalBookingPage() {
       try {
         const { state: savedState, step, slug: savedSlug } = JSON.parse(savedBooking);
         if (savedSlug === slug) {
-          // Restore dates as Date objects
           if (savedState.duration.startDate) savedState.duration.startDate = new Date(savedState.duration.startDate);
           if (savedState.duration.endDate) savedState.duration.endDate = new Date(savedState.duration.endDate);
           
           setBookingState(savedState);
           setCurrentStep(step as Step);
-          // Clear it after restoration to avoid accidental reuse
           sessionStorage.removeItem('pending_rental_booking');
         }
       } catch (e) {
@@ -201,7 +204,6 @@ export default function RentalBookingPage() {
         setConsoleData(target as RentalConsole);
       } catch (error) {
         console.error("Error fetching console details:", error);
-        // Fallback to constants
         setConsoleData(RENTAL_CONSOLES.find(c => c.slug === slug) || null);
       } finally {
         setLoading(false);
@@ -247,13 +249,12 @@ export default function RentalBookingPage() {
   }, [user]);
 
   // --- Calculations ---
-  const { rentalCost, addonsCost, deposit, deliveryFee, subtotal, discountAmount, totalDue } = useMemo(() => {
-    if (!consoleData) return { rentalCost: 0, addonsCost: 0, deposit: 0, deliveryFee: 0, subtotal: 0, discountAmount: 0, totalDue: 0 };
+  const { rentalCost, addonsCost, deposit, deliveryFee, subtotal, discountAmount, totalDue, durationLabel } = useMemo(() => {
+    if (!consoleData) return { rentalCost: 0, addonsCost: 0, deposit: 0, deliveryFee: 0, subtotal: 0, discountAmount: 0, totalDue: 0, durationLabel: '' };
 
     const catalog = getCatalogSettings();
     const controllers = getControllerSettings();
 
-    // Map console IDs to catalog keys
     const idToKey: Record<string, string> = {
       'ps5': 'Sony PlayStation 5',
       'xbox': 'Xbox Series X',
@@ -264,7 +265,6 @@ export default function RentalBookingPage() {
     const key = idToKey[consoleData.id] || idToKey['ps5'];
     const config = catalog[key] || catalog['Sony PlayStation 5'];
 
-    // Map console IDs to controller keys
     const idToCtrl: Record<string, keyof typeof controllers.pricing> = {
       'ps5': 'ps5',
       'xbox': 'xbox',
@@ -274,18 +274,29 @@ export default function RentalBookingPage() {
     const ctrlKey = idToCtrl[consoleData.id] || 'ps5';
     const ctrlPricing = controllers.pricing[ctrlKey];
 
-    // Determine controller rate based on duration type
     const ctrlRate = bookingState.duration.type === 'monthly' ? ctrlPricing.MONTHLY :
                     bookingState.duration.type === 'weekly' ? ctrlPricing.WEEKLY :
                     ctrlPricing.DAILY;
 
-    // Base console rate
-    const consoleRate = bookingState.duration.type === 'monthly' ? config.monthly.price :
-                       bookingState.duration.type === 'weekly' ? config.weekly.price :
-                       config.daily.price * bookingState.duration.totalDays;
+    let baseConsoleRate = 0;
+    let label = '';
+
+    switch(bookingState.duration.type) {
+      case 'monthly':
+        baseConsoleRate = config.monthly.price;
+        label = '1 Month Deployment';
+        break;
+      case 'weekly':
+        baseConsoleRate = config.weekly.price;
+        label = '7 Day Expedition';
+        break;
+      default:
+        baseConsoleRate = config.daily.price * bookingState.duration.totalDays;
+        label = `${bookingState.duration.totalDays} Day Mission`;
+    }
 
     const currentAddonsCost = bookingState.addons.extraControllers * ctrlRate * (bookingState.duration.type === 'daily' ? bookingState.duration.totalDays : 1);
-    const currentRentalCost = consoleRate + currentAddonsCost;
+    const currentRentalCost = baseConsoleRate + currentAddonsCost;
     const currentDeliveryFee = bookingState.delivery.method === 'delivery' ? 9.99 : 0;
     const currentDeposit = config.securityDeposit || consoleData.deposit;
     const currentSubtotal = currentRentalCost + currentDeliveryFee;
@@ -293,19 +304,20 @@ export default function RentalBookingPage() {
     const currentTotalDue = currentSubtotal - currentDiscountAmount + currentDeposit;
 
     return {
-      rentalCost: currentRentalCost - currentAddonsCost,
+      rentalCost: baseConsoleRate,
       addonsCost: currentAddonsCost,
       deposit: currentDeposit,
       deliveryFee: currentDeliveryFee,
       subtotal: currentSubtotal,
       discountAmount: currentDiscountAmount,
-      totalDue: currentTotalDue
+      totalDue: currentTotalDue,
+      durationLabel: label
     };
   }, [consoleData, bookingState.duration, bookingState.addons.extraControllers, bookingState.delivery.method, bookingState.payment.discount]);
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#080112] flex items-center justify-center">
         <RefreshCw className="h-8 w-8 text-[#00d4ff] animate-spin" />
       </div>
     );
@@ -313,16 +325,38 @@ export default function RentalBookingPage() {
 
   if (!consoleData) {
     return (
-      <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#080112] flex items-center justify-center">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">Console not found</h1>
-          <Link to="/rentals" className="text-[#A855F7] hover:underline">Back to Rentals</Link>
+          <Link to="/rentals" className="text-[#B000FF] hover:underline">Back to Rentals</Link>
         </div>
       </div>
     );
   }
 
-  const nextStep = () => {
+  const nextStep = async () => {
+    if (currentStep === 2) {
+      if (!bookingState.duration.startDate || !bookingState.duration.endDate || !consoleData) return;
+      
+      setIsCheckingAvailability(true);
+      setAvailabilityError(null);
+      
+      const result = await rentalService.checkAvailability(
+        consoleData.id, 
+        bookingState.duration.startDate, 
+        bookingState.duration.endDate
+      );
+
+      setIsCheckingAvailability(false);
+
+      if (!result.available) {
+        setAvailabilityError("NEGATIVE. NO UNITS AVAILABLE IN FLEET FOR SELECTED WINDOW.");
+        return;
+      }
+
+      setBookingState(prev => ({ ...prev, unitId: result.units[0].id }));
+    }
+
     setCompletedSteps(prev => [...new Set([...prev, currentStep])]);
     setCurrentStep(prev => (prev + 1) as Step);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -336,15 +370,13 @@ export default function RentalBookingPage() {
   const handleConfirmBooking = async () => {
     if (!user || !consoleData) return;
 
-    // Proceed with Razorpay checkout
     razorpayService.openCheckout({
-      amount: totalDue * 100, // Razorpay expects amount in paise
+      amount: totalDue * 100,
       prefill: {
         name: user.name || '',
         email: user.email || ''
       },
       handler: async (response: any) => {
-        console.log('Payment Successful:', response);
         try {
           setLoading(true);
 
@@ -354,6 +386,7 @@ export default function RentalBookingPage() {
             phone: bookingState.delivery.phone,
             product: consoleData.name,
             productId: consoleData.id,
+            unitId: bookingState.unitId || '', 
             image: consoleData.image,
             startDate: bookingState.duration.startDate ? bookingState.duration.startDate.toISOString().split('T')[0] : '',
             endDate: bookingState.duration.endDate ? bookingState.duration.endDate.toISOString().split('T')[0] : '',
@@ -368,22 +401,11 @@ export default function RentalBookingPage() {
             createdAt: new Date().toISOString(),
             timeline: [
               { status: 'pending', timestamp: new Date().toLocaleString(), note: 'Rental booking confirmed via Razorpay' }
-            ],
-            transactions: [
-              {
-                id: response.razorpay_payment_id,
-                type: 'payment',
-                amount: totalDue,
-                date: new Date().toISOString().split('T')[0],
-                status: 'completed'
-              }
             ]
           };
 
           const docRef = await addDoc(collection(db, 'rentals'), rentalData);
-          console.log("Rental saved with ID: ", docRef.id);
-
-          // Trigger Automation & Notifications
+          
           await automationService.triggerWorkflow('rental_confirmed', {
             rentalId: docRef.id,
             customerName: user.name || user.email,
@@ -397,23 +419,17 @@ export default function RentalBookingPage() {
           navigate(`/rentals/${slug}/book/confirm?id=${docRef.id}`);
         } catch (error) {
           console.error("Error saving rental booking:", error);
-          alert("Failed to confirm booking. Please contact support if your payment was successful.");
+          alert("Failed to confirm booking. Please contact support.");
         } finally {
           setLoading(false);
-        }
-      },
-      modal: {
-        ondismiss: () => {
-          console.log('Checkout dismissed');
         }
       }
     });
   };
 
   return (
-    <div className="min-h-dvh bg-[#050505] text-white pt-20 md:pt-24 pb-32 md:pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-dvh bg-[#080112] text-white pt-20 md:pt-24 pb-32 md:pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Breadcrumbs & Back */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
           <button
             onClick={() => navigate('/rentals')}
@@ -422,17 +438,9 @@ export default function RentalBookingPage() {
             <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
             <span className="ml-1 font-bold uppercase tracking-widest text-[10px] md:text-xs">Back to Rentals</span>
           </button>
-          <div className="hidden md:flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-gray-500">
-            <Link to="/" className="hover:text-white">Home</Link>
-            <span>/</span>
-            <Link to="/rentals" className="hover:text-white">Rent</Link>
-            <span>/</span>
-            <span className="text-white">Book</span>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
-          {/* Left Column: Form */}
           <div className="lg:col-span-7 xl:col-span-8">
             <StepIndicator currentStep={currentStep} completedSteps={completedSteps} />
 
@@ -451,6 +459,8 @@ export default function RentalBookingPage() {
                   setState={setBookingState}
                   onNext={nextStep}
                   onBack={prevStep}
+                  isChecking={isCheckingAvailability}
+                  error={availabilityError}
                 />
               )}
               {currentStep === 3 && (
@@ -476,7 +486,6 @@ export default function RentalBookingPage() {
             </AnimatePresence>
           </div>
 
-          {/* Right Column: Sticky Summary */}
           <div className="lg:col-span-5 xl:col-span-4">
             <div className="lg:sticky lg:top-24">
               <OrderSummary
@@ -486,13 +495,13 @@ export default function RentalBookingPage() {
                 onNext={currentStep === 4 ? handleConfirmBooking : nextStep}
                 currentStep={currentStep}
                 user={user}
+                isChecking={isCheckingAvailability}
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Sticky Summary Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-t border-white/10 p-4 pb-safe">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -511,13 +520,13 @@ export default function RentalBookingPage() {
           <button
             onClick={currentStep === 4 ? handleConfirmBooking : nextStep}
             disabled={
-              (currentStep === 2 && (!bookingState.duration.startDate || !bookingState.duration.endDate)) ||
+              (currentStep === 2 && (!bookingState.duration.startDate || !bookingState.duration.endDate || isCheckingAvailability)) ||
               (currentStep === 3 && (!bookingState.delivery.phone || (bookingState.delivery.method === 'delivery' && !bookingState.delivery.address))) ||
               (currentStep === 4 && !bookingState.payment.termsAccepted)
             }
-            className="flex-1 py-3.5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-[10px] rounded-xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] disabled:opacity-50"
+            className="flex-1 py-3.5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-[10px] rounded-xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {currentStep === 4 ? 'Confirm' : 'Continue'}
+            {isCheckingAvailability ? <RefreshCw className="animate-spin h-3 w-3" /> : (currentStep === 4 ? 'Confirm' : 'Continue')}
           </button>
         </div>
       </div>
@@ -525,51 +534,25 @@ export default function RentalBookingPage() {
   );
 }
 
-// --- Step Components ---
-
 function Step1ConsoleDetails({ selectedConsole, state, setState, onNext }: { selectedConsole: RentalConsole, state: BookingState, setState: any, onNext: () => void }) {
   const controllers = getControllerSettings();
-  
-  // Map console IDs to controller keys
-  const idToCtrl: Record<string, keyof typeof controllers.pricing> = {
-    'ps5': 'ps5',
-    'xbox': 'xbox',
-    'ps4': 'ps4',
-    'switch': 'switch'
-  };
+  const idToCtrl: Record<string, keyof typeof controllers.pricing> = { 'ps5': 'ps5', 'xbox': 'xbox', 'ps4': 'ps4', 'switch': 'switch' };
   const ctrlKey = idToCtrl[selectedConsole.id] || 'ps5';
   const ctrlPricing = controllers.pricing[ctrlKey];
-  
-  // Determine rate based on duration type
-  const extraControllerRate = state.duration.type === 'monthly' ? ctrlPricing.MONTHLY :
-                             state.duration.type === 'weekly' ? ctrlPricing.WEEKLY :
-                             ctrlPricing.DAILY;
+  const extraControllerRate = state.duration.type === 'monthly' ? ctrlPricing.MONTHLY : state.duration.type === 'weekly' ? ctrlPricing.WEEKLY : ctrlPricing.DAILY;
 
   const updateExtraControllers = (val: number) => {
     const newVal = Math.max(0, Math.min(controllers.maxQuantity, state.addons.extraControllers + val));
-    setState((prev: BookingState) => ({
-      ...prev,
-      addons: { ...prev.addons, extraControllers: newVal }
-    }));
+    setState((prev: BookingState) => ({ ...prev, addons: { ...prev.addons, extraControllers: newVal } }));
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-6 md:space-y-8"
-    >
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6 md:space-y-8">
       <div className="bg-[#0a0f1e] border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-12">
         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
           <div className="md:w-1/2">
             <div className="aspect-square rounded-2xl overflow-hidden bg-black/40 border border-white/5 relative group">
-              <img
-                src={selectedConsole.image}
-                alt={selectedConsole.name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                referrerPolicy="no-referrer"
-              />
+              <img src={selectedConsole.image} alt={selectedConsole.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
               <div className="absolute top-4 left-4">
                 <span className="bg-[#00d4ff] text-black text-[8px] md:text-[10px] font-black px-3 py-1 rounded-full uppercase shadow-[0_0_15px_rgba(0,212,255,0.5)]">
                   {selectedConsole.condition} Condition
@@ -578,844 +561,160 @@ function Step1ConsoleDetails({ selectedConsole, state, setState, onNext }: { sel
             </div>
           </div>
           <div className="md:w-1/2 space-y-6">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white mb-2">{selectedConsole.name}</h2>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] md:text-xs font-bold text-green-500 uppercase tracking-widest">{selectedConsole.available} Units Available</span>
-              </div>
-            </div>
-
+            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white mb-2">{selectedConsole.name}</h2>
             <div className="space-y-4">
               <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Key Specs</h3>
               <div className="grid grid-cols-1 gap-2 md:gap-3">
                 {selectedConsole.specs.map((spec, i) => (
                   <div key={i} className="flex items-center gap-3 text-xs md:text-sm text-gray-300">
-                    <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#00d4ff]" />
-                    {spec}
+                    <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#00d4ff]" /> {spec}
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="space-y-4">
-              <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">What's Included</h3>
-              <div className="flex flex-wrap gap-2">
-                {selectedConsole.included.map((item, i) => (
-                  <span key={i} className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[10px] md:text-xs font-medium text-gray-300">
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="w-full h-px bg-white/5 my-4 md:my-6" />
-
-            {/* Optional Addons Section */}
             <div className="space-y-4 pt-2 md:pt-4">
               <div className="flex items-center gap-2">
                 <Gamepad2 size={16} className="text-[#00d4ff]" />
                 <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Add-On Equipment</h3>
               </div>
-              <div className={cn(
-                "relative group overflow-hidden rounded-xl md:rounded-2xl border transition-all duration-500",
-                state.addons.extraControllers > 0 
-                  ? "bg-[#00d4ff]/5 border-[#00d4ff]/30 shadow-[0_0_30px_rgba(0,212,255,0.1)]" 
-                  : "bg-white/[0.02] border-white/10 hover:border-white/20"
-              )}>
-                <div className="p-4 md:p-5 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className={cn(
-                      "w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-500",
-                      state.addons.extraControllers > 0 ? "bg-[#00d4ff] text-black shadow-[0_0_20px_rgba(0,212,255,0.4)]" : "bg-white/5 text-gray-500"
-                    )}>
-                      <Gamepad2 size={24} />
-                    </div>
-                    <div>
-                      <h4 className="text-xs md:text-sm font-bold text-white uppercase tracking-tight">Extra Controller</h4>
-                      <p className="text-[8px] md:text-[9px] text-gray-500 font-black uppercase tracking-widest mt-0.5">
-                        Wireless Gear // ₹{extraControllerRate} Day
-                      </p>
-                    </div>
+              <div className="relative group overflow-hidden rounded-xl md:rounded-2xl border bg-white/[0.02] border-white/10 p-4 md:p-5 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-[#00d4ff] text-black flex items-center justify-center shadow-[0_0_20px_rgba(0,212,255,0.4)]">
+                    <Gamepad2 size={24} />
                   </div>
-
-                  <div className="flex items-center gap-3 bg-black/60 p-1 rounded-xl border border-white/5">
-                    <button
-                      onClick={() => updateExtraControllers(-1)}
-                      disabled={state.addons.extraControllers === 0}
-                      className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
-                    >
-                      <MinusCircle size={18} />
-                    </button>
-                    <span className="w-5 md:w-6 text-center font-black text-[#00d4ff] font-mono text-xs md:text-sm">{state.addons.extraControllers}</span>
-                    <button
-                      onClick={() => updateExtraControllers(1)}
-                      disabled={state.addons.extraControllers === 3}
-                      className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00d4ff] hover:bg-[#00d4ff]/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
-                    >
-                      <PlusCircle size={18} />
-                    </button>
+                  <div>
+                    <h4 className="text-xs md:text-sm font-bold text-white uppercase tracking-tight">Extra Controller</h4>
+                    <p className="text-[8px] md:text-[9px] text-gray-500 font-black uppercase tracking-widest mt-0.5">₹{extraControllerRate} Day</p>
                   </div>
                 </div>
-                
-                {/* Visual feedback line */}
-                <div className={cn(
-                  "absolute bottom-0 left-0 h-[2px] bg-[#00d4ff] transition-all duration-700",
-                  state.addons.extraControllers === 0 ? "w-0" : state.addons.extraControllers === 1 ? "w-1/3" : state.addons.extraControllers === 2 ? "w-2/3" : "w-full"
-                )} />
+                <div className="flex items-center gap-3 bg-black/60 p-1 rounded-xl border border-white/5">
+                  <button onClick={() => updateExtraControllers(-1)} disabled={state.addons.extraControllers === 0} className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all"><MinusCircle size={18} /></button>
+                  <span className="w-5 md:w-6 text-center font-black text-[#00d4ff] font-mono text-xs md:text-sm">{state.addons.extraControllers}</span>
+                  <button onClick={() => updateExtraControllers(1)} disabled={state.addons.extraControllers === 3} className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00d4ff] transition-all"><PlusCircle size={18} /></button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        <div className="mt-8 md:mt-12 pt-8 md:pt-12 border-t border-white/5 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-[#00d4ff]">
-              <ShieldCheck size={18} />
-              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Deposit Policy</span>
-            </div>
-            <p className="text-[10px] md:text-xs text-gray-400 leading-relaxed">
-              A refundable deposit of {formatCurrency(selectedConsole.deposit)} is required. Released within 3 days of return.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-amber-500">
-              <Clock size={18} />
-              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Late Fees</span>
-            </div>
-            <p className="text-[10px] md:text-xs text-gray-400 leading-relaxed">
-              Returned late? A fee of ₹15/day applies. Please notify us 24h in advance for extensions.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-[#A855F7]">
-              <Info size={18} />
-              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Max Duration</span>
-            </div>
-            <p className="text-[10px] md:text-xs text-gray-400 leading-relaxed">
-              Standard rentals are capped at 30 days. Contact us for long-term corporate leasing.
-            </p>
-          </div>
-        </div>
       </div>
-
       <div className="flex justify-end pt-4">
-        <button
-          onClick={onNext}
-          className="group relative w-full md:w-auto px-12 py-5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs md:text-sm rounded-xl md:rounded-2xl overflow-hidden transition-all hover:shadow-[0_0_30px_rgba(0,212,255,0.4)]"
-        >
-          <span className="relative z-10 flex items-center justify-center gap-2">
-            Looks Good — Continue <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-          </span>
-          <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
+        <button onClick={onNext} className="group relative w-full md:w-auto px-12 py-5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs md:text-sm rounded-xl md:rounded-2xl transition-all hover:shadow-[0_0_30px_rgba(0,212,255,0.4)]">
+          Continue <ChevronRight size={20} className="inline ml-2" />
         </button>
       </div>
     </motion.div>
   );
 }
 
-function Step2DurationDates({ state, setState, onNext, onBack }: { state: BookingState, setState: any, onNext: () => void, onBack: () => void }) {
-  const [hoverDate, setHoverDate] = useState<Date | null>(null);
+function Step2DurationDates({ state, setState, onNext, onBack, isChecking, error }: { state: BookingState, setState: any, onNext: () => void, onBack: () => void, isChecking: boolean, error: string | null }) {
   const today = startOfToday();
   const [viewDate, setViewDate] = useState(startOfMonth(today));
-
   const monthStart = startOfMonth(viewDate);
-  const monthEnd = endOfMonth(monthStart);
-  const calendarStartDate = startOfWeek(monthStart);
-  const calendarEndDate = endOfWeek(monthEnd);
-
-  const calendarDays = eachDayOfInterval({
-    start: calendarStartDate,
-    end: calendarEndDate
-  });
+  const calendarDays = eachDayOfInterval({ start: startOfWeek(monthStart), end: endOfWeek(endOfMonth(monthStart)) });
 
   const handleDateClick = (date: Date) => {
     if (isBefore(date, today)) return;
-
-    // Mapping plan types to day counts
-    const planDurations = {
-      weekly: 7,
-      monthly: 30,
-      daily: 0 // daily is special, manual range
-    };
-
-    const currentDurationType = state.duration.type;
-
-    if (currentDurationType === 'daily') {
-      // Original manual logic for 'daily' mode
+    const planDurations = { weekly: 7, monthly: 30, daily: 0 };
+    const type = state.duration.type;
+    if (type === 'daily') {
       if (!state.duration.startDate || (state.duration.startDate && state.duration.endDate)) {
-        setState((prev: BookingState) => ({
-          ...prev,
-          duration: { ...prev.duration, startDate: date, endDate: null, totalDays: 0 }
-        }));
+        setState((p: any) => ({ ...p, duration: { ...p.duration, startDate: date, endDate: null, totalDays: 0 } }));
       } else {
-        if (isBefore(date, state.duration.startDate)) {
-          setState((prev: BookingState) => ({
-            ...prev,
-            duration: { ...prev.duration, startDate: date, endDate: null, totalDays: 0 }
-          }));
-        } else {
-          const days = differenceInDays(date, state.duration.startDate) + 1;
-          setState((prev: BookingState) => ({
-            ...prev,
-            duration: { ...prev.duration, endDate: date, totalDays: days }
-          }));
-        }
+        if (isBefore(date, state.duration.startDate)) return;
+        setState((p: any) => ({ ...p, duration: { ...p.duration, endDate: date, totalDays: differenceInDays(date, p.duration.startDate) + 1 } }));
       }
     } else {
-      // Fixed plan logic: Clicking a date sets start AND calculates end based on plan duration
-      const daysToAdd = planDurations[currentDurationType as keyof typeof planDurations] - 1;
-      const calculatedEnd = addDays(date, daysToAdd);
-
-      setState((prev: BookingState) => ({
-        ...prev,
-        duration: {
-          ...prev.duration,
-          startDate: date,
-          endDate: calculatedEnd,
-          totalDays: planDurations[currentDurationType as keyof typeof planDurations]
-        }
-      }));
+      const days = planDurations[type as keyof typeof planDurations];
+      setState((p: any) => ({ ...p, duration: { ...p.duration, startDate: date, endDate: addDays(date, days - 1), totalDays: days } }));
     }
   };
 
-  const isInRange = (date: Date) => {
-    if (!state.duration.startDate || !state.duration.endDate) return false;
-    return date >= state.duration.startDate && date <= state.duration.endDate;
-  };
-
-  const isSelected = (date: Date) => {
-    return (state.duration.startDate && isSameDay(date, state.duration.startDate)) ||
-      (state.duration.endDate && isSameDay(date, state.duration.endDate));
-  };
-
-  const durationTypes = [
-    { id: 'daily', label: 'Daily', days: 1 },
-    { id: 'weekly', label: 'Weekly', days: 7 },
-    { id: 'monthly', label: 'Monthly', days: 30 }
-  ];
-
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-6 md:space-y-8"
-    >
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6 md:space-y-8">
       <div className="bg-[#0a0f1e] border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8">
-        <div className="space-y-6 md:space-y-8">
-          {/* Custom Duration Type */}
+        <div className="space-y-8">
+          {error && <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3 text-red-500 text-[10px] font-mono uppercase tracking-widest"><AlertCircle size={16} /> {error}</div>}
           <div className="space-y-4">
-            <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Select Booking Duration</h3>
-            <div className="flex flex-wrap gap-2 md:gap-3">
-              {durationTypes.map(type => (
-                <button
-                  key={type.id}
-                  onClick={() => {
-                    const planDays = type.days;
-
-                    setState((prev: BookingState) => {
-                      const newDuration = { ...prev.duration, type: type.id as any };
-
-                      // If customer has already picked a start date, immediately auto-recalculate the range for the new plan
-                      if (prev.duration.startDate && type.id !== 'daily') {
-                        newDuration.endDate = addDays(prev.duration.startDate, planDays - 1);
-                        newDuration.totalDays = planDays;
-                      } else if (type.id === 'daily') {
-                        // Reset range when switching to manual daily mode to prevent confusion
-                        newDuration.endDate = null;
-                        newDuration.totalDays = 0;
-                      }
-
-                      return { ...prev, duration: newDuration };
-                    });
-                  }}
-                  className={cn(
-                    "flex-1 md:flex-none px-4 md:px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] md:text-xs border transition-all",
-                    state.duration.type === type.id
-                      ? "bg-[#00d4ff] text-black border-[#00d4ff] shadow-[0_0_15px_rgba(0,212,255,0.3)]"
-                      : "bg-white/5 text-gray-400 border-white/10 hover:border-white/30"
-                  )}
-                >
-                  {type.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Pick Your Dates */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Pick Your Dates</h3>
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500" />
-                  <span className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest">Available</span>
-                </div>
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-red-500" />
-                  <span className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest">Booked</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-black/40 border border-white/5 rounded-2xl p-4 md:p-6">
-              <div className="flex items-center justify-between mb-4 md:mb-6 px-1 md:px-2">
-                <button
-                  onClick={() => setViewDate(subMonths(viewDate, 1))}
-                  className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <h4 className="text-xs md:text-sm font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-white">
-                  {format(viewDate, 'MMMM yyyy')}
-                </h4>
-                <button
-                  onClick={() => setViewDate(addMonths(viewDate, 1))}
-                  className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
-                >
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2 md:mb-4">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-                  <div key={day} className="text-center text-[8px] md:text-[10px] font-black text-gray-600 py-1 md:py-2">{day}</div>
-                ))}
-              </div>
-              <div className="grid grid-cols-7 gap-1 md:gap-2">
-                {calendarDays.map((date, i) => {
-                  const isPast = isBefore(date, today);
-                  const isToday = isSameDay(date, today);
-                  const isCurrentMonth = isSameMonth(date, monthStart);
-                  const selected = isSelected(date);
-                  const inRange = isInRange(date);
-                  const isBooked = i % 12 === 0 && i > 10; // Mock booked dates
-
-                  return (
-                    <button
-                      key={i}
-                      disabled={isPast || isBooked || !isCurrentMonth}
-                      onClick={() => handleDateClick(date)}
-                      onMouseEnter={() => setHoverDate(date)}
-                      onMouseLeave={() => setHoverDate(null)}
-                      className={cn(
-                        "aspect-square rounded-lg md:rounded-xl flex flex-col items-center justify-center relative transition-all duration-200",
-                        (isPast || !isCurrentMonth) ? "opacity-20 cursor-not-allowed" : "hover:scale-110",
-                        isBooked ? "bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20" : "bg-white/5 text-white",
-                        isToday && !selected && "border border-[#00d4ff]/50",
-                        selected ? "bg-[#00d4ff] text-black z-10 shadow-[0_0_15px_rgba(0,212,255,0.5)]" : "",
-                        inRange ? "bg-[#00d4ff]/20 text-[#00d4ff]" : ""
-                      )}
-                    >
-                      <span className="text-xs md:text-sm font-bold">{format(date, 'd')}</span>
-                      {isToday && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-[#00d4ff]" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Time Slot */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Preferred Deployment Window</h3>
-              <span className="text-[8px] md:text-[9px] font-mono text-emerald-500 uppercase">10AM - 08PM</span>
-            </div>
-            <div className="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
-              {[
-                '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', 
-                '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM'
-              ].map(slot => (
-                <button
-                  key={slot}
-                  onClick={() => setState((prev: BookingState) => ({ ...prev, duration: { ...prev.duration, timeSlot: slot } }))}
-                  className={cn(
-                    "py-2.5 md:py-3 rounded-xl border text-center transition-all duration-300",
-                    state.duration.timeSlot === slot
-                      ? "bg-[#00d4ff] text-black border-[#00d4ff] shadow-[0_0_15px_rgba(0,212,255,0.3)] font-black"
-                      : "bg-white/5 border-white/10 text-gray-400 hover:border-[#00d4ff]/50 hover:text-white"
-                  )}
-                >
-                  <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-tighter">{slot}</span>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 text-center">Select Booking Window</h3>
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
+              {calendarDays.map((date, i) => (
+                <button key={i} onClick={() => handleDateClick(date)} disabled={isBefore(date, today) || !isSameMonth(date, monthStart)} className={cn("aspect-square rounded-lg flex items-center justify-center text-xs font-bold transition-all", isSameDay(date, state.duration.startDate || new Date(0)) || isSameDay(date, state.duration.endDate || new Date(0)) ? "bg-[#00d4ff] text-black" : "bg-white/5 text-white hover:bg-white/10", (state.duration.startDate && state.duration.endDate && date > state.duration.startDate && date < state.duration.endDate) ? "bg-[#00d4ff]/20 text-[#00d4ff]" : "", !isSameMonth(date, monthStart) && "opacity-0 pointer-events-none")}>
+                  {format(date, 'd')}
                 </button>
               ))}
             </div>
           </div>
         </div>
       </div>
-
       <div className="flex justify-between gap-4">
-        <button
-          onClick={onBack}
-          className="flex-1 md:flex-none px-6 md:px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-[10px] md:text-xs rounded-xl border border-white/10 hover:bg-white/10 transition-all"
-        >
-          Back
-        </button>
-        <button
-          onClick={onNext}
-          disabled={!state.duration.startDate || !state.duration.endDate}
-          className="flex-[2] md:flex-none px-10 md:px-12 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-[10px] md:text-xs rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Continue
+        <button onClick={onBack} className="px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-xs rounded-xl border border-white/10">Back</button>
+        <button onClick={onNext} disabled={!state.duration.startDate || !state.duration.endDate || isChecking} className="flex-1 px-12 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs rounded-xl flex items-center justify-center gap-2">
+          {isChecking ? <><RefreshCw className="animate-spin" size={14} /> SCANNING...</> : 'Continue'}
         </button>
       </div>
     </motion.div>
   );
 }
 
-function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycAddress, isFirstBooking }: {
-  state: BookingState,
-  setState: any,
-  onNext: () => void,
-  onBack: () => void,
-  kycStatus?: string,
-  kycAddress?: string,
-  isFirstBooking: boolean
-}) {
-  const { slug } = useParams();
-  const navigate = useNavigate();
+function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycAddress, isFirstBooking }: { state: BookingState, setState: any, onNext: () => void, onBack: () => void, kycStatus?: string, kycAddress?: string, isFirstBooking: boolean }) {
   const isKycApproved = kycStatus === 'APPROVED';
-  const [showManualAddress, setShowManualAddress] = useState(false);
-
-  useEffect(() => {
-    // Only auto-fill if the user hasn't explicitly chosen to show manual address
-    // and if the current address is empty or is the kyc address
-    if (state.delivery.method === 'delivery' && isKycApproved && kycAddress && !showManualAddress) {
-      if (!state.delivery.address || state.delivery.address === kycAddress) {
-        setState((prev: BookingState) => ({
-          ...prev,
-          delivery: { ...prev.delivery, address: kycAddress }
-        }));
-      }
-    }
-  }, [state.delivery.method, isKycApproved, kycAddress, showManualAddress]);
-
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-6 md:space-y-8"
-    >
-      <div className="bg-[#0a0f1e] border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8">
-        <div className="space-y-6 md:space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <button
-              onClick={() => {
-                if (isFirstBooking) {
-                  alert("Security Protocol: First-time rentals are restricted to Home Delivery for identity verification.");
-                } else {
-                  setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, method: 'pickup' } }));
-                }
-              }}
-              className={cn(
-                "p-6 md:p-8 rounded-2xl border text-left transition-all group relative overflow-hidden",
-                state.delivery.method === 'pickup'
-                  ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
-                  : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30",
-                isFirstBooking && "opacity-50 grayscale cursor-not-allowed hover:border-white/10"
-              )}
-            >
-              <Store size={24} className="mb-3 md:mb-4" />
-              <div className="flex justify-between items-start">
-                <h4 className="text-lg md:text-xl font-black uppercase tracking-tight mb-1 md:mb-2">Store Pickup</h4>
-                {isFirstBooking && (
-                  <span className="text-[8px] md:text-[9px] font-black bg-red-500/20 text-red-500 px-2 py-0.5 rounded border border-red-500/30 uppercase tracking-widest">Locked</span>
-                )}
-              </div>
-              <p className="text-[10px] md:text-xs leading-relaxed opacity-70">
-                {isFirstBooking ? "Restricted for first-time deployments." : "Pick up from our central hub. Free of charge."}
-              </p>
-              <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/10 flex items-center gap-2">
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">Free</span>
-              </div>
-            </button>
-
-            <button
-              onClick={() => {
-                if (isKycApproved) {
-                  setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, method: 'delivery' } }));
-                } else {
-                  // Save progress to sessionStorage immediately
-                  sessionStorage.setItem('pending_rental_booking', JSON.stringify({
-                    state: state,
-                    step: 3,
-                    slug: slug
-                  }));
-                  sessionStorage.setItem('redirectAfterKYC', `/rentals/${slug}/book`);
-                  navigate('/dashboard/kyc');
-                }
-              }}
-              className={cn(
-                "p-6 md:p-8 rounded-2xl border text-left transition-all group relative overflow-hidden",
-                state.delivery.method === 'delivery'
-                  ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
-                  : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30",
-                !isKycApproved && "opacity-50 grayscale hover:border-white/10"
-              )}
-            >
-              <Truck size={24} className="mb-3 md:mb-4" />
-              <h4 className="text-lg md:text-xl font-black uppercase tracking-tight mb-1 md:mb-2">Home Delivery</h4>
-              <p className="text-[10px] md:text-xs leading-relaxed opacity-70">We bring the game to your doorstep. Same-day available.</p>
-              {!isKycApproved && (
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="text-[8px] md:text-[10px] text-amber-500 font-bold uppercase tracking-widest flex items-center gap-1">
-                    <ShieldCheck size={12} />
-                    KYC Required
-                  </div>
-                  <span className="text-[8px] md:text-[9px] font-black text-[#00d4ff] underline uppercase tracking-widest">Verify Now</span>
-                </div>
-              )}
-              <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/10 flex items-center gap-2">
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">+₹9.99</span>
-              </div>
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Contact Phone</label>
-                <div className="relative">
-                  <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input
-                    type="tel"
-                    maxLength={10}
-                    placeholder="9876543210"
-                    value={state.delivery.phone}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '');
-                      setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, phone: val } }));
-                    }}
-                    className={`w-full bg-black/40 border rounded-xl py-3.5 md:py-4 pl-11 md:pl-12 pr-4 text-sm outline-none transition-all ${
-                      state.delivery.phone.length === 10 ? 'border-emerald-500/50 focus:border-emerald-500' : 'border-white/10 focus:border-[#00d4ff]'
-                    }`}
-                  />
-                  {state.delivery.phone.length === 10 && (
-                    <CheckCircle2 size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500" />
-                  )}
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Delivery Address</label>
-                
-                {state.delivery.method === 'pickup' ? (
-                  <div className="relative opacity-70">
-                    <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                    <input
-                      type="text"
-                      readOnly
-                      value="123 Gaming Hub, Tech District"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 md:py-4 pl-11 md:pl-12 pr-4 text-sm outline-none cursor-not-allowed"
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {isKycApproved && kycAddress && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowManualAddress(false);
-                          setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: kycAddress } }));
-                        }}
-                        className={cn(
-                          "w-full p-3.5 md:p-4 rounded-xl border text-left transition-all flex items-start gap-3 group",
-                          !showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address)
-                            ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
-                            : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30"
-                        )}
-                      >
-                        <div className={cn(
-                          "mt-1 w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors",
-                          !showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address) ? "border-[#00d4ff]" : "border-gray-600 group-hover:border-gray-400"
-                        )}>
-                          {!showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address) && <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#00d4ff]" />}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 md:mb-1">Use Verified Address</p>
-                          <p className="text-[10px] md:text-xs opacity-80 line-clamp-2 leading-relaxed">{kycAddress}</p>
-                        </div>
-                      </button>
-                    )}
-
-                    {(!isKycApproved || !kycAddress || showManualAddress) ? (
-                      <div className="relative group">
-                        <MapPin size={16} className="absolute left-4 top-4 text-gray-500 group-focus-within:text-[#00d4ff] transition-colors" />
-                        <textarea
-                          autoFocus={showManualAddress}
-                          placeholder="Enter delivery address..."
-                          value={state.delivery.address}
-                          onChange={(e) => setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: e.target.value } }))}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 md:py-4 pl-11 md:pl-12 pr-4 text-sm focus:border-[#00d4ff] outline-none transition-all h-24 resize-none"
-                        />
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowManualAddress(true);
-                          setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: '' } }));
-                        }}
-                        className="w-full p-3.5 md:p-4 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-[#00d4ff] hover:border-[#00d4ff]/50 transition-all flex items-center justify-center gap-2"
-                      >
-                        <PlusCircle size={16} />
-                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">New Address</span>
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6 md:space-y-8">
+      <div className="bg-[#0a0f1e] border border-white/10 rounded-2xl p-6 md:p-8 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button onClick={() => setState((p: any) => ({ ...p, delivery: { ...p.delivery, method: 'pickup' } }))} className={cn("p-6 rounded-xl border text-left transition-all", state.delivery.method === 'pickup' ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]" : "bg-white/5 border-white/10 text-gray-400")}><Store size={24} className="mb-2" /> Store Pickup</button>
+          <button onClick={() => setState((p: any) => ({ ...p, delivery: { ...p.delivery, method: 'delivery' } }))} className={cn("p-6 rounded-xl border text-left transition-all", state.delivery.method === 'delivery' ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]" : "bg-white/5 border-white/10 text-gray-400")}><Truck size={24} className="mb-2" /> Home Delivery</button>
         </div>
+        <input type="tel" maxLength={10} placeholder="Mobile Number" value={state.delivery.phone} onChange={e => setState((p: any) => ({ ...p, delivery: { ...p.delivery, phone: e.target.value.replace(/\D/g, '') } }))} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-4 text-white outline-none" />
+        {state.delivery.method === 'delivery' && <textarea placeholder="Delivery Address" value={state.delivery.address} onChange={e => setState((p: any) => ({ ...p, delivery: { ...p.delivery, address: e.target.value } }))} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-4 text-white h-24" />}
       </div>
-
       <div className="flex justify-between gap-4">
-        <button
-          onClick={onBack}
-          className="flex-1 md:flex-none px-6 md:px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-[10px] md:text-xs rounded-xl border border-white/10 hover:bg-white/10 transition-all"
-        >
-          Back
-        </button>
-        <button
-          onClick={onNext}
-          disabled={!state.delivery.phone || (state.delivery.method === 'delivery' && !state.delivery.address)}
-          className="flex-[2] md:flex-none px-10 md:px-12 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-[10px] md:text-xs rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Continue
-        </button>
+        <button onClick={onBack} className="px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-xs rounded-xl">Back</button>
+        <button onClick={onNext} disabled={!state.delivery.phone || (state.delivery.method === 'delivery' && !state.delivery.address)} className="flex-1 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs rounded-xl">Continue</button>
       </div>
     </motion.div>
   );
 }
 
 function Step4Payment({ state, setState, totals, onNext, onBack }: { state: BookingState, setState: any, totals: any, onNext: () => void, onBack: () => void }) {
-  const [couponInput, setCouponInput] = useState('');
-  const [isApplying, setIsApplying] = useState(false);
-
-  const applyCoupon = () => {
-    setIsApplying(true);
-    setTimeout(() => {
-      if (couponInput.toUpperCase() === 'GAMER20') {
-        setState((prev: BookingState) => ({ ...prev, payment: { ...prev.payment, couponCode: 'GAMER20', discount: 20 } }));
-      }
-      setIsApplying(false);
-    }, 800);
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-8"
-    >
-      <div className="bg-[#0a0f1e] border border-white/10 rounded-3xl p-8">
-        <div className="space-y-8">
-          {/* Coupon */}
-          <div className="space-y-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Promo Code</h3>
-            <div className="flex gap-3">
-              <div className="relative flex-1">
-                <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input
-                  type="text"
-                  placeholder="Enter code (Try GAMER20)"
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-sm focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none transition-all"
-                />
-              </div>
-              <button
-                onClick={applyCoupon}
-                disabled={isApplying || !couponInput}
-                className="px-8 bg-white/5 border border-white/10 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all disabled:opacity-50"
-              >
-                {isApplying ? '...' : 'Apply'}
-              </button>
-            </div>
-            {state.payment.couponCode && (
-              <div className="flex items-center gap-2 text-green-500 text-[10px] font-bold uppercase tracking-widest">
-                <Check size={12} />
-                Code Applied: {state.payment.couponCode} (20% OFF)
-              </div>
-            )}
-          </div>
-
-          {/* Deposit Info */}
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
-              <ShieldCheck size={20} />
-            </div>
-            <div className="space-y-1">
-              <h4 className="text-sm font-black uppercase tracking-tight text-amber-500">Refundable Deposit</h4>
-              <p className="text-xs text-amber-500/80 leading-relaxed">
-                A {formatCurrency(totals.deposit)} refundable deposit will be held and released within 3 business days of return. This is charged separately from your rental fee.
-              </p>
-            </div>
-          </div>
-
-          {/* Terms */}
-          <label className="flex items-start gap-3 cursor-pointer group">
-            <div className="relative mt-1">
-              <input
-                type="checkbox"
-                checked={state.payment.termsAccepted}
-                onChange={(e) => setState((prev: BookingState) => ({ ...prev, payment: { ...prev.payment, termsAccepted: e.target.checked } }))}
-                className="sr-only"
-              />
-              <div className={cn(
-                "w-5 h-5 rounded border transition-all flex items-center justify-center",
-                state.payment.termsAccepted ? "bg-[#00d4ff] border-[#00d4ff]" : "bg-white/5 border-white/20 group-hover:border-white/40"
-              )}>
-                {state.payment.termsAccepted && <Check size={14} className="text-black" strokeWidth={4} />}
-              </div>
-            </div>
-            <span className="text-xs text-gray-400 leading-relaxed">
-              I agree to the <button className="text-[#00d4ff] hover:underline">Rental Terms & Conditions</button> and the <button className="text-[#00d4ff] hover:underline">Late Fee Policy</button>.
-            </span>
-          </label>
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+      <div className="bg-[#0a0f1e] border border-white/10 rounded-3xl p-8 space-y-6">
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 flex gap-4">
+          <ShieldCheck size={24} className="text-amber-500" />
+          <p className="text-xs text-amber-500/80 uppercase font-black tracking-widest">Security Deposit: {formatCurrency(totals.deposit)} (Refundable)</p>
         </div>
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <input type="checkbox" checked={state.payment.termsAccepted} onChange={e => setState((p: any) => ({ ...p, payment: { ...p.payment, termsAccepted: e.target.checked } }))} className="mt-1" />
+          <span className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">I agree to the Rental Terms, Damage Policy & Late Fees.</span>
+        </label>
       </div>
-
-      <div className="flex justify-between">
-        <button
-          onClick={onBack}
-          className="px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-xs rounded-xl border border-white/10 hover:bg-white/10 transition-all"
-        >
-          Back
-        </button>
-        <button
-          onClick={onNext}
-          disabled={!state.payment.termsAccepted}
-          className="px-12 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Pay with Razorpay — {formatCurrency(totals.totalDue)}
-        </button>
+      <div className="flex justify-between gap-4">
+        <button onClick={onBack} className="px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-xs rounded-xl">Back</button>
+        <button onClick={onNext} disabled={!state.payment.termsAccepted} className="flex-1 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs rounded-xl">Pay {formatCurrency(totals.totalDue)}</button>
       </div>
     </motion.div>
   );
 }
 
-function OrderSummary({ selectedConsole, state, totals, onNext, currentStep, user }: { selectedConsole: RentalConsole, state: BookingState, totals: any, onNext: () => void, currentStep: number, user: any }) {
+function OrderSummary({ selectedConsole, state, totals, onNext, currentStep, isChecking, user }: { selectedConsole: any, state: any, totals: any, onNext: any, currentStep: number, isChecking: boolean, user: any }) {
   return (
-    <div className="bg-[#0a0f1e] border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-      <div className="p-8 space-y-6">
-        <div className="flex gap-4">
-          <div className="w-20 h-20 rounded-xl overflow-hidden bg-black/40 border border-white/5 shrink-0">
-            <img src={selectedConsole.image} alt={selectedConsole.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-          </div>
-          <div className="flex-1">
-            <h4 className="text-sm font-bold text-white leading-tight">{selectedConsole.name}</h4>
-            <p className="text-xs text-gray-500 mt-1">{formatCurrency(selectedConsole.dailyRate)} / Day</p>
-          </div>
-        </div>
-
-        <div className="space-y-3 pt-4 border-t border-white/5">
-          <div className="flex justify-between text-xs">
-            <span className="text-gray-400">Duration</span>
-            <span className="text-white font-bold">
-              {state.duration.totalDays > 0 ? `${state.duration.totalDays} Days` : 'Not selected'}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-gray-400">Dates</span>
-            <span className="text-white font-bold">
-              {state.duration.startDate ? format(state.duration.startDate, 'MMM d') : '-'}
-              {state.duration.endDate ? ` — ${format(state.duration.endDate, 'MMM d')}` : ''}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-gray-400">Delivery</span>
-            <span className="text-white font-bold capitalize">{state.delivery.method}</span>
-          </div>
-          {state.delivery.phone && (
-            <div className="flex justify-between text-xs">
-              <span className="text-gray-400">Contact</span>
-              <span className="text-white font-bold">{state.delivery.phone}</span>
-            </div>
-          )}
-          {state.delivery.method === 'delivery' && (state.delivery.address || state.delivery.notes) && (
-            <div className="pt-2">
-              <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Shipping Destination</div>
-              <div className="text-[11px] text-gray-300 bg-white/5 p-3 rounded-lg border border-white/5 leading-relaxed">
-                <p className="font-bold text-white mb-1">{state.delivery.address || 'Address pending...'}</p>
-                {state.delivery.notes && <p className="opacity-60 italic">Note: {state.delivery.notes}</p>}
-              </div>
-            </div>
-          )}
-          {state.delivery.method === 'delivery' && (
-            <div className="flex items-center gap-2 mt-2 py-2 px-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">Live Location Tracking Enabled</span>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-3 pt-6 border-t border-white/5">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Rental Cost</span>
-            <span className="text-white font-bold">{formatCurrency(totals.rentalCost)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Delivery Fee</span>
-            <span className="text-white font-bold">{formatCurrency(totals.deliveryFee)}</span>
-          </div>
-          {totals.addonsCost > 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Addons (Controllers)</span>
-              <span className="text-white font-bold">{formatCurrency(totals.addonsCost)}</span>
-            </div>
-          )}
-          {totals.discountAmount > 0 && (
-            <div className="flex justify-between text-sm text-green-500">
-              <span>Discount</span>
-              <span className="font-bold">-{formatCurrency(totals.discountAmount)}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Refundable Deposit</span>
-            <span className="text-white font-bold">{formatCurrency(totals.deposit)}</span>
-          </div>
-        </div>
-
-        <div className="pt-6 border-t border-white/10">
-          <div className="flex justify-between items-end">
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Total Due</span>
-            <span className="text-3xl font-black text-[#00d4ff] tracking-tighter">{formatCurrency(totals.totalDue)}</span>
-          </div>
-        </div>
-
-        <button
-          onClick={onNext}
-          disabled={
-            (currentStep === 2 && (!state.duration.startDate || !state.duration.endDate)) ||
-            (currentStep === 3 && (!state.delivery.phone || (state.delivery.method === 'delivery' && !state.delivery.address))) ||
-            (currentStep === 4 && !state.payment.termsAccepted)
-          }
-          className="w-full py-5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-sm rounded-2xl transition-all hover:shadow-[0_0_30px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-        >
-          {currentStep === 4 ? 'Pay with Razorpay' : 'Continue'}
-        </button>
-      </div>
-
-      <div className="bg-white/5 p-6 space-y-3">
-        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-          <ShieldCheck size={14} className="text-green-500" />
-          <span>Secure Payment Processing</span>
-        </div>
-        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-          <Check size={14} className="text-green-500" />
-          <span>Refundable Deposit</span>
-        </div>
-        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-          <Check size={14} className="text-green-500" />
-          <span>Free Cancellation (24h)</span>
+    <div className="bg-[#0a0f1e] border border-white/10 rounded-3xl overflow-hidden shadow-2xl p-8 space-y-6">
+      <div className="flex gap-4">
+        <img src={selectedConsole.image} className="w-20 h-20 rounded-xl object-cover border border-white/10" alt="" />
+        <div>
+          <h4 className="text-sm font-black text-white uppercase">{selectedConsole.name}</h4>
+          <p className="text-[10px] text-[#00d4ff] font-mono mt-1">SN: {state.unitId || 'PENDING_SCAN'}</p>
         </div>
       </div>
+      <div className="space-y-3 pt-4 border-t border-white/5 text-[10px] font-black uppercase tracking-widest text-gray-400">
+        <div className="flex justify-between"><span>Rental Fee</span><span className="text-white">{formatCurrency(totals.rentalCost)}</span></div>
+        <div className="flex justify-between"><span>Security Deposit</span><span className="text-amber-500">{formatCurrency(totals.deposit)}</span></div>
+        <div className="flex justify-between border-t border-white/10 pt-3 text-lg text-[#00d4ff]"><span>Total Due</span><span className="italic">{formatCurrency(totals.totalDue)}</span></div>
+      </div>
+      <button onClick={onNext} disabled={isChecking} className="w-full py-5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:shadow-[0_0_30px_rgba(0,212,255,0.4)]">
+        {isChecking ? 'FLEET SCAN...' : (currentStep === 4 ? 'Initiate Payment' : 'Continue')}
+      </button>
     </div>
   );
 }

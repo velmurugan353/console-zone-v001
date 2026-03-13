@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, X, User, Gamepad2 } from 'lucide-react';
+import { ShoppingCart, Menu, X, User } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +7,7 @@ import { useCustomizer } from '../context/CustomizerContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { EditableText } from './Editable';
+import Logo from './Logo';
 
 export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,15 +26,10 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
   return (
     <nav className="fixed top-0 w-full z-[100] bg-gaming-bg/80 backdrop-blur-md border-b border-gaming-border">
       <div className="w-full px-6 transition-all duration-500">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group text-white">
-            <div className="p-2 bg-gaming-accent/10 rounded-lg group-hover:bg-gaming-accent/20 transition-colors">
-              <Gamepad2 className="h-6 w-6 text-gaming-accent" />
-            </div>
-            <span className="text-xl font-bold tracking-tight italic">
-              Console<span className="text-gaming-accent">Zone</span>
-            </span>
+          <Link to="/" className="flex items-center group">
+            <Logo size={56} />
           </Link>
 
           {/* Desktop Nav */}
@@ -100,69 +96,60 @@ export default function Navbar({ onAuthClick }: { onAuthClick?: () => void }) {
       {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[-1]"
-            />
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-gaming-card border-b border-gaming-border overflow-hidden"
-            >
-              <div className="px-4 pt-2 pb-6 space-y-2">
-                {navLinks.map((link) => (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-gaming-card border-b border-gaming-border overflow-hidden"
+          >
+            <div className="px-4 pt-2 pb-6 space-y-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "block px-3 py-2 rounded-md text-base font-medium",
+                    location.pathname === link.path
+                      ? "bg-gaming-accent/10 text-gaming-accent"
+                      : "text-gaming-muted hover:bg-gaming-border/50 hover:text-white"
+                  )}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <div className="pt-4 border-t border-gaming-border">
+                <Link
+                  to="/cart"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center space-x-2 px-3 py-2 text-gaming-muted hover:text-white"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  <span>Cart ({cartCount})</span>
+                </Link>
+                {user ? (
                   <Link
-                    key={link.name}
-                    to={link.path}
-                    onClick={() => setIsOpen(false)}
-                    className={cn(
-                      "block px-3 py-2 rounded-md text-base font-medium",
-                      location.pathname === link.path
-                        ? "bg-gaming-accent/10 text-gaming-accent"
-                        : "text-gaming-muted hover:bg-gaming-border/50 hover:text-white"
-                    )}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-                <div className="pt-4 border-t border-gaming-border">
-                  <Link
-                    to="/cart"
+                    to="/dashboard"
                     onClick={() => setIsOpen(false)}
                     className="flex items-center space-x-2 px-3 py-2 text-gaming-muted hover:text-white"
                   >
-                    <ShoppingCart className="h-5 w-5" />
-                    <span>Cart ({cartCount})</span>
+                    <User className="h-5 w-5" />
+                    <span>Dashboard</span>
                   </Link>
-                  {user ? (
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center space-x-2 px-3 py-2 text-gaming-muted hover:text-white"
-                    >
-                      <User className="h-5 w-5" />
-                      <span>Dashboard</span>
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setIsOpen(false);
-                        if (onAuthClick) onAuthClick();
-                      }}
-                      className="block w-full mt-2 px-3 py-2 text-center bg-gaming-accent text-black rounded-md font-medium"
-                    >
-                      Login
-                    </button>
-                  )}
-                </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      if (onAuthClick) onAuthClick();
+                    }}
+                    className="block w-full mt-2 px-3 py-2 text-center bg-gaming-accent text-black rounded-md font-medium"
+                  >
+                    Login
+                  </button>
+                )}
               </div>
-            </motion.div>
-          </>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </nav>

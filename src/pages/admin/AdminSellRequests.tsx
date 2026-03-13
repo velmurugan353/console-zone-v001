@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { formatCurrency } from '../../lib/utils';
 import { 
   CheckCircle, 
@@ -221,7 +221,7 @@ export default function AdminSellRequests() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#A855F7]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B000FF]"></div>
       </div>
     );
   }
@@ -236,17 +236,17 @@ export default function AdminSellRequests() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-md p-8 shadow-2xl"
+              className="bg-[#080112] border border-white/10 rounded-2xl w-full max-w-md p-8 shadow-2xl"
             >
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <h3 className="text-xs font-mono uppercase tracking-widest text-[#A855F7]">Acquisition_Protocol</h3>
+                  <h3 className="text-xs font-mono uppercase tracking-widest text-[#B000FF]">Acquisition_Protocol</h3>
                   <p className="text-2xl font-bold text-white tracking-tighter uppercase italic">Request Details</p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowInvoice(true)}
-                    className="p-2 bg-white/5 rounded-full text-[#A855F7] border border-[#A855F7]/20 hover:bg-white/10 transition-colors"
+                    className="p-2 bg-white/5 rounded-full text-[#B000FF] border border-[#B000FF]/20 hover:bg-white/10 transition-colors"
                     title="Generate Acquisition Invoice"
                   >
                     <FileText size={20} />
@@ -265,7 +265,7 @@ export default function AdminSellRequests() {
                   <img src={selectedRequest.images[0]} alt={selectedRequest.device} className="w-20 h-20 rounded-lg object-cover border border-white/10" />
                   <div>
                     <h4 className="font-bold text-white text-lg uppercase tracking-tight">{selectedRequest.device}</h4>
-                    <p className="text-[#A855F7] font-mono text-xs uppercase mt-1">Condition: {selectedRequest.condition}</p>
+                    <p className="text-[#B000FF] font-mono text-xs uppercase mt-1">Condition: {selectedRequest.condition}</p>
                     <div className="flex items-center space-x-2 mt-2">
                       <User className="h-3 w-3 text-gray-500" />
                       <span className="text-gray-400 font-mono text-[10px] uppercase">{selectedRequest.customer}</span>
@@ -306,7 +306,7 @@ export default function AdminSellRequests() {
                 <div className="bg-white/[0.02] p-4 border border-white/5 rounded-xl">
                   <span className="text-gray-500 block text-[10px] font-mono uppercase mb-1">Admin Offer</span>
                   <div className="flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4 text-[#A855F7]" />
+                    <DollarSign className="h-4 w-4 text-[#B000FF]" />
                     <input
                       type="number"
                       value={selectedRequest.adminOffer || ''}
@@ -319,7 +319,7 @@ export default function AdminSellRequests() {
                           console.error('Failed to update offer:', error);
                         }
                       }}
-                      className="bg-black border border-white/10 rounded px-2 py-1 text-white font-mono text-sm focus:outline-none focus:border-[#A855F7] w-full"
+                      className="bg-black border border-white/10 rounded px-2 py-1 text-white font-mono text-sm focus:outline-none focus:border-[#B000FF] w-full"
                     />
                   </div>
                 </div>
@@ -331,7 +331,7 @@ export default function AdminSellRequests() {
                     <button
                       onClick={handleAIMarketAnalysis}
                       disabled={isAnalyzing}
-                      className="text-[9px] font-black text-[#A855F7] hover:text-white transition-colors flex items-center gap-1 uppercase tracking-widest disabled:opacity-50"
+                      className="text-[9px] font-black text-[#B000FF] hover:text-white transition-colors flex items-center gap-1 uppercase tracking-widest disabled:opacity-50"
                     >
                       <Zap size={10} className={isAnalyzing ? 'animate-pulse' : ''} />
                       {isAnalyzing ? 'Scanning...' : 'Analyze Market'}
@@ -342,7 +342,7 @@ export default function AdminSellRequests() {
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-[#A855F7]/5 border border-[#A855F7]/20 rounded-xl text-[10px] font-mono text-gray-300 leading-relaxed max-h-40 overflow-y-auto whitespace-pre-wrap prose prose-invert"
+                      className="p-4 bg-[#B000FF]/5 border border-[#B000FF]/20 rounded-xl text-[10px] font-mono text-gray-300 leading-relaxed max-h-40 overflow-y-auto whitespace-pre-wrap prose prose-invert"
                     >
                       {marketAnalysis}
                     </motion.div>
@@ -365,7 +365,7 @@ export default function AdminSellRequests() {
                     {selectedRequest.status === 'pending' && (
                       <button
                         onClick={() => handleStatusChange(selectedRequest.id, 'offered')}
-                        className="col-span-2 py-3 bg-[#A855F7] text-black font-bold rounded-xl text-xs uppercase tracking-widest hover:bg-[#9333EA] transition-all flex items-center justify-center gap-2"
+                        className="col-span-2 py-3 bg-[#B000FF] text-black font-bold rounded-xl text-xs uppercase tracking-widest hover:bg-[#9333EA] transition-all flex items-center justify-center gap-2"
                       >
                         <TrendingUp className="h-4 w-4" /> Send Offer
                       </button>
@@ -388,9 +388,9 @@ export default function AdminSellRequests() {
 
       {/* Stats Matrix */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl relative overflow-hidden group">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Activity className="h-12 w-12 text-[#A855F7]" />
+            <Activity className="h-12 w-12 text-[#B000FF]" />
           </div>
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Acquisition Rate</p>
           <div className="flex items-end space-x-2">
@@ -401,21 +401,21 @@ export default function AdminSellRequests() {
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: '72.5%' }}
-              className="bg-[#A855F7] h-full shadow-[0_0_10px_#A855F7]"
+              className="bg-[#B000FF] h-full shadow-[0_0_10px_#B000FF]"
             />
           </div>
         </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Pending Requests</p>
           <p className="text-3xl font-bold text-amber-500 tracking-tighter">{requests.filter(r => r.status === 'pending').length}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Awaiting Protocol</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Active Offers</p>
           <p className="text-3xl font-bold text-blue-500 tracking-tighter">{requests.filter(r => r.status === 'offered').length}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Negotiation Matrix</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Accepted</p>
           <p className="text-3xl font-bold text-emerald-500 tracking-tighter">{requests.filter(r => r.status === 'accepted').length}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Ready for Inbound</p>
@@ -423,7 +423,7 @@ export default function AdminSellRequests() {
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-col md:flex-row gap-4 bg-[#0a0a0a] p-4 rounded-2xl border border-white/10">
+      <div className="flex flex-col md:flex-row gap-4 bg-[#080112] p-4 rounded-2xl border border-white/10">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <input
@@ -431,7 +431,7 @@ export default function AdminSellRequests() {
             placeholder="Search acquisition matrix..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] w-full"
+            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#B000FF] w-full"
           />
         </div>
         <div className="flex items-center space-x-3">
@@ -439,7 +439,7 @@ export default function AdminSellRequests() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="bg-black border border-white/10 rounded-xl px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
+            className="bg-black border border-white/10 rounded-xl px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF]"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -452,7 +452,7 @@ export default function AdminSellRequests() {
       </div>
 
       {/* Content Matrix */}
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="bg-[#080112] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-white/[0.02] text-gray-500 text-[10px] font-mono uppercase tracking-widest">
@@ -473,7 +473,7 @@ export default function AdminSellRequests() {
                   key={request.id}
                   className="hover:bg-white/[0.01] transition-colors group"
                 >
-                  <td className="px-6 py-4 text-[#A855F7] font-bold tracking-tighter">[{request.id}]</td>
+                  <td className="px-6 py-4 text-[#B000FF] font-bold tracking-tighter">[{request.id}]</td>
                   <td className="px-6 py-4">
                     <div className="text-white uppercase font-bold">{request.customer}</div>
                     <div className="text-[10px] text-gray-600">{request.date}</div>
@@ -501,7 +501,7 @@ export default function AdminSellRequests() {
                       {request.status === 'pending' && (
                         <button
                           onClick={() => setSelectedRequest(request)}
-                          className="p-2 bg-[#A855F7]/10 text-[#A855F7] hover:bg-[#A855F7]/20 border border-[#A855F7]/20 rounded transition-all"
+                          className="p-2 bg-[#B000FF]/10 text-[#B000FF] hover:bg-[#B000FF]/20 border border-[#B000FF]/20 rounded transition-all"
                           title="Review & Offer"
                         >
                           <DollarSign className="h-4 w-4" />
@@ -549,3 +549,4 @@ export default function AdminSellRequests() {
     </div>
   );
 }
+

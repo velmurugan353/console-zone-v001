@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+﻿import React, { useRef } from 'react';
 import { useCustomizer, ThemePalette, LayoutSettings } from '../../context/CustomizerContext';
 import { 
   Palette, 
@@ -19,13 +19,13 @@ const PRESET_PALETTES = [
   {
     name: 'Cyberpunk',
     palette: {
-      bg: '#0a0a0a',
-      card: '#121212',
-      accent: '#00f0ff',
-      secondary: '#7000ff',
+      bg: '#080112',
+      card: '#0c021a',
+      accent: '#B000FF',
+      secondary: '#B000FF',
       text: '#e0e0e0',
       muted: '#a0a0a0',
-      border: '#2a2a2a',
+      border: '#4D008C',
       headingFont: 'Inter',
       bodyFont: 'Inter'
     }
@@ -35,11 +35,11 @@ const PRESET_PALETTES = [
     palette: {
       bg: '#050214',
       card: '#0d0829',
-      accent: '#A855F7',
-      secondary: '#6366f1',
+      accent: '#B000FF',
+      secondary: '#4D008C',
       text: '#f8fafc',
       muted: '#94a3b8',
-      border: '#1e1b4b',
+      border: '#4D008C',
       headingFont: 'Inter',
       bodyFont: 'Inter'
     }
@@ -513,3 +513,4 @@ export default function AdminCustomizer() {
     </div>
   );
 }
+

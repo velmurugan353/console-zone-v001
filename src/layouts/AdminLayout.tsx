@@ -8,7 +8,6 @@ import {
   Settings,
   LogOut,
   Gamepad2,
-  Wrench,
   DollarSign,
   Activity,
   Tag,
@@ -60,7 +59,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-dvh bg-[#050505] flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-[#080112] flex items-center justify-center p-4">
         <div className="text-center space-y-6 p-8 bg-white/5 border border-white/10 rounded-3xl max-w-md mx-auto shadow-2xl">
           <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto">
             <ShieldCheck className="h-8 w-8 text-red-500" />
@@ -93,7 +92,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       title: 'Dashboard',
       links: [
         { name: 'Overview', path: '/admin', icon: LayoutDashboard },
-        { name: 'Repair Matrix', path: '/admin/operations?tab=repairs', icon: Wrench },
         { name: 'Control Center', path: '/admin/controls', icon: Zap },
         { name: 'Analytics', path: '/admin/analytics', icon: Activity },
       ]
@@ -110,7 +108,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       links: [
         { name: 'Orders', path: '/admin/operations?tab=orders', icon: ShoppingBag },
         { name: 'Rentals', path: '/admin/operations?tab=rentals', icon: Calendar },
-        { name: 'Repairs', path: '/admin/operations?tab=repairs', icon: Wrench },
         { name: 'Sell Requests', path: '/admin/operations?tab=sell-requests', icon: DollarSign },
       ]
     },
@@ -142,7 +139,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-dvh flex bg-[#050505] text-gaming-text font-sans overflow-x-hidden relative admin-layout">
+    <div className="min-h-dvh flex bg-[#080112] text-gaming-text font-sans overflow-x-hidden relative admin-layout">
       {/* Mobile Mach Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-gaming-card border-b border-gaming-border z-50 flex items-center justify-between px-6">
         <Link to="/" className="flex items-center space-x-2">
@@ -290,7 +287,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             >
               <Bell size={18} className={cn("transition-colors", unreadCount > 0 ? "text-gaming-accent animate-pulse" : "text-gray-500 group-hover:text-white")} />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-[#0a0a0a]">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-[#080112]">
                   {unreadCount}
                 </span>
               )}

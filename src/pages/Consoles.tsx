@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { PRODUCTS } from '../lib/data';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../lib/utils';
@@ -11,11 +11,11 @@ export default function Consoles() {
   const featuredConsole = consoles[0]; // PS5 Pro
 
   return (
-    <div className="bg-[#050505] min-h-dvh pb-24">
+    <div className="bg-[#080112] min-h-dvh pb-24">
       {/* Hero Section */}
       <section className="relative h-[] flex items-center overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#080112] via-[#080112]/60 to-transparent z-10" />
           <img 
             src={featuredConsole.image} 
             alt={featuredConsole.name}
@@ -30,9 +30,9 @@ export default function Consoles() {
             transition={{ duration: 0.8 }}
             className="max-w-2xl space-y-6"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#A855F7]/20 border border-[#A855F7]/30 rounded-full">
-              <Zap className="h-3 w-3 text-[#A855F7]" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A855F7]">Featured Console</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#B000FF]/20 border border-[#B000FF]/30 rounded-full">
+              <Zap className="h-3 w-3 text-[#B000FF]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#B000FF]">Featured Console</span>
             </div>
             <h1 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.85]">
               {featuredConsole.name}
@@ -43,7 +43,7 @@ export default function Consoles() {
             <div className="flex flex-wrap gap-4 pt-4">
               <button 
                 onClick={() => addToCart({ ...featuredConsole, quantity: 1, type: 'buy' })}
-                className="px-8 py-4 bg-white text-black font-black uppercase tracking-widest rounded-none skew-x-[-15deg] hover:bg-[#A855F7] hover:text-white transition-all flex items-center gap-2"
+                className="px-8 py-4 bg-white text-black font-black uppercase tracking-widest rounded-none skew-x-[-15deg] hover:bg-[#B000FF] hover:text-white transition-all flex items-center gap-2"
               >
                 <span className="skew-x-[15deg]">Buy Now</span>
               </button>
@@ -62,7 +62,7 @@ export default function Consoles() {
             <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase">
               ALL CONSOLES
             </h2>
-            <div className="h-1 w-20 bg-[#A855F7] rounded-full" />
+            <div className="h-1 w-20 bg-[#B000FF] rounded-full" />
           </div>
           <div className="flex gap-4">
             <span className="text-gray-500 font-mono text-sm uppercase tracking-widest">Total Units: {consoles.length}</span>
@@ -80,11 +80,13 @@ export default function Consoles() {
               className="group relative"
             >
               {/* Card Background & Border */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[2.5rem] -m-1 group-hover:from-[#A855F7]/20 transition-all duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#B000FF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-[2.5rem] -m-1 blur-xl" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[2.5rem] -m-1 group-hover:from-[#B000FF]/30 transition-all duration-500" />
               
-              <div className="relative bg-[#0A0A0A] border border-white/5 rounded-[2.5rem] overflow-hidden p-6 space-y-6 flex flex-col h-full group-hover:border-[#A855F7]/30 transition-all">
+              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden p-6 space-y-6 flex flex-col h-full group-hover:border-[#B000FF]/50 transition-all duration-500 hover:-translate-y-2 shadow-2xl">
                 {/* Image Container */}
-                <div className="relative aspect-[4/3] w-full bg-[#121212] rounded-[2rem] overflow-hidden">
+                <div className="relative aspect-[4/3] w-full bg-[#0c021a] rounded-[2rem] overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <img 
                     src={console.image} 
                     alt={console.name}
@@ -93,9 +95,9 @@ export default function Consoles() {
                   />
                   
                   {/* Status Badge */}
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-4 right-4 z-20">
                     {console.inStock ? (
-                      <div className="bg-black/60 backdrop-blur-md border border-green-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
+                      <div className="bg-black/60 backdrop-blur-md border border-green-500/30 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                         <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">In Stock</span>
                       </div>
@@ -109,31 +111,31 @@ export default function Consoles() {
                 </div>
 
                 {/* Content */}
-                <div className="space-y-4 flex-grow">
+                <div className="space-y-4 flex-grow relative z-10">
                   <div className="flex items-start justify-between gap-4">
-                    <h3 className="text-2xl font-black text-white uppercase tracking-tight group-hover:text-[#A855F7] transition-colors leading-none">
+                    <h3 className="text-2xl font-black text-white uppercase tracking-tight group-hover:text-[#B000FF] group-hover:drop-shadow-[0_0_8px_rgba(176,0,255,0.8)] transition-all duration-300 leading-none">
                       {console.name}
                     </h3>
                   </div>
-                  <p className="text-gray-500 text-sm font-medium line-clamp-2 leading-relaxed">
+                  <p className="text-gray-400 text-sm font-medium line-clamp-2 leading-relaxed">
                     {console.description}
                   </p>
                 </div>
 
                 {/* Pricing & Actions */}
-                <div className="pt-6 border-t border-white/5 space-y-6">
+                <div className="pt-6 border-t border-white/5 space-y-6 relative z-10">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] text-gray-600 font-black uppercase tracking-widest mb-1">Buy For</div>
-                      <div className="text-3xl font-black text-white italic tracking-tighter">
+                      <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Buy For</div>
+                      <div className="text-3xl font-black text-white italic tracking-tighter drop-shadow-md">
                         {formatCurrency(console.price)}
                       </div>
                     </div>
                     {console.isRental && (
                       <div className="text-right">
-                        <div className="text-[10px] text-gray-600 font-black uppercase tracking-widest mb-1">Rent From</div>
-                        <div className="text-2xl font-black text-[#A855F7] italic tracking-tighter">
-                          {formatCurrency(console.rentalPrice || 0)}<span className="text-xs text-gray-500 font-normal">/day</span>
+                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Rent From</div>
+                        <div className="text-2xl font-black text-[#B000FF] italic tracking-tighter drop-shadow-[0_0_5px_rgba(176,0,255,0.4)]">
+                          {formatCurrency(console.rentalPrice || 0)}<span className="text-xs text-gray-400 font-normal">/day</span>
                         </div>
                       </div>
                     )}
@@ -143,7 +145,7 @@ export default function Consoles() {
                     <button 
                       onClick={() => addToCart({ ...console, quantity: 1, type: 'buy' })}
                       disabled={!console.inStock}
-                      className="flex items-center justify-center gap-2 py-4 bg-white text-black font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-[#A855F7] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center justify-center gap-2 py-4 bg-white text-black font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-[#B000FF] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(176,0,255,0.5)]"
                     >
                       <ShoppingBag size={16} />
                       Buy
@@ -174,4 +176,6 @@ export default function Consoles() {
     </div>
   );
 }
+
+
 

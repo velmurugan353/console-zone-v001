@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useState, useMemo, useCallback } from "react";
 import BookingForm from "../components/BookingForm";
@@ -152,9 +152,9 @@ export default function BookPage() {
   };
 
   return (
-    <main className="min-h-dvh bg-[#050505] flex flex-col pt-16 md:flex-row">
+    <main className="min-h-dvh bg-[#080112] flex flex-col pt-16 md:flex-row">
       {/* Left Panel: Visuals & Context */}
-      <div className="md:w-1/2 lg:w-5/12 bg-[#0A0A0A] relative overflow-hidden flex flex-col justify-center p-8 md:p-12 lg:p-20">
+      <div className="md:w-1/2 lg:w-5/12 bg-[#080112] relative overflow-hidden flex flex-col justify-center p-8 md:p-12 lg:p-20">
         {/* Background */}
         <div className="absolute inset-0 z-0">
           <EditableImage
@@ -164,7 +164,7 @@ export default function BookPage() {
             alt="Gaming"
             className="w-full h-full object-cover opacity-30 grayscale hover:grayscale-0 transition-all duration-1000"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-[#050505]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-[#080112]" />
           <div className="absolute inset-0 bg-black/40" />
         </div>
 
@@ -185,29 +185,29 @@ export default function BookPage() {
 
           <div className="space-y-4 pt-4">
             <div className="flex items-center gap-4 text-white/80">
-              <div className="w-10 h-10 rounded-full bg-[#A855F7]/10 flex items-center justify-center text-[#A855F7]">
+              <div className="w-10 h-10 rounded-full bg-[#B000FF]/10 flex items-center justify-center text-[#B000FF]">
                 <Shield size={20} />
               </div>
               <span className="font-bold text-sm tracking-wide">Insured & Secure Equipment</span>
             </div>
             <div className="flex items-center gap-4 text-white/80">
-              <div className="w-10 h-10 rounded-full bg-[#A855F7]/10 flex items-center justify-center text-[#A855F7]">
+              <div className="w-10 h-10 rounded-full bg-[#B000FF]/10 flex items-center justify-center text-[#B000FF]">
                 <Clock size={20} />
               </div>
               <span className="font-bold text-sm tracking-wide">24/7 Support & Fast Delivery</span>
             </div>
             <div className="flex items-center gap-4 text-white/80">
-              <div className="w-10 h-10 rounded-full bg-[#A855F7]/10 flex items-center justify-center text-[#A855F7]">
+              <div className="w-10 h-10 rounded-full bg-[#B000FF]/10 flex items-center justify-center text-[#B000FF]">
                 <Truck size={20} />
               </div>
-              <span className="font-bold text-sm tracking-wide">Free Delivery Above ₹5000</span>
+              <span className="font-bold text-sm tracking-wide">Free Delivery Above â‚¹5000</span>
             </div>
           </div>
         </motion.div>
       </div>
 
       {/* Right Panel: Enhanced Booking */}
-      <div className="md:w-1/2 lg:w-7/12 bg-[#050505] flex flex-col justify-center p-4 md:p-8 lg:p-12 relative overflow-y-auto max-h-dvh">
+      <div className="md:w-1/2 lg:w-7/12 bg-[#080112] flex flex-col justify-center p-4 md:p-8 lg:p-12 relative overflow-y-auto max-h-dvh">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -225,18 +225,18 @@ export default function BookPage() {
                   onClick={() => setSelectedConsole(console)}
                   className={`relative p-4 rounded-2xl border text-left transition-all ${
                     selectedConsole.id === console.id
-                      ? 'bg-[#A855F7]/10 border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.2)]'
+                      ? 'bg-[#B000FF]/10 border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.2)]'
                       : 'bg-white/5 border-white/10 hover:border-white/30'
                   }`}
                 >
                   {selectedConsole.id === console.id && (
-                    <div className="absolute top-2 right-2 w-5 h-5 bg-[#A855F7] rounded-full flex items-center justify-center">
+                    <div className="absolute top-2 right-2 w-5 h-5 bg-[#B000FF] rounded-full flex items-center justify-center">
                       <Check size={12} className="text-black" />
                     </div>
                   )}
                   <img src={console.image} alt={console.name} className="w-full h-24 object-cover rounded-xl mb-3" referrerPolicy="no-referrer" />
                   <h4 className="text-sm font-bold text-white">{console.name}</h4>
-                  <p className="text-lg font-black text-[#A855F7]">₹{console.price}<span className="text-xs text-gray-500 font-normal">/day</span></p>
+                  <p className="text-lg font-black text-[#B000FF]">â‚¹{console.price}<span className="text-xs text-gray-500 font-normal">/day</span></p>
                 </button>
               ))}
             </div>
@@ -254,7 +254,7 @@ export default function BookPage() {
                   onClick={() => handlePresetSelect(preset.id as DurationType)}
                   className={`p-4 rounded-xl border text-center transition-all ${
                     durationType === preset.id
-                      ? 'bg-[#A855F7] border-[#A855F7] text-black'
+                      ? 'bg-[#B000FF] border-[#B000FF] text-black'
                       : 'bg-white/5 border-white/10 text-white hover:border-white/30'
                   }`}
                 >
@@ -271,11 +271,11 @@ export default function BookPage() {
             <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Calendar size={16} className="text-[#A855F7]" />
+                  <Calendar size={16} className="text-[#B000FF]" />
                   Select Your Dates
                 </h4>
                 {startDate && endDate && (
-                  <span className="text-xs text-[#A855F7] font-bold">
+                  <span className="text-xs text-[#B000FF] font-bold">
                     {format(startDate, 'MMM d')} - {format(endDate, 'MMM d, yyyy')}
                   </span>
                 )}
@@ -318,8 +318,8 @@ export default function BookPage() {
                       className={`
                         p-2 rounded-lg text-xs font-bold transition-all
                         ${(isPast || !isCurrentMonth) ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}
-                        ${isSelected ? 'bg-[#A855F7] text-black' : ''}
-                        ${isInRange ? 'bg-[#A855F7]/20 text-[#A855F7]' : ''}
+                        ${isSelected ? 'bg-[#B000FF] text-black' : ''}
+                        ${isInRange ? 'bg-[#B000FF]/20 text-[#B000FF]' : ''}
                         ${!isPast && isCurrentMonth && !isSelected && !isInRange ? 'text-white' : ''}
                       `}
                     >
@@ -338,12 +338,12 @@ export default function BookPage() {
             {/* Extra Controllers */}
             <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#A855F7]/10 flex items-center justify-center">
-                  <Gamepad2 size={24} className="text-[#A855F7]" />
+                <div className="w-12 h-12 rounded-xl bg-[#B000FF]/10 flex items-center justify-center">
+                  <Gamepad2 size={24} className="text-[#B000FF]" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-white">Extra Controller</h4>
-                  <p className="text-xs text-gray-500">₹50/day per controller</p>
+                  <p className="text-xs text-gray-500">â‚¹50/day per controller</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -356,7 +356,7 @@ export default function BookPage() {
                 <span className="w-8 text-center font-bold text-white">{extraControllers}</span>
                 <button
                   onClick={() => setExtraControllers(Math.min(4, extraControllers + 1))}
-                  className="w-8 h-8 rounded-lg bg-[#A855F7] flex items-center justify-center text-black hover:bg-[#9333EA]"
+                  className="w-8 h-8 rounded-lg bg-[#B000FF] flex items-center justify-center text-black hover:bg-[#9333EA]"
                 >
                   <Plus size={16} />
                 </button>
@@ -371,7 +371,7 @@ export default function BookPage() {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-white">Gaming Headset</h4>
-                  <p className="text-xs text-gray-500">₹75/day</p>
+                  <p className="text-xs text-gray-500">â‚¹75/day</p>
                 </div>
               </div>
               <span className="text-[10px] text-gray-500 uppercase tracking-widest">Coming Soon</span>
@@ -389,13 +389,13 @@ export default function BookPage() {
                   placeholder="Enter code (Try GAMER15)"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-[#A855F7] focus:outline-none transition-all text-white"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-[#B000FF] focus:outline-none transition-all text-white"
                 />
               </div>
               <button
                 onClick={applyPromo}
                 disabled={!promoCode}
-                className="px-6 bg-[#A855F7] text-black font-bold text-sm rounded-xl hover:bg-[#9333EA] transition-all disabled:opacity-50"
+                className="px-6 bg-[#B000FF] text-black font-bold text-sm rounded-xl hover:bg-[#9333EA] transition-all disabled:opacity-50"
               >
                 Apply
               </button>
@@ -423,28 +423,28 @@ export default function BookPage() {
               {calculations.totalDays > 0 ? (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">{selectedConsole.name} × {calculations.totalDays} days</span>
-                    <span className="text-white">₹{calculations.basePrice.toLocaleString()}</span>
+                    <span className="text-gray-400">{selectedConsole.name} Ã— {calculations.totalDays} days</span>
+                    <span className="text-white">â‚¹{calculations.basePrice.toLocaleString()}</span>
                   </div>
                   {calculations.controllerPrice > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Extra Controllers × {calculations.totalDays} days</span>
-                      <span className="text-white">₹{calculations.controllerPrice.toLocaleString()}</span>
+                      <span className="text-gray-400">Extra Controllers Ã— {calculations.totalDays} days</span>
+                      <span className="text-white">â‚¹{calculations.controllerPrice.toLocaleString()}</span>
                     </div>
                   )}
                   {calculations.discount > 0 && (
                     <div className="flex justify-between text-emerald-500">
                       <span>Discount (15%)</span>
-                      <span>-₹{calculations.discount.toLocaleString()}</span>
+                      <span>-â‚¹{calculations.discount.toLocaleString()}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span className="text-gray-400">Delivery Fee</span>
-                    <span className="text-white">₹{calculations.deliveryFee}</span>
+                    <span className="text-white">â‚¹{calculations.deliveryFee}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Refundable Deposit</span>
-                    <span className="text-amber-500">₹{calculations.deposit.toLocaleString()}</span>
+                    <span className="text-amber-500">â‚¹{calculations.deposit.toLocaleString()}</span>
                   </div>
                 </>
               ) : (
@@ -458,8 +458,8 @@ export default function BookPage() {
               <div className="flex justify-between items-end">
                 <span className="text-gray-400 font-bold">Total Amount</span>
                 <div className="text-right">
-                  <span className="text-2xl font-black text-[#A855F7]">
-                    {calculations.totalDays > 0 ? `₹${calculations.total.toLocaleString()}` : '₹0'}
+                  <span className="text-2xl font-black text-[#B000FF]">
+                    {calculations.totalDays > 0 ? `â‚¹${calculations.total.toLocaleString()}` : 'â‚¹0'}
                   </span>
                   {calculations.totalDays > 0 && (
                     <p className="text-[10px] text-gray-500">Deposit refundable</p>
@@ -476,7 +476,7 @@ export default function BookPage() {
             disabled={calculations.totalDays === 0}
             className={`w-full py-4 font-black uppercase tracking-widest text-sm rounded-xl shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all flex items-center justify-center gap-2 ${
               calculations.totalDays > 0
-                ? 'bg-gradient-to-r from-[#A855F7] to-[#9333EA] text-black hover:shadow-[0_0_40px_rgba(168,85,247,0.6)]'
+                ? 'bg-gradient-to-r from-[#B000FF] to-[#9333EA] text-black hover:shadow-[0_0_40px_rgba(168,85,247,0.6)]'
                 : 'bg-white/10 text-gray-500 cursor-not-allowed'
             }`}
           >
@@ -488,10 +488,11 @@ export default function BookPage() {
           </motion.button>
 
           <p className="text-center text-[10px] text-gray-500">
-            By booking, you agree to our <a href="#" className="text-[#A855F7] hover:underline">Terms & Conditions</a>
+            By booking, you agree to our <a href="#" className="text-[#B000FF] hover:underline">Terms & Conditions</a>
           </p>
         </motion.div>
       </div>
     </main>
   );
 }
+

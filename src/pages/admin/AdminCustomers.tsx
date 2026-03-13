@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { 
   Search, 
   Filter, 
@@ -124,7 +124,7 @@ export default function AdminCustomers() {
     switch (status) {
       case 'APPROVED': return <span className="flex items-center gap-1 text-[8px] font-black text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20"><ShieldCheck size={10}/> VERIFIED</span>;
       case 'PENDING': return <span className="flex items-center gap-1 text-[8px] font-black text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20"><Activity size={10}/> PENDING</span>;
-      case 'MANUAL_REVIEW': return <span className="flex items-center gap-1 text-[8px] font-black text-[#A855F7] bg-[#A855F7]/10 px-1.5 py-0.5 rounded border border-[#A855F7]/20"><Eye size={10}/> REVIEW</span>;
+      case 'MANUAL_REVIEW': return <span className="flex items-center gap-1 text-[8px] font-black text-[#B000FF] bg-[#B000FF]/10 px-1.5 py-0.5 rounded border border-[#B000FF]/20"><Eye size={10}/> REVIEW</span>;
       case 'REJECTED': return <span className="flex items-center gap-1 text-[8px] font-black text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20"><XCircle size={10}/> REJECTED</span>;
       default: return <span className="flex items-center gap-1 text-[8px] font-black text-gray-600 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">UNVERIFIED</span>;
     }
@@ -154,10 +154,10 @@ export default function AdminCustomers() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-8">
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <User className="h-3 w-3 text-[#A855F7] animate-pulse" />
-            <span className="text-[10px] font-mono text-[#A855F7] uppercase tracking-[0.2em]">Identity Management // User Registry</span>
+            <User className="h-3 w-3 text-[#B000FF] animate-pulse" />
+            <span className="text-[10px] font-mono text-[#B000FF] uppercase tracking-[0.2em]">Identity Management // User Registry</span>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Customer <span className="text-[#A855F7]">Matrix</span></h1>
+          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Customer <span className="text-[#B000FF]">Matrix</span></h1>
           <p className="text-gray-500 font-mono text-xs mt-1">Personnel Oversight & Credential Verification // Node_Access_Logs</p>
         </div>
         
@@ -173,7 +173,7 @@ export default function AdminCustomers() {
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-col md:flex-row gap-4 bg-[#0a0a0a] p-4 rounded-2xl border border-white/10">
+      <div className="flex flex-col md:flex-row gap-4 bg-[#080112] p-4 rounded-2xl border border-white/10">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <input
@@ -181,7 +181,7 @@ export default function AdminCustomers() {
             placeholder="Search identity database (Name, Email, ID)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] w-full"
+            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#B000FF] w-full"
           />
         </div>
         <div className="flex items-center space-x-3">
@@ -192,7 +192,7 @@ export default function AdminCustomers() {
           <div className="h-8 w-px bg-white/10" />
           <div className="relative">
             <select
-              className="appearance-none flex items-center space-x-2 pl-8 pr-8 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest text-white transition-all cursor-pointer focus:outline-none focus:border-[#A855F7]"
+              className="appearance-none flex items-center space-x-2 pl-8 pr-8 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest text-white transition-all cursor-pointer focus:outline-none focus:border-[#B000FF]"
             >
               <option value="All">All Tiers</option>
               <option value="Novice">Novice</option>
@@ -205,7 +205,7 @@ export default function AdminCustomers() {
       </div>
 
       {/* Table Matrix */}
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="bg-[#080112] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-white/[0.02] text-gray-500 text-[10px] font-mono uppercase tracking-widest">
@@ -223,7 +223,7 @@ export default function AdminCustomers() {
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-4">
                       <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-black italic text-lg shadow-2xl border ${
-                        customer.status === 'banned' ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-[#A855F7]/10 text-[#A855F7] border-[#A855F7]/20'
+                        customer.status === 'banned' ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-[#B000FF]/10 text-[#B000FF] border-[#B000FF]/20'
                       }`}>
                         {customer.name.charAt(0)}
                       </div>
@@ -261,7 +261,7 @@ export default function AdminCustomers() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <CreditCard size={14} className="text-[#A855F7]" />
+                      <CreditCard size={14} className="text-[#B000FF]" />
                       <span className="text-white font-black italic">{formatCurrency(customer.totalSpent)}</span>
                     </div>
                   </td>
@@ -269,7 +269,7 @@ export default function AdminCustomers() {
                     <div className="flex justify-end items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => openKYCModal(customer)}
-                        className="p-2 bg-[#A855F7]/10 text-[#A855F7] border border-[#A855F7]/20 rounded-lg hover:bg-[#A855F7] hover:text-black transition-all"
+                        className="p-2 bg-[#B000FF]/10 text-[#B000FF] border border-[#B000FF]/20 rounded-lg hover:bg-[#B000FF] hover:text-black transition-all"
                         title="Manual KYC Filling"
                       >
                         <ShieldCheck size={14} />
@@ -317,3 +317,4 @@ export default function AdminCustomers() {
     </div>
   );
 }
+

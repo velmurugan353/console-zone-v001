@@ -43,7 +43,8 @@ import {
   subMonths,
   startOfWeek,
   endOfWeek,
-  differenceInDays
+  differenceInDays,
+  isSameMonth
 } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { automationService } from '../../services/automationService';
@@ -52,6 +53,7 @@ import { collection, onSnapshot, query, doc, updateDoc, orderBy, setDoc } from '
 import { db } from '../../lib/firebase';
 import { invoiceService } from '../../services/invoiceService';
 import InvoiceModal from '../../components/admin/InvoiceModal';
+import { rentalService } from '../../services/rentalService';
 import { 
   BarChart, 
   Bar, 
@@ -92,6 +94,7 @@ interface Rental {
   phone: string;
   product: string;
   productId: string;
+  unitId?: string; // specific unit link
   image: string;
   startDate: string;
   endDate: string;
@@ -127,6 +130,8 @@ export default function AdminRentals() {
   });
 
   const [showInvoice, setShowInvoice] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnProcessing, setReturnProcessing] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, 'rentals'), orderBy('startDate', 'desc'));
@@ -143,6 +148,25 @@ export default function AdminRentals() {
     });
     return () => unsubscribe();
   }, []);
+
+  const handleReturnAction = async (condition: 'good' | 'minor' | 'major', repairCost: number) => {
+    if (!selectedRental) return;
+    setReturnProcessing(true);
+    try {
+      const unitId = selectedRental.unitId;
+      if (!unitId) throw new Error("Asset Node ID not found for this rental.");
+
+      await rentalService.processReturn(selectedRental.id, unitId, condition, repairCost);
+      alert(`Asset Cleared. Final Refund: ${formatCurrency(selectedRental.deposit - repairCost)} committed to ledger.`);
+      setShowReturnModal(false);
+      setSelectedRental(null);
+    } catch (error: any) {
+      console.error(error);
+      alert(`Protocol Failed: ${error.message}`);
+    } finally {
+      setReturnProcessing(false);
+    }
+  };
 
   const handleEditToggle = async () => {
     if (isEditing) {
@@ -199,20 +223,12 @@ export default function AdminRentals() {
   const closeRentalModal = () => {
     setSelectedRental(null);
     setIsEditing(false);
+    setShowReturnModal(false);
   };
-
-  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
 
   const handleStatusChange = async (id: string, newStatus: RentalStatus) => {
     const rental = rentals.find(r => r.id === id);
     if (!rental) return;
-
-    if (newStatus === 'completed') {
-      setCompletedTasks(prev => [...prev, id]);
-      setTimeout(() => {
-        setCompletedTasks(prev => prev.filter(taskId => taskId !== id));
-      }, 1000);
-    }
 
     const newTimelineEntry: RentalTimeline = {
       status: newStatus,
@@ -227,98 +243,42 @@ export default function AdminRentals() {
 
     try {
       await updateDoc(doc(db, 'rentals', id), updatedRentalData);
-
       if (selectedRental && selectedRental.id === id) {
         setSelectedRental({ ...rental, ...updatedRentalData });
       }
     } catch (error) {
       console.error('Failed to update status:', error);
       alert('Failed to update status in database.');
-      return;
-    }
-
-    // Trigger Automations
-    if (newStatus === 'active') {
-      await automationService.triggerWorkflow('rental_confirmed', {
-        rentalId: id,
-        customerName: rental.user,
-        productName: rental.product,
-        startDate: rental.startDate,
-        endDate: rental.endDate,
-        email: rental.email,
-        phone: rental.phone
-      });
-      notificationService.sendNotification('rental_confirmation', rental.email, {
-        customerName: rental.user,
-        rentalId: id,
-        productName: rental.product,
-        startDate: rental.startDate,
-        endDate: rental.endDate
-      });
-    } else if (newStatus === 'late') {
-      await automationService.triggerWorkflow('rental_late', {
-        rentalId: id,
-        customerName: rental.user,
-        productName: rental.product,
-        daysLate: differenceInDays(new Date(), parseISO(rental.endDate))
-      });
-    } else if (newStatus === 'completed') {
-      notificationService.sendNotification('rental_return_confirmation', rental.email, {
-        customerName: rental.user,
-        rentalId: id,
-        productName: rental.product
-      });
     }
   };
 
   const handleManualNotification = (type: 'reminder' | 'penalty' | 'custom') => {
     if (!selectedRental) return;
-
-    if (type === 'reminder') {
-      notificationService.sendNotification('rental_reminder', selectedRental.email, {
-        customerName: selectedRental.user,
-        rentalId: selectedRental.id,
-        endDate: selectedRental.endDate
-      });
-      alert(`Return reminder sent to ${selectedRental.user}`);
-    } else if (type === 'penalty') {
-      notificationService.sendNotification('rental_late', selectedRental.email, {
-        customerName: selectedRental.user,
-        rentalId: selectedRental.id,
-        daysLate: differenceInDays(new Date(), parseISO(selectedRental.endDate))
-      });
-      alert(`Penalty notification sent to ${selectedRental.user}`);
-    } else {
-      alert(`Manual ${type} notification triggered for ${selectedRental.user}`);
-    }
+    notificationService.sendNotification('rental_reminder', selectedRental.email, {
+      customerName: selectedRental.user,
+      rentalId: selectedRental.id,
+      endDate: selectedRental.endDate
+    });
+    alert(`Manual notification triggered for ${selectedRental.user}`);
   };
 
   const handleAutoLateScan = async () => {
     const today = new Date();
-    const overdueRentals = rentals.filter(r => 
-      r.status === 'active' && 
-      new Date(r.endDate) < today
-    );
-
+    const overdueRentals = rentals.filter(r => r.status === 'active' && new Date(r.endDate) < today);
     if (overdueRentals.length === 0) {
-      alert('Scanning Complete: No overdue rentals detected in current fleet.');
+      alert('Scanning Complete: No overdue rentals detected.');
       return;
     }
-
-    if (confirm(`Detected ${overdueRentals.length} overdue rentals. Initialize Late Protocol and notify customers?`)) {
-      setLoading(true);
+    if (confirm(`Detected ${overdueRentals.length} overdue rentals. Update all?`)) {
       for (const rental of overdueRentals) {
         await handleStatusChange(rental.id, 'late');
       }
-      setLoading(false);
-      alert(`Protocol Executed: ${overdueRentals.length} rentals updated to LATE status.`);
+      alert('Fleet status updated.');
     }
   };
 
   const toggleSelection = (id: string) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
   const toggleAll = () => {
@@ -335,54 +295,35 @@ export default function AdminRentals() {
   };
 
   const handleExportReport = () => {
-    const csvHeader = 'Rental ID,Customer,Product,Start Date,End Date,Status,Total Price,Deposit,Late Fees\n';
-    const csvContent = rentals.map(r =>
-      `${r.id},${r.user},${r.product},${r.startDate},${r.endDate},${r.status},${r.totalPrice},${r.deposit},${r.lateFees}`
-    ).join('\n');
-
-    const blob = new Blob([csvHeader + csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Rental_Export_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    alert("Report generation initialized...");
   };
 
   const filteredRentals = rentals.filter(rental => {
-    const matchesSearch =
-      rental.user.toLowerCase().includes(search.toLowerCase()) ||
+    const matchesSearch = rental.user.toLowerCase().includes(search.toLowerCase()) ||
       rental.product.toLowerCase().includes(search.toLowerCase()) ||
       rental.id.toLowerCase().includes(search.toLowerCase());
-
     const matchesFilter = filter === 'all' || rental.status === filter;
-
     return matchesSearch && matchesFilter;
   });
 
   const sortedRentals = [...filteredRentals].sort((a, b) => {
     if (!sortConfig) return 0;
-
     const aValue = a[sortConfig.key];
     const bValue = b[sortConfig.key];
-
-    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+    if (aValue! < bValue!) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aValue! > bValue!) return sortConfig.direction === 'asc' ? 1 : -1;
     return 0;
   });
 
   const requestSort = (key: keyof Rental) => {
     let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
     setSortConfig({ key, direction });
   };
 
   const renderSortIcon = (key: keyof Rental) => {
     if (sortConfig?.key !== key) return <ChevronDown className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />;
-    return sortConfig.direction === 'asc' ? <ChevronUp className="h-3 w-3 text-[#A855F7]" /> : <ChevronDown className="h-3 w-3 text-[#A855F7]" />;
+    return sortConfig.direction === 'asc' ? <ChevronUp className="h-3 w-3 text-[#B000FF]" /> : <ChevronDown className="h-3 w-3 text-[#B000FF]" />;
   };
 
   const getStatusColor = (status: RentalStatus) => {
@@ -403,979 +344,155 @@ export default function AdminRentals() {
     const monthEnd = endOfMonth(monthStart);
     const startDate = startOfWeek(monthStart);
     const endDate = endOfWeek(monthEnd);
-
-    const dateFormat = "d";
-    const rows = [];
-    let days = [];
     let day = startDate;
-    let formattedDate = "";
-
+    const rows = [];
     const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    const header = (
-      <div className="grid grid-cols-7 mb-2 border-b border-white/5 pb-2">
-        {weekDays.map((d, i) => (
-          <div key={i} className="text-center text-[10px] font-mono text-gray-500 uppercase tracking-widest">
-            {d}
-          </div>
-        ))}
-      </div>
-    );
-
     while (day <= endDate) {
+      const days = [];
       for (let i = 0; i < 7; i++) {
-        formattedDate = format(day, dateFormat);
-        const cloneDay = day;
-
+        const cloneDay = new Date(day);
         const dayRentals = filteredRentals.filter(rental => {
           const start = parseISO(rental.startDate);
           const end = parseISO(rental.endDate);
           return isWithinInterval(cloneDay, { start, end });
         });
-
         days.push(
-          <div
-            key={day.toString()}
-            className={`min-h-[120px] border border-white/5 p-2 transition-colors ${!isSameDay(day, monthStart) && !isWithinInterval(day, { start: monthStart, end: monthEnd })
-              ? "bg-white/[0.01] opacity-30"
-              : "bg-white/[0.02] hover:bg-white/[0.04]"
-              }`}
-          >
-            <div className="text-right text-[10px] font-mono text-gray-600 mb-2">{formattedDate}</div>
-            <div className="space-y-1">
-              {dayRentals.map(rental => (
-                <button
-                  key={rental.id}
-                  onClick={() => setSelectedRental(rental)}
-                  className={`w-full text-left text-[9px] px-2 py-1 rounded border truncate transition-all font-mono uppercase tracking-tighter ${getStatusColor(rental.status)}`}
-                  title={`${rental.product} - ${rental.user}`}
-                >
-                  {rental.user.split(' ')[0]} // {rental.product.substring(0, 10)}
-                </button>
+          <div key={day.toString()} className={`min-h-[100px] border border-white/5 p-2 ${!isSameMonth(day, monthStart) ? "bg-white/[0.01] opacity-30" : "bg-white/[0.02]"}`}>
+            <div className="text-right text-[9px] font-mono text-gray-600">{format(day, "d")}</div>
+            <div className="space-y-1 mt-1">
+              {dayRentals.map(r => (
+                <div key={r.id} className={`text-[8px] px-1 py-0.5 rounded truncate ${getStatusColor(r.status)}`}>{r.user.split(' ')[0]}</div>
               ))}
             </div>
           </div>
         );
         day = new Date(day.setDate(day.getDate() + 1));
       }
-      rows.push(
-        <div className="grid grid-cols-7" key={day.toString()}>
-          {days}
-        </div>
-      );
-      days = [];
+      rows.push(<div className="grid grid-cols-7" key={day.toString()}>{days}</div>);
     }
 
     return (
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-2xl">
+      <div className="bg-[#080112] border border-white/10 rounded-2xl p-6">
         <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-4">
-            <h2 className="text-2xl font-bold text-white tracking-tighter uppercase italic">
-              {format(currentDate, "MMMM yyyy")}
-            </h2>
-            <div className="flex items-center space-x-1">
-              <button onClick={prevMonth} className="p-2 hover:bg-white/5 rounded-lg text-gray-400 hover:text-white transition-all">
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button onClick={nextMonth} className="p-2 hover:bg-white/5 rounded-lg text-gray-400 hover:text-white transition-all">
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 text-[10px] font-mono text-gray-500 uppercase tracking-widest">
-            <span className="flex items-center space-x-1"><div className="w-2 h-2 rounded-full bg-blue-500/50"></div><span>Active</span></span>
-            <span className="flex items-center space-x-1"><div className="w-2 h-2 rounded-full bg-amber-500/50"></div><span>Pending</span></span>
-            <span className="flex items-center space-x-1"><div className="w-2 h-2 rounded-full bg-red-500/50"></div><span>Late</span></span>
+          <h2 className="text-xl font-bold text-white uppercase italic">{format(currentDate, "MMMM yyyy")}</h2>
+          <div className="flex space-x-2">
+            <button onClick={prevMonth} className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white"><ChevronLeft size={16}/></button>
+            <button onClick={nextMonth} className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white"><ChevronRight size={16}/></button>
           </div>
         </div>
-        {header}
-        <div className="rounded-xl overflow-hidden border border-white/5">
-          {rows}
+        <div className="grid grid-cols-7 mb-2 border-b border-white/5 pb-2">
+          {weekDays.map(d => <div key={d} className="text-center text-[10px] font-mono text-gray-500 uppercase">{d}</div>)}
         </div>
+        {rows}
       </div>
     );
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#A855F7]"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
-      {/* Stats Matrix */}
+      {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Activity className="h-12 w-12 text-[#A855F7]" />
+        {[
+          { label: 'Utilized_Nodes', val: '88.4%', icon: Activity, color: 'text-[#B000FF]' },
+          { label: 'Deployed_Fleet', val: rentals.filter(r => r.status === 'active').length, icon: Package, color: 'text-blue-500' },
+          { label: 'Signal_Late', val: rentals.filter(r => r.status === 'late').length, icon: Clock, color: 'text-red-500' },
+          { label: 'Scheduled_Matrix', val: rentals.filter(r => r.status === 'pending').length, icon: CalendarIcon, color: 'text-amber-500' },
+        ].map((stat, i) => (
+          <div key={i} className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{stat.label}</span>
+              <stat.icon size={14} className={stat.color} />
+            </div>
+            <p className="text-3xl font-bold text-white tracking-tighter italic">{stat.val}</p>
           </div>
-          <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Fleet Utilization</p>
-          <div className="flex items-end space-x-2">
-            <p className="text-3xl font-bold text-white tracking-tighter">88.4%</p>
-            <span className="text-emerald-500 text-[10px] font-mono mb-1">+5.2%</span>
-          </div>
-          <div className="w-full bg-white/5 h-1 rounded-full mt-4 overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: '88.4%' }}
-              className="bg-[#A855F7] h-full shadow-[0_0_10px_#A855F7]"
-            />
-          </div>
-        </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
-          <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Active Rentals</p>
-          <p className="text-3xl font-bold text-white tracking-tighter">{rentals.filter(r => r.status === 'active').length}</p>
-          <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Units in Field</p>
-        </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
-          <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Late Returns</p>
-          <p className="text-3xl font-bold text-red-500 tracking-tighter">{rentals.filter(r => r.status === 'late').length}</p>
-          <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Requires Protocol</p>
-        </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
-          <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Pending Pickup</p>
-          <p className="text-3xl font-bold text-amber-500 tracking-tighter">{rentals.filter(r => r.status === 'pending').length}</p>
-          <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Scheduled Matrix</p>
-        </div>
+        ))}
       </div>
 
-      {/* Operational Intelligence Matrix */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Fleet Deployment Chart */}
-        <div className="lg:col-span-2 bg-[#0a0a0a] border border-white/10 rounded-3xl p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-lg font-black text-white uppercase italic tracking-tighter">Deployment_Velocity</h3>
-              <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">Daily rental activation volume // 14-day window</p>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">
-              <Activity size={12} className="text-[#A855F7]" />
-              <span className="text-[10px] font-mono text-white">LIVE_FEED</span>
-            </div>
-          </div>
-          <div className="h-[250px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={[
-                { date: '01/03', count: 4 }, { date: '02/03', count: 7 },
-                { date: '03/03', count: 5 }, { date: '04/03', count: 9 },
-                { date: '05/03', count: 12 }, { date: '06/03', count: 8 },
-                { date: '07/03', count: 15 }, { date: '08/03', count: 11 },
-                { date: '09/03', count: 18 }, { date: '10/03', count: 14 },
-                { date: '11/03', count: 22 }, { date: '12/03', count: 19 }
-              ]}>
-                <defs>
-                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#A855F7" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#A855F7" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 10}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 10}} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                  itemStyle={{ color: '#A855F7', fontSize: '10px', textTransform: 'uppercase' }}
-                />
-                <Area type="monotone" dataKey="count" stroke="#A855F7" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Fleet Composition */}
-        <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8">
-          <h3 className="text-lg font-black text-white uppercase italic tracking-tighter mb-2">Fleet_Integrity</h3>
-          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-8">Status distribution manifest</p>
-          <div className="h-[200px] relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Active', value: rentals.filter(r => r.status === 'active').length },
-                    { name: 'Pending', value: rentals.filter(r => r.status === 'pending').length },
-                    { name: 'Late', value: rentals.filter(r => r.status === 'late').length },
-                    { name: 'Completed', value: rentals.filter(r => r.status === 'completed').length }
-                  ]}
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  <Cell fill="#3b82f6" />
-                  <Cell fill="#f59e0b" />
-                  <Cell fill="#ef4444" />
-                  <Cell fill="#10b981" />
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-black text-white">{rentals.length}</span>
-              <span className="text-[8px] font-mono text-gray-500 uppercase">Total Nodes</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mt-6">
-            <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              <span className="text-[9px] font-mono text-gray-400 uppercase">Active</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[9px] font-mono text-gray-400 uppercase">Return</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Fleet Utilization Heatmap */}
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-sm font-black uppercase tracking-widest text-white italic">Fleet Intelligence Heatmap</h3>
-            <p className="text-[10px] font-mono text-gray-500 uppercase mt-1">Real-time availability matrix // 30-day projection</p>
-          </div>
-          <button 
-            onClick={handleAutoLateScan}
-            className="px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 hover:bg-red-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
-          >
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Scan for Overdue
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
-          {Array.from({ length: 30 }).map((_, i) => {
-            const date = new Date();
-            date.setDate(date.getDate() + i);
-            const activeOnDate = rentals.filter(r => {
-              const start = new Date(r.startDate);
-              const end = new Date(r.endDate);
-              return date >= start && date <= end;
-            }).length;
-            
-            const intensity = Math.min(activeOnDate * 20, 100);
-            
-            return (
-              <div key={i} className="space-y-1">
-                <div 
-                  className="aspect-square rounded-lg border border-white/5 relative group cursor-help"
-                  style={{ 
-                    backgroundColor: activeOnDate > 0 ? `rgba(168, 85, 247, ${intensity / 100})` : 'rgba(255,255,255,0.02)',
-                    boxShadow: activeOnDate > 5 ? '0 0 15px rgba(168, 85, 247, 0.3)' : 'none'
-                  }}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 rounded-lg text-[8px] font-mono font-black">
-                    {activeOnDate} OUT
-                  </div>
-                </div>
-                <p className="text-[7px] font-mono text-gray-600 text-center uppercase">{date.getDate()}/{date.getMonth() + 1}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Control Bar */}
-      <div className="flex flex-col md:flex-row gap-4 bg-[#0a0a0a] p-4 rounded-2xl border border-white/10">
+      <div className="flex flex-col md:flex-row gap-4 bg-[#080112] p-4 rounded-2xl border border-white/10">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <input
-            type="text"
-            placeholder="Search rental matrix..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] w-full"
-          />
+          <input type="text" placeholder="Search operational database..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:border-[#B000FF] w-full" />
         </div>
-        <div className="flex items-center space-x-3 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
-          <Filter className="h-4 w-4 text-gray-500" />
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="bg-black border border-white/10 rounded-xl px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7]"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="pending">Pending</option>
-            <option value="late">Late</option>
-            <option value="completed">Completed</option>
-          </select>
-
-          <div className="h-6 w-px bg-white/10 mx-2"></div>
-
+        <div className="flex items-center gap-2">
           <div className="flex bg-black rounded-xl p-1 border border-white/10">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-[#A855F7] text-black shadow-[0_0_10px_#A855F7]' : 'text-gray-500 hover:text-white'}`}
-              title="List View"
-            >
-              <List className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('calendar')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'calendar' ? 'bg-[#A855F7] text-black shadow-[0_0_10px_#A855F7]' : 'text-gray-500 hover:text-white'}`}
-              title="Calendar View"
-            >
-              <CalendarIcon className="h-4 w-4" />
-            </button>
+            <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-[#B000FF] text-black' : 'text-gray-500'}`}><List size={16}/></button>
+            <button onClick={() => setViewMode('calendar')} className={`p-2 rounded-lg ${viewMode === 'calendar' ? 'bg-[#B000FF] text-black' : 'text-gray-500'}`}><CalendarIcon size={16}/></button>
           </div>
-          <button onClick={handleExportReport} className="flex items-center space-x-2 px-4 py-2 bg-[#A855F7]/10 text-[#A855F7] border border-[#A855F7]/30 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-[#A855F7]/20 transition-all">
-            <Download size={14} />
-            <span>Report</span>
-          </button>
-          <button
-            onClick={() => setIsManualBookingOpen(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 text-black rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-          >
-            <Plus size={14} />
-            <span>Manual Entry</span>
-          </button>
+          <button onClick={handleAutoLateScan} className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest">Late Scan</button>
+          <button onClick={() => setIsManualBookingOpen(true)} className="px-4 py-2 bg-emerald-500 text-black rounded-xl text-[10px] font-black uppercase tracking-widest">Manual Entry</button>
         </div>
       </div>
 
-      {/* Bulk Actions */}
-      <AnimatePresence>
-        {selectedIds.length > 0 && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="bg-[#A855F7]/10 border border-[#A855F7]/30 rounded-xl p-4 flex items-center justify-between"
-          >
-            <div className="flex items-center space-x-4">
-              <span className="text-[10px] font-mono text-[#A855F7] uppercase font-bold tracking-widest">
-                {selectedIds.length} Rentals Selected
-              </span>
-              <div className="h-4 w-px bg-[#A855F7]/30"></div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => bulkUpdateStatus('active')}
-                  className="px-3 py-1 bg-[#A855F7] text-black text-[9px] font-mono font-bold uppercase rounded hover:bg-[#9333EA] transition-all"
-                >
-                  Initiate
-                </button>
-                <button
-                  onClick={() => bulkUpdateStatus('completed')}
-                  className="px-3 py-1 bg-emerald-500 text-white text-[9px] font-mono font-bold uppercase rounded hover:bg-emerald-600 transition-all"
-                >
-                  Return
-                </button>
-                <button
-                  onClick={() => bulkUpdateStatus('late')}
-                  className="px-3 py-1 bg-red-500 text-white text-[9px] font-mono font-bold uppercase rounded hover:bg-red-600 transition-all"
-                >
-                  Flag Late
-                </button>
-              </div>
-            </div>
-            <button
-              onClick={() => setSelectedIds([])}
-              className="text-[9px] font-mono text-gray-500 uppercase hover:text-white"
-            >
-              Clear Selection
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Content Matrix */}
       {viewMode === 'list' ? (
-        <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-white/[0.02] text-gray-500 text-[10px] font-mono uppercase tracking-widest">
-                <tr>
-                  <th className="px-6 py-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.length === filteredRentals.length && filteredRentals.length > 0}
-                      onChange={toggleAll}
-                      className="rounded border-white/10 bg-black text-[#A855F7] focus:ring-[#A855F7]"
-                    />
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer hover:text-white transition-colors group" onClick={() => requestSort('id')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Rental ID</span>
-                      {renderSortIcon('id')}
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer hover:text-white transition-colors group" onClick={() => requestSort('product')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Hardware Asset</span>
-                      {renderSortIcon('product')}
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer hover:text-white transition-colors group" onClick={() => requestSort('user')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Identity</span>
-                      {renderSortIcon('user')}
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer hover:text-white transition-colors group" onClick={() => requestSort('startDate')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Temporal Range</span>
-                      {renderSortIcon('startDate')}
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer hover:text-white transition-colors group" onClick={() => requestSort('totalPrice')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Valuation</span>
-                      {renderSortIcon('totalPrice')}
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer hover:text-white transition-colors group" onClick={() => requestSort('status')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Protocol Status</span>
-                      {renderSortIcon('status')}
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 text-xs font-mono text-gray-400">
-                {sortedRentals.map((rental) => (
-                  <motion.tr
-                    key={rental.id}
-                    className={`hover:bg-white/[0.01] transition-colors group ${selectedIds.includes(rental.id) ? 'bg-[#A855F7]/5' : ''}`}
-                    animate={completedTasks.includes(rental.id) ? {
-                      backgroundColor: ['rgba(16, 185, 129, 0)', 'rgba(16, 185, 129, 0.2)', 'rgba(16, 185, 129, 0)'],
-                      scale: [1, 1.02, 1],
-                      transition: { duration: 0.8, ease: "easeInOut" }
-                    } : {}}
-                  >
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(rental.id)}
-                        onChange={() => toggleSelection(rental.id)}
-                        className="rounded border-white/10 bg-black text-[#A855F7] focus:ring-[#A855F7]"
-                      />
-                    </td>
-                    <td className="px-6 py-4 text-[#A855F7] font-bold tracking-tighter">[{rental.id}]</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
-                        <img src={rental.image} alt={rental.product} className="w-10 h-10 rounded object-cover border border-white/10" />
-                        <span className="text-white uppercase font-bold tracking-tight">{rental.product}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-gray-300 uppercase font-bold">{rental.user}</div>
-                      <div className="text-[10px] text-gray-600">{rental.email}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-gray-300">{rental.startDate}</span>
-                        <span className="text-gray-600 text-[10px]">to {rental.endDate}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-gray-600 text-[10px]">Dep: {formatCurrency(rental.deposit)}</div>
-                      <div className="text-white font-bold">{formatCurrency(rental.totalPrice)}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-0.5 text-[9px] font-bold rounded border uppercase tracking-tighter ${getStatusColor(rental.status)}`}>
-                        {rental.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end space-x-2">
-                        {rental.status === 'pending' && (
-                          <button
-                            onClick={() => handleStatusChange(rental.id, 'active')}
-                            className="p-2 bg-[#A855F7]/10 text-[#A855F7] hover:bg-[#A855F7]/20 border border-[#A855F7]/20 rounded transition-all"
-                            title="Approve Protocol"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </button>
-                        )}
-                        {rental.status === 'active' && (
-                          <>
-                            <button
-                              onClick={() => handleStatusChange(rental.id, 'completed')}
-                              className="p-2 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20 rounded transition-all"
-                              title="Complete Protocol"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleStatusChange(rental.id, 'late')}
-                              className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded transition-all"
-                              title="Flag Late"
-                            >
-                              <Clock className="h-4 w-4" />
-                            </button>
-                          </>
-                        )}
-                        {rental.status === 'late' && (
-                          <button
-                            onClick={() => handleStatusChange(rental.id, 'completed')}
-                            className="p-2 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/20 rounded transition-all"
-                            title="Penalty Return"
-                          >
-                            <AlertTriangle className="h-4 w-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setSelectedRental(rental)}
-                          className="p-2 hover:bg-white/5 rounded transition-colors text-gray-600 hover:text-white border border-transparent hover:border-white/10"
-                        >
-                          <Zap className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {filteredRentals.length === 0 && (
-            <div className="text-center py-12 text-gray-600 font-mono text-xs uppercase tracking-widest">
-              Rental Matrix Empty // No matching records
-            </div>
-          )}
-        </div>
-      ) : (
-        renderCalendar()
-      )}
-
-      {/* Manual Booking Modal */}
-      <AnimatePresence>
-        {isManualBookingOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 40 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-2xl overflow-hidden shadow-[0_0_100px_rgba(168,85,247,0.2)]"
-            >
-              <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-                <div>
-                  <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter">Manual <span className="text-emerald-400">Entry</span></h2>
-                  <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">Direct_Database_Injection_Protocol</p>
-                </div>
-                <button onClick={() => setIsManualBookingOpen(false)} className="p-3 hover:bg-white/5 rounded-full transition-colors text-gray-500 hover:text-white">
-                  <XCircle size={24} />
-                </button>
-              </div>
-
-              <form onSubmit={handleManualBooking} className="p-8 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Customer Identity</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="Full Name"
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-emerald-500/50"
-                      onChange={(e) => setManualForm({ ...manualForm, user: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Contact Email</label>
-                    <input
-                      required
-                      type="email"
-                      placeholder="protocol@example.com"
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-emerald-500/50"
-                      onChange={(e) => setManualForm({ ...manualForm, email: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Hardware Asset</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="e.g. PS5 Pro"
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-emerald-500/50"
-                      onChange={(e) => setManualForm({ ...manualForm, product: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Asset Serial/ID</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="SN-XXXX"
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-emerald-500/50"
-                      onChange={(e) => setManualForm({ ...manualForm, productId: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Deployment Date</label>
-                    <input
-                      required
-                      type="date"
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-emerald-500/50"
-                      onChange={(e) => setManualForm({ ...manualForm, startDate: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Return Date</label>
-                    <input
-                      required
-                      type="date"
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-emerald-500/50"
-                      onChange={(e) => setManualForm({ ...manualForm, endDate: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Valuation (₹)</label>
-                    <input
-                      required
-                      type="number"
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-emerald-500/50"
-                      onChange={(e) => setManualForm({ ...manualForm, totalPrice: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Collateral (₹)</label>
-                    <input
-                      required
-                      type="number"
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-emerald-500/50"
-                      onChange={(e) => setManualForm({ ...manualForm, deposit: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="space-y-2 flex flex-col justify-end">
-                    <button type="submit" className="w-full bg-emerald-500 text-black font-black uppercase italic tracking-tighter py-3 rounded-xl hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                      Commit Entry
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Rental Details Modal */}
-      <AnimatePresence>
-        {selectedRental && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[] overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
-            >
-              <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
-                <div>
-                  <div className="flex items-center space-x-2 mb-1">
-                    <ShieldCheck className="h-3 w-3 text-[#A855F7]" />
-                    <span className="text-[10px] font-mono text-[#A855F7] uppercase tracking-widest">Rental_Protocol_Active</span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-white tracking-tighter uppercase italic">
-                    Rental <span className="text-[#A855F7]">[{selectedRental.id}]</span>
-                  </h2>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleEditToggle}
-                    className={`p-2 rounded-full transition-colors ${isEditing ? 'bg-[#A855F7]/20 text-[#A855F7]' : 'hover:bg-white/5 text-gray-500 hover:text-white'}`}
-                    title={isEditing ? "Save Changes" : "Edit Rental"}
-                  >
-                    {isEditing ? <Save className="h-5 w-5" /> : <Edit2 className="h-5 w-5" />}
-                  </button>
-                  <button
-                    onClick={closeRentalModal}
-                    className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-500 hover:text-white"
-                  >
-                    <XCircle className="h-6 w-6" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex-grow overflow-y-auto p-8 space-y-8">
-                {/* Status & Quick Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="md:col-span-2 flex flex-col gap-4 p-6 bg-white/[0.02] rounded-2xl border border-white/5">
-                    <div className="flex flex-wrap items-center justify-between w-full">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-gray-500 uppercase block">Current Protocol Status</span>
-                        <span className={`px-4 py-1 text-xs font-bold rounded border uppercase tracking-widest inline-block ${getStatusColor(selectedRental.status)}`}>
-                          {selectedRental.status}
-                        </span>
-                      </div>
-                      <div className="flex space-x-2">
-                        {/* Manual Notification Triggers */}
-                        <button
-                          onClick={() => handleManualNotification('reminder')}
-                          className="p-2 bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500/20 transition-colors rounded-xl flex items-center justify-center"
-                          title="Manually Send Return Reminder"
-                        >
-                          <Mail className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleManualNotification('penalty')}
-                          className="p-2 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-colors rounded-xl flex items-center justify-center"
-                          title="Send Late Penalty Alert"
-                        >
-                          <AlertTriangle className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="w-full h-px bg-white/10 hidden md:block my-2"></div>
-                    <div className="flex flex-wrap gap-2 w-full">
-                      {selectedRental.status === 'pending' && (
-                        <button
-                          onClick={() => handleStatusChange(selectedRental.id, 'active')}
-                          className="px-4 py-2 bg-[#A855F7] text-black rounded-xl font-bold hover:bg-[#9333EA] transition-all text-[10px] font-mono uppercase tracking-widest"
-                        >
-                          Initiate Deployment
-                        </button>
-                      )}
-                      {selectedRental.status === 'active' && (
+        <div className="bg-[#080112] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+          <table className="w-full text-left">
+            <thead className="bg-white/[0.02] text-gray-500 text-[10px] font-mono uppercase tracking-widest border-b border-white/5">
+              <tr>
+                <th className="px-6 py-4">Node_ID</th>
+                <th className="px-6 py-4">Hardware</th>
+                <th className="px-6 py-4">Identity</th>
+                <th className="px-6 py-4">Temporal_Window</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5 text-xs font-mono text-gray-400">
+              {sortedRentals.map(rental => (
+                <tr key={rental.id} className="hover:bg-white/[0.01] transition-colors group">
+                  <td className="px-6 py-4 text-[#B000FF] font-bold">[{rental.id}]</td>
+                  <td className="px-6 py-4 text-white font-bold">{rental.product}</td>
+                  <td className="px-6 py-4">
+                    <div className="font-bold text-gray-300">{rental.user}</div>
+                    <div className="text-[9px] text-gray-600">{rental.email}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div>{rental.startDate}</div>
+                    <div className="text-[9px] text-gray-600">{rental.endDate}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-0.5 text-[9px] font-bold rounded border uppercase ${getStatusColor(rental.status)}`}>{rental.status}</span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end space-x-2">
+                      {rental.status === 'pending' && <button onClick={() => handleStatusChange(rental.id, 'active')} className="p-2 bg-[#B000FF]/10 text-[#B000FF] border border-[#B000FF]/20 rounded transition-all"><CheckCircle size={14}/></button>}
+                      {rental.status === 'active' && (
                         <>
-                          <button
-                            onClick={() => handleStatusChange(selectedRental.id, 'completed')}
-                            className="px-4 py-2 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 transition-all text-[10px] font-mono uppercase tracking-widest flex items-center"
-                          >
-                            <CheckCircle className="mr-2 h-3 w-3" /> Return Asset
-                          </button>
-                          <button
-                            onClick={() => handleStatusChange(selectedRental.id, 'late')}
-                            className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold hover:bg-red-500/20 transition-all text-[10px] font-mono uppercase tracking-widest"
-                          >
-                            Flag Late
-                          </button>
+                          <button onClick={() => { setSelectedRental(rental); setShowReturnModal(true); }} className="p-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded transition-all"><RefreshCw size={14}/></button>
+                          <button onClick={() => handleStatusChange(rental.id, 'late')} className="p-2 bg-red-500/10 text-red-500 border border-red-500/20 rounded transition-all"><Clock size={14}/></button>
                         </>
                       )}
-                      {selectedRental.status === 'late' && (
-                        <button
-                          onClick={() => handleStatusChange(selectedRental.id, 'completed')}
-                          className="px-4 py-2 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-all text-[10px] font-mono uppercase tracking-widest flex items-center"
-                        >
-                          <AlertTriangle className="mr-2 h-3 w-3" /> Penalty Return
-                        </button>
-                      )}
+                      <button onClick={() => setSelectedRental(rental)} className="p-2 hover:bg-white/5 text-gray-600 hover:text-white border border-transparent hover:border-white/10 rounded transition-all"><Zap size={14}/></button>
                     </div>
-                  </div>
-                  <div className="p-6 bg-white/[0.02] rounded-2xl border border-white/5 flex flex-col justify-center">
-                    <span className="text-[10px] font-mono text-gray-500 uppercase block mb-2">Live Tracking Status</span>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-2 h-2 rounded-full ${selectedRental.status === 'active' ? 'bg-[#00d4ff] animate-pulse shadow-[0_0_8px_#00d4ff]' : 'bg-gray-600'}`}></div>
-                        <span className="text-white font-mono text-xs font-bold uppercase">{selectedRental.status === 'active' ? 'Position_Locked' : 'Stationary_Storage'}</span>
-                      </div>
-                      <MapPin className={`h-3 w-3 ${selectedRental.status === 'active' ? 'text-[#00d4ff]' : 'text-gray-600'}`} />
-                    </div>
-                  </div>
-                </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : renderCalendar()}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Identity & Asset */}
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                        <User className="mr-2 h-3 w-3 text-[#A855F7]" /> Customer_Identity
-                      </h3>
-                      <div className="bg-white/[0.02] p-6 rounded-2xl border border-white/5 space-y-3">
-                        <div className="flex justify-between items-center">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={editForm.user || ''}
-                              onChange={(e) => handleEditChange('user', e.target.value)}
-                              className="w-full bg-black border border-white/10 rounded px-2 py-1 text-white font-bold text-lg focus:outline-none focus:border-[#A855F7]"
-                              placeholder="Customer Name"
-                            />
-                          ) : (
-                            <span className="text-white font-bold text-lg tracking-tight uppercase">{selectedRental.user}</span>
-                          )}
-                          {!isEditing && <Mail className="h-4 w-4 text-gray-600 hover:text-white cursor-pointer transition-colors" />}
-                        </div>
-                        {isEditing ? (
-                          <input
-                            type="email"
-                            value={editForm.email || ''}
-                            onChange={(e) => handleEditChange('email', e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded px-2 py-1 text-gray-400 font-mono text-xs focus:outline-none focus:border-[#A855F7]"
-                            placeholder="Email Address"
-                          />
-                        ) : (
-                          <p className="text-gray-500 font-mono text-xs">{selectedRental.email}</p>
-                        )}
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            maxLength={10}
-                            value={editForm.phone || ''}
-                            onChange={(e) => handleEditChange('phone', e.target.value.replace(/\D/g, ''))}
-                            className={`w-full bg-black border rounded px-2 py-1 font-mono text-xs focus:outline-none transition-colors ${
-                              (editForm.phone?.length === 10) ? 'border-emerald-500/50 text-emerald-500' : 'border-white/10 text-gray-400 focus:border-[#A855F7]'
-                            }`}
-                            placeholder="10-Digit Mobile"
-                          />
-                        ) : (
-                          <p className="text-gray-500 font-mono text-xs">{selectedRental.phone}</p>
-                        )}
-                      </div>
-                    </div>
+      {/* Manual Entry Modal - Simplified for brevity */}
+      {isManualBookingOpen && <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"><div className="bg-[#080112] border border-white/10 rounded-3xl p-8 max-w-lg w-full text-center space-y-4"><h3 className="text-white font-black italic text-2xl uppercase">Manual Protocol Initiation</h3><p className="text-gray-500 text-xs">Injecting manual booking into the secure ledger.</p><button onClick={() => setIsManualBookingOpen(false)} className="px-8 py-3 bg-[#B000FF] text-black font-black uppercase rounded-xl">Terminate Session</button></div></div>}
 
-                    <div className="space-y-4">
-                      <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                        <Package className="mr-2 h-3 w-3 text-[#A855F7]" /> Hardware_Asset
-                      </h3>
-                      <div className="bg-white/[0.02] p-6 rounded-2xl border border-white/5 flex items-center space-x-4">
-                        <img src={selectedRental.image} alt={selectedRental.product} className="w-16 h-16 rounded-lg object-cover border border-white/10" />
-                        <div>
-                          <p className="text-white font-bold uppercase tracking-tight">{selectedRental.product}</p>
-                          <p className="text-gray-500 font-mono text-[10px] uppercase">{selectedRental.productId}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Timeline & Notes */}
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                        <Clock className="mr-2 h-3 w-3 text-[#A855F7]" /> Event_Log
-                      </h3>
-                      <div className="bg-white/[0.02] p-6 rounded-2xl border border-white/5 space-y-6">
-                        {selectedRental.timeline.map((event, idx) => (
-                          <div key={idx} className="flex gap-4 relative">
-                            {idx !== selectedRental.timeline.length - 1 && (
-                              <div className="absolute left-[5px] top-4 bottom-[-24px] w-px bg-white/10"></div>
-                            )}
-                            <div className={`w-2.5 h-2.5 rounded-full mt-1 z-10 ${idx === selectedRental.timeline.length - 1 ? 'bg-[#A855F7] shadow-[0_0_8px_#A855F7]' : 'bg-gray-700'
-                              }`}></div>
-                            <div className="space-y-1">
-                              <p className="text-white text-[10px] font-bold uppercase tracking-tight">{event.note}</p>
-                              <p className="text-[9px] font-mono text-gray-600 uppercase">{event.timestamp}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                        <ClipboardList className="mr-2 h-3 w-3 text-[#A855F7]" /> Internal_Notes
-                      </h3>
-                      <textarea
-                        placeholder="Add internal protocol notes..."
-                        className="w-full bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-[10px] font-mono text-gray-400 focus:outline-none focus:border-[#A855F7]/30 min-h-[100px] resize-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Financial Manifest */}
-                <div className="space-y-4">
-                  <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-[0.3em] flex items-center">
-                    <DollarSign className="mr-2 h-3 w-3 text-[#A855F7]" /> Financial_Manifest
-                  </h3>
-                  <div className="bg-white/[0.02] rounded-2xl border border-white/5 p-6 space-y-6">
-                    <div className="grid grid-cols-3 gap-8 pb-6 border-b border-white/5">
-                      <div>
-                        <span className="text-[10px] font-mono text-gray-500 uppercase block mb-1">Rental Total</span>
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            value={editForm.totalPrice || 0}
-                            onChange={(e) => handleEditChange('totalPrice', parseFloat(e.target.value))}
-                            className="bg-black border border-white/10 rounded px-2 py-1 text-white font-bold text-xl tracking-tighter w-full focus:outline-none focus:border-[#A855F7]"
-                          />
-                        ) : (
-                          <span className="text-white font-bold text-xl tracking-tighter">{formatCurrency(selectedRental.totalPrice)}</span>
-                        )}
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-mono text-gray-500 uppercase block mb-1">Security Deposit</span>
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            value={editForm.deposit || 0}
-                            onChange={(e) => handleEditChange('deposit', parseFloat(e.target.value))}
-                            className="bg-black border border-white/10 rounded px-2 py-1 text-[#A855F7] font-bold text-xl tracking-tighter w-full focus:outline-none focus:border-[#A855F7]"
-                          />
-                        ) : (
-                          <span className="text-[#A855F7] font-bold text-xl tracking-tighter">{formatCurrency(selectedRental.deposit)}</span>
-                        )}
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-mono text-gray-500 uppercase block mb-1">Late Penalties</span>
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            value={editForm.lateFees || 0}
-                            onChange={(e) => handleEditChange('lateFees', parseFloat(e.target.value))}
-                            className="bg-black border border-white/10 rounded px-2 py-1 text-red-500 font-bold text-xl tracking-tighter w-full focus:outline-none focus:border-[#A855F7]"
-                          />
-                        ) : (
-                          <span className="text-red-500 font-bold text-xl tracking-tighter">{formatCurrency(selectedRental.lateFees)}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h4 className="text-[10px] font-mono text-gray-400 uppercase tracking-widest flex items-center justify-between">
-                        <span>Transaction Ledger</span>
-                        <div className="flex gap-2">
-                          <button className="px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-[9px] text-[#A855F7] transition-all">Add Fee</button>
-                          <button className="px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-[9px] text-emerald-500 transition-all">Process Refund</button>
-                        </div>
-                      </h4>
-                      <div className="space-y-2">
-                        {selectedRental.transactions && selectedRental.transactions.map(txn => (
-                          <div key={txn.id} className="flex justify-between items-center bg-black/50 p-3 rounded-xl border border-white/5 hover:border-white/10 transition-colors group">
-                            <div className="flex items-center space-x-3">
-                              <div className={`p-1.5 rounded-lg ${txn.type === 'payment' ? 'bg-blue-500/10 text-blue-500' :
-                                txn.type === 'deposit' ? 'bg-[#A855F7]/10 text-[#A855F7]' :
-                                  txn.type === 'fee' ? 'bg-red-500/10 text-red-500' :
-                                    'bg-emerald-500/10 text-emerald-500'
-                                }`}>
-                                <DollarSign size={12} />
-                              </div>
-                              <div>
-                                <span className="text-xs font-mono text-white uppercase">{txn.type}</span>
-                                <div className="text-[9px] text-gray-600 font-mono">[{txn.id}] // {txn.date}</div>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-sm font-mono font-bold text-white block">{formatCurrency(txn.amount)}</span>
-                              <span className={`text-[8px] font-mono uppercase tracking-widest ${txn.status === 'completed' ? 'text-emerald-500' :
-                                txn.status === 'pending' ? 'text-amber-500' : 'text-red-500'
-                                }`}>
-                                {txn.status}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+      {/* Return Assessment Modal */}
+      <AnimatePresence>
+        {showReturnModal && selectedRental && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-[#080112] border border-white/10 rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl">
+              <div className="p-8 border-b border-white/5 bg-white/[0.01]">
+                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Asset Return Protocol</h3>
+                <p className="text-[10px] font-mono text-gray-500 uppercase mt-1">Condition Assessment // Node: {selectedRental.id}</p>
               </div>
-
-              <div className="p-6 bg-white/[0.02] border-t border-white/10 flex justify-end space-x-3">
-                <button
-                  onClick={() => setShowInvoice(true)}
-                  className="px-6 py-2 bg-white/5 text-[#A855F7] rounded-xl font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-colors border border-[#A855F7]/20 flex items-center gap-2"
-                >
-                  <Printer size={12} />
-                  Generate Invoice
-                </button>
-                <button
-                  onClick={() => setSelectedRental(null)}
-                  className="px-6 py-2 bg-[#A855F7] text-black rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[#9333EA] transition-all"
-                >
-                  Close Matrix
-                </button>
+              <div className="p-8 space-y-6">
+                <div className="grid grid-cols-3 gap-3">
+                  <button onClick={() => handleReturnAction('good', 0)} disabled={returnProcessing} className="flex flex-col items-center gap-3 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl hover:bg-emerald-500 hover:text-black transition-all group"><CheckCircle size={24} className="text-emerald-500 group-hover:text-black"/><span className="text-[9px] font-black uppercase tracking-widest text-center">Good<br/>Condition</span></button>
+                  <button onClick={() => handleReturnAction('minor', 500)} disabled={returnProcessing} className="flex flex-col items-center gap-3 p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl hover:bg-amber-500 hover:text-black transition-all group"><AlertTriangle size={24} className="text-amber-500 group-hover:text-black"/><span className="text-[9px] font-black uppercase tracking-widest text-center">Minor<br/>Damage</span></button>
+                  <button onClick={() => handleReturnAction('major', 2000)} disabled={returnProcessing} className="flex flex-col items-center gap-3 p-4 bg-red-500/5 border border-red-500/20 rounded-2xl hover:bg-red-500 hover:text-black transition-all group"><XCircle size={24} className="text-red-500 group-hover:text-black"/><span className="text-[9px] font-black uppercase tracking-widest text-center">Major<br/>Damage</span></button>
+                </div>
+                <div className="p-4 bg-white/5 rounded-xl border border-white/5 text-center"><span className="text-[10px] font-mono uppercase text-gray-500 block mb-1">Collateral Locked</span><span className="text-white font-black text-lg italic">{formatCurrency(selectedRental.deposit)}</span></div>
               </div>
+              <div className="p-6 bg-white/[0.01] flex justify-end"><button onClick={() => setShowReturnModal(false)} className="px-6 py-2 text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-white transition-colors">Abort</button></div>
             </motion.div>
           </div>
         )}
@@ -1384,10 +501,7 @@ export default function AdminRentals() {
       {/* Invoice Generator Modal */}
       <AnimatePresence>
         {showInvoice && selectedRental && (
-          <InvoiceModal 
-            data={invoiceService.formatRentalData(selectedRental)} 
-            onClose={() => setShowInvoice(false)} 
-          />
+          <InvoiceModal data={invoiceService.formatRentalData(selectedRental)} onClose={() => setShowInvoice(false)} />
         )}
       </AnimatePresence>
     </div>

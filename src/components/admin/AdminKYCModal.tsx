@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     X, ShieldCheck, User, Phone, MapPin, 
@@ -64,12 +64,12 @@ export default function AdminKYCModal({ isOpen, onClose, customer }: AdminKYCMod
                         initial={{ scale: 0.95, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-3xl overflow-hidden shadow-2xl"
+                        className="relative w-full max-w-2xl bg-[#080112] border border-white/10 rounded-3xl overflow-hidden shadow-2xl"
                     >
                         {/* Header */}
                         <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-[#A855F7]/10 rounded-lg text-[#A855F7]">
+                                <div className="p-2 bg-[#B000FF]/10 rounded-lg text-[#B000FF]">
                                     <ShieldCheck size={20} />
                                 </div>
                                 <div>
@@ -87,13 +87,13 @@ export default function AdminKYCModal({ isOpen, onClose, customer }: AdminKYCMod
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1">Full Legal Name</label>
                                     <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A855F7]" size={14} />
+                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B000FF]" size={14} />
                                         <input 
                                             required
                                             type="text"
                                             value={formData.fullName}
                                             onChange={e => setFormData({...formData, fullName: e.target.value})}
-                                            className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#A855F7] outline-none transition-all font-bold"
+                                            className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#B000FF] outline-none transition-all font-bold"
                                         />
                                     </div>
                                 </div>
@@ -101,13 +101,13 @@ export default function AdminKYCModal({ isOpen, onClose, customer }: AdminKYCMod
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1">Verification Phone</label>
                                     <div className="relative">
-                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A855F7]" size={14} />
+                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B000FF]" size={14} />
                                         <input 
                                             required
                                             type="tel"
                                             value={formData.phone}
                                             onChange={e => setFormData({...formData, phone: e.target.value})}
-                                            className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#A855F7] outline-none transition-all font-mono"
+                                            className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#B000FF] outline-none transition-all font-mono"
                                         />
                                     </div>
                                 </div>
@@ -115,14 +115,14 @@ export default function AdminKYCModal({ isOpen, onClose, customer }: AdminKYCMod
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1">Driving License</label>
                                     <div className="relative">
-                                        <Fingerprint className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A855F7]" size={14} />
+                                        <Fingerprint className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B000FF]" size={14} />
                                         <input 
                                             required
                                             type="text"
                                             placeholder="DL Number"
                                             value={formData.drivingLicenseNumber}
                                             onChange={e => setFormData({...formData, drivingLicenseNumber: e.target.value})}
-                                            className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#A855F7] outline-none transition-all font-mono uppercase"
+                                            className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#B000FF] outline-none transition-all font-mono uppercase"
                                         />
                                     </div>
                                 </div>
@@ -133,7 +133,7 @@ export default function AdminKYCModal({ isOpen, onClose, customer }: AdminKYCMod
                                         <select 
                                             value={formData.secondaryIdType}
                                             onChange={e => setFormData({...formData, secondaryIdType: e.target.value})}
-                                            className="bg-black border border-white/10 rounded-xl px-2 py-3 text-[10px] text-white focus:border-[#A855F7] outline-none font-black uppercase tracking-tighter"
+                                            className="bg-black border border-white/10 rounded-xl px-2 py-3 text-[10px] text-white focus:border-[#B000FF] outline-none font-black uppercase tracking-tighter"
                                         >
                                             <option value="AADHAR">AADHAR</option>
                                             <option value="PAN">PAN</option>
@@ -141,14 +141,14 @@ export default function AdminKYCModal({ isOpen, onClose, customer }: AdminKYCMod
                                             <option value="PASSPORT">PASSPORT</option>
                                         </select>
                                         <div className="relative flex-1">
-                                            <FileCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A855F7]" size={14} />
+                                            <FileCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B000FF]" size={14} />
                                             <input 
                                                 required
                                                 type="text"
                                                 placeholder="ID Number"
                                                 value={formData.secondaryIdNumber}
                                                 onChange={e => setFormData({...formData, secondaryIdNumber: e.target.value})}
-                                                className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#A855F7] outline-none transition-all font-mono uppercase"
+                                                className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#B000FF] outline-none transition-all font-mono uppercase"
                                             />
                                         </div>
                                     </div>
@@ -158,13 +158,13 @@ export default function AdminKYCModal({ isOpen, onClose, customer }: AdminKYCMod
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1">Verified Address</label>
                                 <div className="relative">
-                                    <MapPin className="absolute left-3 top-4 text-[#A855F7]" size={14} />
+                                    <MapPin className="absolute left-3 top-4 text-[#B000FF]" size={14} />
                                     <textarea 
                                         required
                                         rows={3}
                                         value={formData.address}
                                         onChange={e => setFormData({...formData, address: e.target.value})}
-                                        className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#A855F7] outline-none transition-all resize-none font-bold"
+                                        className="w-full bg-black border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-[#B000FF] outline-none transition-all resize-none font-bold"
                                     />
                                 </div>
                             </div>
@@ -187,7 +187,7 @@ export default function AdminKYCModal({ isOpen, onClose, customer }: AdminKYCMod
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex-[2] py-4 bg-[#A855F7] text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all flex items-center justify-center gap-2"
+                                    className="flex-[2] py-4 bg-[#B000FF] text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                                     {isSubmitting ? 'Syncing...' : 'Inject KYC Record'}
@@ -200,3 +200,4 @@ export default function AdminKYCModal({ isOpen, onClose, customer }: AdminKYCMod
         </AnimatePresence>
     );
 }
+

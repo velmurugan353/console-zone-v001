@@ -93,32 +93,35 @@ export default function Shop() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 layout
+                className="group relative"
               >
-                <Link to={`/product/${product.id}`} className="group block h-full">
-                  <div className="bg-gaming-card overflow-hidden border border-gaming-border hover:border-gaming-accent transition-all duration-300 h-full flex flex-col" style={{ borderRadius: 'var(--layout-border-radius, 0.75rem)' }}>
-                    <div className="relative aspect-square overflow-hidden bg-white/5">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#B000FF]/10 to-[#4D008C]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl blur-xl pointer-events-none" />
+                <Link to={`/product/${product.id}`} className="group block h-full relative z-10">
+                  <div className="bg-[#0c021a] overflow-hidden border border-white/5 hover:border-[#B000FF]/50 transition-all duration-500 hover:-translate-y-1 shadow-xl h-full flex flex-col relative" style={{ borderRadius: 'var(--layout-border-radius, 1.5rem)' }}>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
+                    <div className="relative aspect-square overflow-hidden bg-[#080112]">
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                     </div>
-                    <div className="p-4 flex-grow flex flex-col">
-                      <h3 className="text-lg font-bold text-white mb-1 group-hover:text-gaming-accent transition-colors">
+                    <div className="p-5 flex-grow flex flex-col relative z-20 bg-gradient-to-b from-transparent to-[#080112]">
+                      <h3 className="text-lg font-black text-white mb-1 group-hover:text-[#B000FF] transition-colors uppercase tracking-tight leading-tight">
                         {product.name}
                       </h3>
-                      <p className="text-sm text-gaming-muted capitalize mb-4">{product.category}</p>
+                      <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-4">{product.category}</p>
 
-                      <div className="mt-auto flex items-center justify-between">
+                      <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5">
                         <div>
-                          <span className="text-lg font-bold text-white block">{formatCurrency(product.price)}</span>
+                          <span className="text-xl font-black text-white italic tracking-tighter drop-shadow-md block">{formatCurrency(product.price)}</span>
                           {product.rentalPrice && (
-                            <span className="text-xs text-gaming-accent">
-                              or rent from {formatCurrency(product.rentalPrice)}/day
+                            <span className="text-[10px] font-bold text-[#B000FF] uppercase tracking-widest mt-1 block">
+                              Rent: {formatCurrency(product.rentalPrice)}/d
                             </span>
                           )}
                         </div>
-                        <button className="px-3 py-1.5 bg-gaming-border hover:bg-gaming-accent hover:text-black text-white text-sm font-medium rounded transition-colors">
+                        <button className="px-4 py-2 bg-white/5 hover:bg-[#B000FF] border border-white/10 hover:border-[#B000FF] text-white hover:text-black text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_10px_rgba(255,255,255,0.05)] hover:shadow-[0_0_15px_#B000FF]">
                           View
                         </button>
                       </div>

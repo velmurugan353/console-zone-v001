@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowRight, Gamepad2, Zap, Shield, Rocket } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -34,7 +34,7 @@ const QUESTIONS: Question[] = [
 const RECOMMENDATIONS: Record<string, any> = {
     'competitive-ps': {
         title: "ELITE ESPORTS BUNDLE",
-        desc: "PlayStation 5 + DualSense Edge™ + Low Latency Monitor Connectivity.",
+        desc: "PlayStation 5 + DualSense Edgeâ„¢ + Low Latency Monitor Connectivity.",
         productId: "1",
         label: "DEPLOY MISSION"
     },
@@ -81,7 +81,7 @@ export default function AIConcierge() {
     return (
         <section className="py-24 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto border-t border-white/5 relative overflow-hidden">
             {/* Decorative pulse background */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#A855F7]/5 blur-[150px] rounded-full -z-10 animate-pulse" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#B000FF]/5 blur-[150px] rounded-full -z-10 animate-pulse" />
 
             <div className="text-center mb-16 space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-gaming-accent/10 border border-gaming-accent/20 rounded-full mb-4">
@@ -98,7 +98,7 @@ export default function AIConcierge() {
                 </p>
             </div>
 
-            <div className="max-w-4xl mx-auto bg-[#0a0a0a] border border-white/10 p-8 md:p-16 min-h-[450px] flex flex-col justify-center relative overflow-hidden shadow-2xl" style={{ borderRadius: 'var(--layout-border-radius, 3rem)' }}>
+            <div className="max-w-4xl mx-auto bg-[#080112] border border-white/10 p-8 md:p-16 min-h-[450px] flex flex-col justify-center relative overflow-hidden shadow-2xl" style={{ borderRadius: 'var(--layout-border-radius, 3rem)' }}>
                 <div className="absolute top-0 right-0 p-8 opacity-5">
                     <Zap size={200} className="text-white" />
                 </div>
@@ -106,7 +106,7 @@ export default function AIConcierge() {
                 {!showResult ? (
                     <div className="relative z-10 space-y-12">
                         <div className="space-y-4">
-                            <span className="text-[10px] font-mono text-[#A855F7] uppercase tracking-[0.4em]">Step_0{step + 1} // Phase_Initialization</span>
+                            <span className="text-[10px] font-mono text-[#B000FF] uppercase tracking-[0.4em]">Step_0{step + 1} // Phase_Initialization</span>
                             <motion.h3
                                 key={step}
                                 initial={{ opacity: 0, x: 20 }}
@@ -125,9 +125,9 @@ export default function AIConcierge() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.1 }}
                                     onClick={() => handleAnswer(opt.value)}
-                                    className="group p-6 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col items-center text-center space-y-4 hover:border-[#A855F7]/50 hover:bg-[#A855F7]/5 transition-all outline-none"
+                                    className="group p-6 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col items-center text-center space-y-4 hover:border-[#B000FF]/50 hover:bg-[#B000FF]/5 transition-all outline-none"
                                 >
-                                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-[#A855F7] group-hover:bg-[#A855F7]/10 transition-all">
+                                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-[#B000FF] group-hover:bg-[#B000FF]/10 transition-all">
                                         <opt.icon size={24} />
                                     </div>
                                     <span className="text-xs font-mono font-bold text-gray-400 group-hover:text-white transition-colors uppercase tracking-widest">{opt.label}</span>
@@ -143,7 +143,7 @@ export default function AIConcierge() {
                     >
                         <div className="space-y-2">
                             <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-[0.4em] animate-pulse">Analysis_Complete // Optimal_Found</span>
-                            <h3 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter shadow-[#A855F7]/20">
+                            <h3 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter shadow-[#B000FF]/20">
                                 {getResult().title}
                             </h3>
                         </div>
@@ -154,7 +154,7 @@ export default function AIConcierge() {
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
                             <Link to={`/product/${getResult().productId}`} className="flex-1 sm:flex-none">
-                                <button className="w-full px-12 py-5 bg-[#A855F7] text-white font-black uppercase tracking-widest rounded-2xl flex items-center justify-center gap-3 hover:bg-[#9333ea] transition-all shadow-[0_10px_40px_rgba(168,85,247,0.3)]">
+                                <button className="w-full px-12 py-5 bg-[#B000FF] text-white font-black uppercase tracking-widest rounded-2xl flex items-center justify-center gap-3 hover:bg-[#9333ea] transition-all shadow-[0_10px_40px_rgba(168,85,247,0.3)]">
                                     {getResult().label} <ArrowRight size={20} />
                                 </button>
                             </Link>
@@ -169,8 +169,9 @@ export default function AIConcierge() {
                 )}
 
                 {/* Console line decor */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#A855F7]/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#B000FF]/30 to-transparent" />
             </div>
         </section>
     );
 }
+

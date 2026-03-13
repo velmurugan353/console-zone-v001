@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+﻿import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Package, 
@@ -21,6 +21,7 @@ import {
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { useAdminNotifications } from '../../hooks/useAdminNotifications';
+import Logo from '../Logo';
 
 const sidebarItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
@@ -55,15 +56,10 @@ export default function AdminSidebar() {
 
   return (
     <div className="w-64 bg-[#111] border-r border-white/10 h-dvh fixed left-0 top-0 flex flex-col">
-      <div className="p-6 border-b border-white/10">
-        <Link to="/" className="flex items-center space-x-2">
-          <div className="p-2 bg-[#A855F7]/10 rounded-lg">
-            <Gamepad2 className="h-6 w-6 text-[#A855F7]" />
-          </div>
-          <span className="text-xl font-bold tracking-tight text-white italic">
-            Console<span className="text-[#A855F7]">Zone</span>
-            <span className="text-xs ml-1 text-gray-500 font-normal not-italic">Admin</span>
-          </span>
+      <div className="p-7 border-b border-white/10">
+        <Link to="/" className="flex items-center">
+          <Logo size={48} />
+          <span className="text-[10px] ml-2 text-gray-500 font-mono uppercase tracking-[0.2em] mt-1 italic opacity-50">Admin</span>
         </Link>
       </div>
 
@@ -77,17 +73,17 @@ export default function AdminSidebar() {
               className={cn(
                 "flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative overflow-hidden",
                 isActive 
-                  ? "bg-[#A855F7]/10 text-[#A855F7]" 
+                  ? "bg-[#B000FF]/10 text-[#B000FF]" 
                   : "text-gray-400 hover:text-white hover:bg-white/5"
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute left-0 top-0 bottom-0 w-1 bg-[#A855F7] rounded-r-full"
+                  className="absolute left-0 top-0 bottom-0 w-1 bg-[#B000FF] rounded-r-full"
                 />
               )}
-              <item.icon className={cn("h-5 w-5", isActive ? "text-[#A855F7]" : "text-gray-500 group-hover:text-white")} />
+              <item.icon className={cn("h-5 w-5", isActive ? "text-[#B000FF]" : "text-gray-500 group-hover:text-white")} />
               <span className="font-medium flex-1">{item.name}</span>
               {getBadgeCount(item.name) > 0 && (
                 <span className="bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-[0_0_10px_rgba(239,68,68,0.3)]">
@@ -108,3 +104,4 @@ export default function AdminSidebar() {
     </div>
   );
 }
+

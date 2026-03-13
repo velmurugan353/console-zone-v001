@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ShieldCheck } from 'lucide-react';
@@ -20,9 +20,9 @@ export default function RequireAuth({ children, onLoginRequired }: RequireAuthPr
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-dvh bg-[#050505] gap-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#A855F7]"></div>
-                <p className="text-[10px] font-mono text-[#A855F7]/70 uppercase tracking-[0.4em]">Verifying Credentials...</p>
+            <div className="flex flex-col items-center justify-center min-h-dvh bg-[#080112] gap-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B000FF]"></div>
+                <p className="text-[10px] font-mono text-[#B000FF]/70 uppercase tracking-[0.4em]">Verifying Credentials...</p>
             </div>
         );
     }
@@ -30,10 +30,10 @@ export default function RequireAuth({ children, onLoginRequired }: RequireAuthPr
     if (!isAuthenticated) {
         if (onLoginRequired) {
             return (
-                <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
+                <div className="min-h-dvh bg-[#080112] flex items-center justify-center">
                     <div className="text-center space-y-6 p-8 bg-white/5 border border-white/10 rounded-3xl max-w-md mx-auto">
-                        <div className="w-16 h-16 bg-[#A855F7]/10 rounded-2xl flex items-center justify-center mx-auto">
-                            <ShieldCheck className="h-8 w-8 text-[#A855F7]" />
+                        <div className="w-16 h-16 bg-[#B000FF]/10 rounded-2xl flex items-center justify-center mx-auto">
+                            <ShieldCheck className="h-8 w-8 text-[#B000FF]" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-tight">Authentication Required</h2>
@@ -41,7 +41,7 @@ export default function RequireAuth({ children, onLoginRequired }: RequireAuthPr
                         </div>
                         <button 
                             onClick={onLoginRequired}
-                            className="w-full py-4 bg-[#A855F7] text-white font-black uppercase tracking-widest text-xs rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transition-all"
+                            className="w-full py-4 bg-[#B000FF] text-white font-black uppercase tracking-widest text-xs rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transition-all"
                         >
                             Log In / Sign Up
                         </button>
@@ -55,3 +55,4 @@ export default function RequireAuth({ children, onLoginRequired }: RequireAuthPr
 
     return <>{children}</>;
 }
+

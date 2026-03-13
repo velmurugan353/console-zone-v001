@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   Zap, 
   Mail, 
@@ -28,16 +28,16 @@ import { cn } from '../../lib/utils';
 import { format } from 'date-fns';
 
 const RuleToggle = ({ label, description, enabled, onToggle }: any) => (
-  <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-lg hover:border-[#A855F7]/20 transition-all group">
+  <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-lg hover:border-[#B000FF]/20 transition-all group">
     <div>
-      <h4 className="text-[10px] font-mono uppercase tracking-widest text-white group-hover:text-[#A855F7] transition-colors">{label}</h4>
+      <h4 className="text-[10px] font-mono uppercase tracking-widest text-white group-hover:text-[#B000FF] transition-colors">{label}</h4>
       <p className="text-[9px] font-mono text-gray-500 uppercase tracking-tighter">{description}</p>
     </div>
     <button 
       onClick={onToggle}
-      className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${enabled ? 'bg-[#A855F7]/40' : 'bg-white/5'}`}
+      className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${enabled ? 'bg-[#B000FF]/40' : 'bg-white/5'}`}
     >
-      <div className={`absolute top-1 left-1 w-3 h-3 rounded-full transition-transform duration-300 ${enabled ? 'translate-x-5 bg-[#A855F7]' : 'translate-x-0 bg-gray-600'}`} />
+      <div className={`absolute top-1 left-1 w-3 h-3 rounded-full transition-transform duration-300 ${enabled ? 'translate-x-5 bg-[#B000FF]' : 'translate-x-0 bg-gray-600'}`} />
     </button>
   </div>
 );
@@ -84,7 +84,7 @@ export default function AdminAutomation() {
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="flex bg-[#0a0a0a] p-1 rounded-xl border border-white/10">
+          <div className="flex bg-[#080112] p-1 rounded-xl border border-white/10">
             {[
               { id: 'workflows', label: 'Logic', icon: Cpu },
               { id: 'google', label: 'Google_Ecosystem', icon: Globe },
@@ -167,7 +167,7 @@ export default function AdminAutomation() {
                             'text-blue-400 bg-blue-400/10'
                           )}>{log.service}</span>
                           <span className="text-[10px] text-white italic tracking-tighter shrink-0">{log.action}</span>
-                          <span className="text-[9px] text-gray-500 truncate shrink">» {log.target}</span>
+                          <span className="text-[9px] text-gray-500 truncate shrink">Â» {log.target}</span>
                           <div className="flex-grow" />
                           <span className="text-[8px] text-emerald-500 font-black uppercase bg-emerald-500/10 px-2 py-0.5 rounded">Success</span>
                         </div>
@@ -296,3 +296,4 @@ export default function AdminAutomation() {
     </div>
   );
 }
+

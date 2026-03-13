@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     X, ShieldCheck, User, Phone, MapPin, 
@@ -55,12 +55,12 @@ export default function ViewKYCModal({ isOpen, onClose, userId, userName }: View
                         initial={{ scale: 0.95, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
+                        className="relative w-full max-w-4xl bg-[#080112] border border-white/10 rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
                     >
                         {/* Header */}
                         <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-[#A855F7]/10 rounded-lg text-[#A855F7]">
+                                <div className="p-2 bg-[#B000FF]/10 rounded-lg text-[#B000FF]">
                                     <Eye size={20} />
                                 </div>
                                 <div>
@@ -75,7 +75,7 @@ export default function ViewKYCModal({ isOpen, onClose, userId, userName }: View
 
                         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                             {loading ? (
-                                <div className="py-20 flex flex-col items-center justify-center gap-4 text-[#A855F7]">
+                                <div className="py-20 flex flex-col items-center justify-center gap-4 text-[#B000FF]">
                                     <Loader2 className="animate-spin" size={32} />
                                     <p className="text-[10px] font-black uppercase tracking-[0.3em]">Accessing Secure Records...</p>
                                 </div>
@@ -99,7 +99,7 @@ export default function ViewKYCModal({ isOpen, onClose, userId, userName }: View
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         {/* Basic Info */}
                                         <div className="space-y-6">
-                                            <h4 className="text-[10px] font-black text-[#A855F7] uppercase tracking-[0.3em] border-b border-[#A855F7]/20 pb-2">Personnel Profile</h4>
+                                            <h4 className="text-[10px] font-black text-[#B000FF] uppercase tracking-[0.3em] border-b border-[#B000FF]/20 pb-2">Personnel Profile</h4>
                                             
                                             <div className="space-y-4">
                                                 <div className="bg-white/5 p-4 rounded-xl border border-white/5">
@@ -132,7 +132,7 @@ export default function ViewKYCModal({ isOpen, onClose, userId, userName }: View
 
                                         {/* Evidence Assets */}
                                         <div className="space-y-6">
-                                            <h4 className="text-[10px] font-black text-[#A855F7] uppercase tracking-[0.3em] border-b border-[#A855F7]/20 pb-2">Evidence Matrix</h4>
+                                            <h4 className="text-[10px] font-black text-[#B000FF] uppercase tracking-[0.3em] border-b border-[#B000FF]/20 pb-2">Evidence Matrix</h4>
                                             
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
@@ -172,7 +172,7 @@ export default function ViewKYCModal({ isOpen, onClose, userId, userName }: View
                                                             <span className="text-[10px] font-black text-amber-500/50 uppercase">Manual Entry</span>
                                                         ) : (
                                                             <>
-                                                                <Video size={24} className="text-[#A855F7]" />
+                                                                <Video size={24} className="text-[#B000FF]" />
                                                                 <a href={kycData.selfieVideoUrl} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
                                                                     <ExternalLink size={16} />
                                                                 </a>
@@ -203,7 +203,7 @@ export default function ViewKYCModal({ isOpen, onClose, userId, userName }: View
 
                                     {/* Agent Feedbacks */}
                                     <div className="space-y-6">
-                                        <h4 className="text-[10px] font-black text-[#A855F7] uppercase tracking-[0.3em] border-b border-[#A855F7]/20 pb-2">Analysis History</h4>
+                                        <h4 className="text-[10px] font-black text-[#B000FF] uppercase tracking-[0.3em] border-b border-[#B000FF]/20 pb-2">Analysis History</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             {kycData.agentReports?.map((report, i) => (
                                                 <div key={i} className="bg-black border border-white/5 p-4 rounded-2xl space-y-2">
@@ -240,3 +240,4 @@ export default function ViewKYCModal({ isOpen, onClose, userId, userName }: View
         </AnimatePresence>
     );
 }
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Save, Bell, Shield, Globe, Database, Mail } from 'lucide-react';
 
 export default function AdminSettings() {
@@ -32,7 +32,7 @@ export default function AdminSettings() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-[#111] p-6 rounded-2xl border border-white/10">
             <div className="flex items-center space-x-3 mb-6">
-              <Globe className="h-5 w-5 text-[#A855F7]" />
+              <Globe className="h-5 w-5 text-[#B000FF]" />
               <h3 className="text-lg font-bold text-white">General Information</h3>
             </div>
 
@@ -44,7 +44,7 @@ export default function AdminSettings() {
                   name="siteName"
                   value={settings.siteName}
                   onChange={handleChange}
-                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#A855F7] focus:outline-none"
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#B000FF] focus:outline-none"
                 />
               </div>
               <div>
@@ -54,7 +54,7 @@ export default function AdminSettings() {
                   name="supportEmail"
                   value={settings.supportEmail}
                   onChange={handleChange}
-                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#A855F7] focus:outline-none"
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#B000FF] focus:outline-none"
                 />
               </div>
               <div>
@@ -63,11 +63,11 @@ export default function AdminSettings() {
                   name="currency"
                   value={settings.currency}
                   onChange={handleChange}
-                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#A855F7] focus:outline-none"
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#B000FF] focus:outline-none"
                 >
-                  <option value="INR">INR (₹)</option>
+                  <option value="INR">INR (â‚¹)</option>
                   <option value="USD">USD ($)</option>
-                  <option value="GBP">GBP (£)</option>
+                  <option value="GBP">GBP (Â£)</option>
                 </select>
               </div>
             </div>
@@ -75,7 +75,7 @@ export default function AdminSettings() {
 
           <div className="bg-[#111] p-6 rounded-2xl border border-white/10">
             <div className="flex items-center space-x-3 mb-6">
-              <Shield className="h-5 w-5 text-[#A855F7]" />
+              <Shield className="h-5 w-5 text-[#B000FF]" />
               <h3 className="text-lg font-bold text-white">Security & Access</h3>
             </div>
 
@@ -93,7 +93,7 @@ export default function AdminSettings() {
                     onChange={handleChange}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#A855F7]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#A855F7]"></div>
+                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#B000FF]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#B000FF]"></div>
                 </label>
               </div>
 
@@ -110,7 +110,7 @@ export default function AdminSettings() {
                     onChange={handleChange}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#A855F7]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#A855F7]"></div>
+                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#B000FF]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#B000FF]"></div>
                 </label>
               </div>
             </div>
@@ -121,7 +121,7 @@ export default function AdminSettings() {
         <div className="space-y-6">
           <div className="bg-[#111] p-6 rounded-2xl border border-white/10">
             <div className="flex items-center space-x-3 mb-6">
-              <Bell className="h-5 w-5 text-[#A855F7]" />
+              <Bell className="h-5 w-5 text-[#B000FF]" />
               <h3 className="text-lg font-bold text-white">Notifications</h3>
             </div>
 
@@ -133,23 +133,23 @@ export default function AdminSettings() {
                   name="emailNotifications"
                   checked={settings.emailNotifications}
                   onChange={handleChange}
-                  className="accent-[#A855F7] w-5 h-5"
+                  className="accent-[#B000FF] w-5 h-5"
                 />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-300">New Order Alerts</span>
-                <input type="checkbox" defaultChecked className="accent-[#A855F7] w-5 h-5" />
+                <input type="checkbox" defaultChecked className="accent-[#B000FF] w-5 h-5" />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-300">Rental Reminders</span>
-                <input type="checkbox" defaultChecked className="accent-[#A855F7] w-5 h-5" />
+                <input type="checkbox" defaultChecked className="accent-[#B000FF] w-5 h-5" />
               </div>
             </div>
           </div>
 
           <div className="bg-[#111] p-6 rounded-2xl border border-white/10">
             <div className="flex items-center space-x-3 mb-6">
-              <Database className="h-5 w-5 text-[#A855F7]" />
+              <Database className="h-5 w-5 text-[#B000FF]" />
               <h3 className="text-lg font-bold text-white">Data Management</h3>
             </div>
 
@@ -163,7 +163,7 @@ export default function AdminSettings() {
             </div>
           </div>
 
-          <button className="w-full py-3 bg-[#A855F7] hover:bg-[#9333EA] text-white font-bold rounded-xl transition-colors flex items-center justify-center shadow-lg shadow-[#A855F7]/20">
+          <button className="w-full py-3 bg-[#B000FF] hover:bg-[#9333EA] text-white font-bold rounded-xl transition-colors flex items-center justify-center shadow-lg shadow-[#B000FF]/20">
             <Save className="h-5 w-5 mr-2" />
             Save Changes
           </button>
@@ -172,3 +172,4 @@ export default function AdminSettings() {
     </div>
   );
 }
+

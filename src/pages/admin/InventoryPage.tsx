@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import AdminInventory from './AdminInventory';
 import RentalSettingsPage from './RentalSettingsPage';
 import { ArrowLeft, Box, LayoutList, Settings2, Tag, Gamepad2 } from "lucide-react";
@@ -14,14 +14,14 @@ export default function InventoryPage() {
             <div className="flex items-center justify-between">
                 <Link 
                     to="/admin" 
-                    className="flex items-center space-x-2 text-gray-500 hover:text-[#A855F7] transition-colors group"
+                    className="flex items-center space-x-2 text-gray-500 hover:text-[#B000FF] transition-colors group"
                 >
                     <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                     <span className="text-[10px] font-mono uppercase tracking-widest">Return to Command Center</span>
                 </Link>
                 
                 <div className="flex items-center space-x-2">
-                    <Box className="h-4 w-4 text-[#A855F7]" />
+                    <Box className="h-4 w-4 text-[#B000FF]" />
                     <span className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em]">System_Asset_Management</span>
                 </div>
             </div>
@@ -34,7 +34,7 @@ export default function InventoryPage() {
                         <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-[0.2em]">Inventory Matrix // Online</span>
                     </div>
                     <h1 className="text-5xl font-bold text-white tracking-tighter uppercase italic">
-                        Rental <span className="text-[#A855F7]">Inventory</span>
+                        Rental <span className="text-[#B000FF]">Inventory</span>
                     </h1>
                     <p className="text-gray-500 font-mono text-xs mt-2 max-w-2xl">
                         Real-time hardware asset tracking, health diagnostics, and catalog pricing controls.
@@ -47,7 +47,7 @@ export default function InventoryPage() {
                         onClick={() => setActiveTab('matrix')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
                             activeTab === 'matrix' 
-                            ? 'bg-[#A855F7] text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' 
+                            ? 'bg-[#B000FF] text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' 
                             : 'text-gray-500 hover:text-gray-300'
                         }`}
                     >
@@ -58,7 +58,7 @@ export default function InventoryPage() {
                         onClick={() => setActiveTab('settings')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
                             activeTab === 'settings' 
-                            ? 'bg-[#A855F7] text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' 
+                            ? 'bg-[#B000FF] text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' 
                             : 'text-gray-500 hover:text-gray-300'
                         }`}
                     >
@@ -85,12 +85,12 @@ export default function InventoryPage() {
                                     <RentalSettingsPage hideHeader />
                                 </div>
                                 <div className="space-y-6">
-                                    <div className="bg-[#0a0a0a] border border-[#A855F7]/30 rounded-2xl p-6 relative overflow-hidden">
+                                    <div className="bg-[#080112] border border-[#B000FF]/30 rounded-2xl p-6 relative overflow-hidden">
                                         <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                                            <Tag className="text-[#A855F7]" size={40} />
+                                            <Tag className="text-[#B000FF]" size={40} />
                                         </div>
                                         <h3 className="text-sm font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                                            <Tag className="text-[#A855F7]" size={16} />
+                                            <Tag className="text-[#B000FF]" size={16} />
                                             Pricing Protocol
                                         </h3>
                                         <p className="text-xs text-gray-400 font-mono leading-relaxed">
@@ -98,9 +98,9 @@ export default function InventoryPage() {
                                         </p>
                                     </div>
 
-                                    <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6">
+                                    <div className="bg-[#080112] border border-white/10 rounded-2xl p-6">
                                         <h3 className="text-sm font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                                            <Gamepad2 className="text-[#A855F7]" size={16} />
+                                            <Gamepad2 className="text-[#B000FF]" size={16} />
                                             Active Fleet Status
                                         </h3>
                                         <div className="space-y-4">
@@ -137,3 +137,4 @@ export default function InventoryPage() {
         </div>
     );
 }
+

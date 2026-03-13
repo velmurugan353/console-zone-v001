@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Zap, Truck, Clock, Gem, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -14,7 +14,7 @@ export default function VaultPassSection() {
 
     return (
         <section className="py-24 px-4 sm:px-6 lg:px-8 w-full">
-            <div className="relative overflow-hidden bg-[#0a0a0a] border border-white/10 group mx-auto" style={{ borderRadius: 'var(--layout-border-radius, 3.5rem)', maxWidth: 'var(--layout-max-width, 1280px)' }}>
+            <div className="relative overflow-hidden bg-[#080112] border border-white/10 group mx-auto" style={{ borderRadius: 'var(--layout-border-radius, 3.5rem)', maxWidth: 'var(--layout-max-width, 1280px)' }}>
                 {/* Animated Background Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gaming-accent/10 via-transparent to-gaming-secondary/5 opacity-50 group-hover:opacity-100 transition-opacity" />
 
@@ -66,7 +66,7 @@ export default function VaultPassSection() {
                         <motion.div
                             animate={{ y: [0, -10, 0] }}
                             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                            className="relative w-72 h-[450px] bg-gradient-to-b from-[#1a1a1a] to-black rounded-3xl border border-white/10 shadow-2xl p-8 flex flex-col justify-between"
+                            className="relative w-72 h-[450px] bg-gradient-to-b from-[#0c021a] to-black rounded-3xl border border-white/10 shadow-2xl p-8 flex flex-col justify-between"
                         >
                             <div className="flex justify-between items-start">
                                 <div className="w-10 h-10 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
@@ -101,3 +101,5 @@ export default function VaultPassSection() {
         </section>
     );
 }
+
+

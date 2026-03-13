@@ -48,7 +48,23 @@ export const DEFAULT_TEMPLATES: NotificationTemplate[] = [
     id: 'rental_reminder',
     name: 'Rental Return Reminder',
     subject: 'Reminder: Your rental ends tomorrow',
-    content: 'Hi {{customerName}}, just a reminder that your rental for {{consoleName}} ends tomorrow. Please ensure it is ready for return.',
+    content: 'Hi {{customerName}}, just a reminder that your rental for {{productName}} ends tomorrow. Please ensure it is ready for return.',
+    channels: ['email', 'sms', 'whatsapp'],
+    enabled: true
+  },
+  {
+    id: 'rental_late',
+    name: 'Late Return Alert',
+    subject: 'URGENT: Rental Overdue - {{productName}}',
+    content: 'Hi {{customerName}}, your rental for {{productName}} is overdue by {{daysLate}} days. Late fees of â‚¹100/day are being applied. Please return the device immediately to avoid further penalties.',
+    channels: ['email', 'sms', 'whatsapp'],
+    enabled: true
+  },
+  {
+    id: 'rental_return_confirmation',
+    name: 'Rental Return Confirmation',
+    subject: 'Return Successful: {{productName}}',
+    content: 'Hi {{customerName}}, we have successfully processed the return of {{productName}}. Your security deposit has been cleared and will reflect in your account within 3 business days. Thank you for choosing ConsoleZone!',
     channels: ['email', 'sms', 'whatsapp'],
     enabled: true
   },

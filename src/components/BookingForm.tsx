@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Calendar, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -60,17 +60,17 @@ const BookingForm = () => {
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-white mb-2">Book Your Console</h2>
         <div className="flex items-center space-x-2 text-sm text-gray-400">
-          <span className={`flex items-center ${step >= 1 ? 'text-[#A855F7]' : ''}`}>
+          <span className={`flex items-center ${step >= 1 ? 'text-[#B000FF]' : ''}`}>
             <span className="w-6 h-6 rounded-full border border-current flex items-center justify-center mr-2 text-xs">1</span>
             Details
           </span>
           <div className="w-8 h-px bg-white/10"></div>
-          <span className={`flex items-center ${step >= 2 ? 'text-[#A855F7]' : ''}`}>
+          <span className={`flex items-center ${step >= 2 ? 'text-[#B000FF]' : ''}`}>
             <span className="w-6 h-6 rounded-full border border-current flex items-center justify-center mr-2 text-xs">2</span>
             Info
           </span>
           <div className="w-8 h-px bg-white/10"></div>
-          <span className={`flex items-center ${step >= 3 ? 'text-[#A855F7]' : ''}`}>
+          <span className={`flex items-center ${step >= 3 ? 'text-[#B000FF]' : ''}`}>
             <span className="w-6 h-6 rounded-full border border-current flex items-center justify-center mr-2 text-xs">3</span>
             Confirm
           </span>
@@ -85,7 +85,7 @@ const BookingForm = () => {
               name="consoleType"
               value={formData.consoleType}
               onChange={handleInputChange}
-              className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#A855F7] focus:outline-none transition-colors"
+              className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#B000FF] focus:outline-none transition-colors"
             >
               <option value="ps5">PlayStation 5</option>
               <option value="xbox">Xbox Series X</option>
@@ -103,7 +103,7 @@ const BookingForm = () => {
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleInputChange}
-                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 pl-10 text-white focus:border-[#A855F7] focus:outline-none transition-colors"
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 pl-10 text-white focus:border-[#B000FF] focus:outline-none transition-colors"
                 />
               </div>
             </div>
@@ -116,7 +116,7 @@ const BookingForm = () => {
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleInputChange}
-                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 pl-10 text-white focus:border-[#A855F7] focus:outline-none transition-colors"
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 pl-10 text-white focus:border-[#B000FF] focus:outline-none transition-colors"
                 />
               </div>
             </div>
@@ -124,7 +124,7 @@ const BookingForm = () => {
 
           <button
             onClick={nextStep}
-            className="w-full bg-[#A855F7] hover:bg-[#9333EA] text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center"
+            className="w-full bg-[#B000FF] hover:bg-[#9333EA] text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center"
           >
             Continue
           </button>
@@ -141,7 +141,7 @@ const BookingForm = () => {
               value={formData.name}
               onChange={handleInputChange}
               placeholder="John Doe"
-              className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#A855F7] focus:outline-none transition-colors"
+              className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#B000FF] focus:outline-none transition-colors"
             />
           </div>
           <div>
@@ -152,7 +152,7 @@ const BookingForm = () => {
               value={formData.email}
               onChange={handleInputChange}
               placeholder="john@example.com"
-              className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#A855F7] focus:outline-none transition-colors"
+              className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#B000FF] focus:outline-none transition-colors"
             />
           </div>
           <div>
@@ -163,7 +163,7 @@ const BookingForm = () => {
               value={formData.phone}
               onChange={handleInputChange}
               placeholder="+1 (555) 000-0000"
-              className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#A855F7] focus:outline-none transition-colors"
+              className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#B000FF] focus:outline-none transition-colors"
             />
           </div>
 
@@ -176,7 +176,7 @@ const BookingForm = () => {
             </button>
             <button
               onClick={nextStep}
-              className="w-2/3 bg-[#A855F7] hover:bg-[#9333EA] text-white font-bold py-3 rounded-lg transition-colors"
+              className="w-2/3 bg-[#B000FF] hover:bg-[#9333EA] text-white font-bold py-3 rounded-lg transition-colors"
             >
               {user?.kyc_status === 'APPROVED' ? 'Review Booking' : 'Verify Identity to Review'}
             </button>
@@ -201,7 +201,7 @@ const BookingForm = () => {
             </div>
             <div className="border-t border-white/10 pt-3 flex justify-between">
               <span className="text-gray-400">Total</span>
-              <span className="text-[#A855F7] font-bold text-lg">₹{(getDays() * getPrice()).toFixed(2)}</span>
+              <span className="text-[#B000FF] font-bold text-lg">â‚¹{(getDays() * getPrice()).toFixed(2)}</span>
             </div>
           </div>
 
@@ -214,7 +214,7 @@ const BookingForm = () => {
             </button>
             <button
               onClick={() => alert("Booking confirmed!")}
-              className="w-2/3 bg-[#A855F7] hover:bg-[#9333EA] text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center"
+              className="w-2/3 bg-[#B000FF] hover:bg-[#9333EA] text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center"
             >
               <CreditCard className="w-4 h-4 mr-2" />
               Pay & Book
@@ -227,3 +227,4 @@ const BookingForm = () => {
 };
 
 export default BookingForm;
+

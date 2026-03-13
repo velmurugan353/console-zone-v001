@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Tag,
   Plus,
@@ -22,12 +22,12 @@ const coupons = [
     limit: 500,
     expiry: '2024-12-31',
     status: 'Active',
-    color: 'from-[#A855F7] to-[#9333EA]'
+    color: 'from-[#B000FF] to-[#9333EA]'
   },
   {
     id: '2',
     code: 'WELCOME50',
-    discount: '₹50',
+    discount: 'â‚¹50',
     type: 'Fixed Amount',
     usage: 89,
     limit: 200,
@@ -69,7 +69,7 @@ export default function AdminCoupons() {
           <h1 className="text-3xl font-bold text-white">Coupons & Discounts</h1>
           <p className="text-gray-400 mt-2">Create and manage promotional offers.</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-[#A855F7] text-white rounded-xl hover:bg-[#9333EA] transition-colors shadow-lg shadow-[#A855F7]/20">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-[#B000FF] text-white rounded-xl hover:bg-[#9333EA] transition-colors shadow-lg shadow-[#B000FF]/20">
           <Plus className="h-4 w-4" />
           <span>Create Coupon</span>
         </button>
@@ -78,7 +78,7 @@ export default function AdminCoupons() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-[#111] p-6 rounded-2xl border border-white/10">
           <div className="flex items-center justify-between mb-2">
-            <Users className="h-5 w-5 text-[#A855F7]" />
+            <Users className="h-5 w-5 text-[#B000FF]" />
             <span className="text-xs text-green-400 font-medium">+12% this month</span>
           </div>
           <p className="text-gray-400 text-sm">Total Coupon Users</p>
@@ -98,7 +98,7 @@ export default function AdminCoupons() {
             <span className="text-xs text-gray-400 font-medium">Last 30 days</span>
           </div>
           <p className="text-gray-400 text-sm">Total Discount Value</p>
-          <p className="text-2xl font-bold text-white mt-1">₹12,450.00</p>
+          <p className="text-2xl font-bold text-white mt-1">â‚¹12,450.00</p>
         </div>
       </div>
 
@@ -108,7 +108,7 @@ export default function AdminCoupons() {
           <input
             type="text"
             placeholder="Search coupon codes..."
-            className="w-full bg-[#111] border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white focus:outline-none focus:border-[#A855F7] transition-colors"
+            className="w-full bg-[#111] border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white focus:outline-none focus:border-[#B000FF] transition-colors"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -117,7 +117,7 @@ export default function AdminCoupons() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {coupons.map((coupon) => (
-          <div key={coupon.id} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden group hover:border-[#A855F7]/50 transition-all">
+          <div key={coupon.id} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden group hover:border-[#B000FF]/50 transition-all">
             <div className={`h-24 bg-gradient-to-r ${coupon.color} p-6 flex justify-between items-start relative overflow-hidden`}>
               <div className="absolute -right-4 -bottom-4 opacity-10">
                 <Tag className="h-24 w-24 rotate-12" />
@@ -173,3 +173,4 @@ export default function AdminCoupons() {
     </div>
   );
 }
+

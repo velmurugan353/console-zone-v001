@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { formatCurrency } from '../../lib/utils';
 import { Wrench, CheckCircle, Clock, XCircle, Search, Filter, AlertTriangle, Activity, ShieldCheck, Zap, User, Edit2, Save, Mail, Phone, Plus, Package, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -204,7 +204,7 @@ export default function AdminRepairs() {
   const handleAppendPart = async () => {
     if (!selectedRepair) return;
     const partName = prompt('Enter part name:');
-    const partCost = parseFloat(prompt('Enter part cost (₹):') || '0');
+    const partCost = parseFloat(prompt('Enter part cost (â‚¹):') || '0');
     if (!partName) return;
 
     const newPart: RepairPart = {
@@ -372,7 +372,7 @@ export default function AdminRepairs() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#A855F7]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#B000FF]"></div>
       </div>
     );
   }
@@ -387,7 +387,7 @@ export default function AdminRepairs() {
               initial={{ opacity: 0, scale: 0.9, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col my-8"
+              className="bg-[#080112] border border-white/10 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col my-8"
             >
               {/* Modal Header */}
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
@@ -406,7 +406,7 @@ export default function AdminRepairs() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleEditToggle}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isEditing ? 'bg-[#A855F7] text-black shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isEditing ? 'bg-[#B000FF] text-black shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}`}
                   >
                     {isEditing ? <><Save size={14} /> Save Protocol</> : <><Edit2 size={14} /> Modify Node</>}
                   </button>
@@ -429,7 +429,7 @@ export default function AdminRepairs() {
                       
                       <div className="space-y-4">
                         <div className="flex items-center gap-4 group">
-                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#A855F7]">
+                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#B000FF]">
                             <User size={24} />
                           </div>
                           <div className="flex-1">
@@ -478,7 +478,7 @@ export default function AdminRepairs() {
                         </div>
                         <div>
                           <p className="text-[8px] font-mono text-gray-600 uppercase mb-1">Serial_Manifest</p>
-                          <p className="text-xs font-mono text-[#A855F7] tracking-widest">{selectedRepair.serialNumber || 'SN-UNKNOWN-X'}</p>
+                          <p className="text-xs font-mono text-[#B000FF] tracking-widest">{selectedRepair.serialNumber || 'SN-UNKNOWN-X'}</p>
                         </div>
                         <div>
                           <p className="text-[8px] font-mono text-gray-600 uppercase mb-1">Fault_Detection</p>
@@ -546,7 +546,7 @@ export default function AdminRepairs() {
                             value={editForm.technician || selectedRepair.technician || ''}
                             onChange={(e) => handleEditChange('technician', e.target.value)}
                             disabled={!isEditing}
-                            className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white focus:outline-none focus:border-[#A855F7]"
+                            className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white focus:outline-none focus:border-[#B000FF]"
                           >
                             <option value="">Unassigned</option>
                             {TECHNICIANS.map(t => (
@@ -563,15 +563,15 @@ export default function AdminRepairs() {
                         <button
                           onClick={handleAIDiagnosis}
                           disabled={isAnalyzing}
-                          className="text-[9px] font-black text-[#A855F7] hover:text-white transition-colors flex items-center gap-1 uppercase tracking-widest disabled:opacity-50"
+                          className="text-[9px] font-black text-[#B000FF] hover:text-white transition-colors flex items-center gap-1 uppercase tracking-widest disabled:opacity-50"
                         >
                           <Zap size={10} className={isAnalyzing ? 'animate-pulse' : ''} />
                           {isAnalyzing ? 'Processing...' : 'Run Analysis'}
                         </button>
                       </div>
                       
-                      <div className="relative min-h-[150px] bg-black/40 border border-[#A855F7]/20 rounded-2xl p-6 overflow-hidden group">
-                        <div className="absolute inset-0 bg-[#A855F7]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                      <div className="relative min-h-[150px] bg-black/40 border border-[#B000FF]/20 rounded-2xl p-6 overflow-hidden group">
+                        <div className="absolute inset-0 bg-[#B000FF]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         
                         {diagnosis ? (
                           <motion.div
@@ -579,7 +579,7 @@ export default function AdminRepairs() {
                             animate={{ opacity: 1 }}
                             className="text-[10px] font-mono text-gray-300 leading-relaxed space-y-2"
                           >
-                            <p className="text-[#A855F7] font-black uppercase tracking-tighter">Diagnostic Report Output:</p>
+                            <p className="text-[#B000FF] font-black uppercase tracking-tighter">Diagnostic Report Output:</p>
                             <div className="whitespace-pre-wrap">{diagnosis}</div>
                           </motion.div>
                         ) : (
@@ -617,7 +617,7 @@ export default function AdminRepairs() {
                         {isEditing && (
                           <button 
                             onClick={handleAppendPart}
-                            className="w-full py-2 border border-dashed border-[#A855F7]/30 text-[#A855F7]/50 hover:text-[#A855F7] hover:border-[#A855F7] transition-all rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                            className="w-full py-2 border border-dashed border-[#B000FF]/30 text-[#B000FF]/50 hover:text-[#B000FF] hover:border-[#B000FF] transition-all rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
                           >
                             <Plus size={12} /> Append Part Node
                           </button>
@@ -627,7 +627,7 @@ export default function AdminRepairs() {
 
                     <div className="space-y-6 pt-4">
                       <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] border-b border-white/5 pb-2">Financial_Ledger</h4>
-                      <div className="bg-[#A855F7]/5 border border-[#A855F7]/10 rounded-2xl p-6 space-y-4">
+                      <div className="bg-[#B000FF]/5 border border-[#B000FF]/10 rounded-2xl p-6 space-y-4">
                         <div className="flex justify-between items-center">
                           <span className="text-[10px] font-mono text-gray-500 uppercase">Parts Total</span>
                           <span className="text-xs font-bold text-white">
@@ -647,9 +647,9 @@ export default function AdminRepairs() {
                             <span className="text-xs font-bold text-white">{formatCurrency(selectedRepair.laborCost || 0)}</span>
                           )}
                         </div>
-                        <div className="pt-4 border-t border-[#A855F7]/20 flex justify-between items-end">
+                        <div className="pt-4 border-t border-[#B000FF]/20 flex justify-between items-end">
                           <div>
-                            <p className="text-[10px] font-black text-[#A855F7] uppercase tracking-[0.2em]">Total_Valuation</p>
+                            <p className="text-[10px] font-black text-[#B000FF] uppercase tracking-[0.2em]">Total_Valuation</p>
                             <p className="text-[8px] font-mono text-gray-600 uppercase mt-1">Final Invoice Estimator</p>
                           </div>
                           <span className="text-2xl font-black text-white tracking-tighter italic">
@@ -670,14 +670,14 @@ export default function AdminRepairs() {
                         {i !== (selectedRepair.history?.length || 0) - 1 && (
                           <div className="absolute left-2 top-6 bottom-[-16px] w-[1px] bg-white/5" />
                         )}
-                        <div className="w-4 h-4 rounded-full bg-white/10 border border-white/10 flex-shrink-0 mt-1 z-10 group-hover:bg-[#A855F7] transition-colors" />
+                        <div className="w-4 h-4 rounded-full bg-white/10 border border-white/10 flex-shrink-0 mt-1 z-10 group-hover:bg-[#B000FF] transition-colors" />
                         <div className="flex-1 pb-4">
                           <div className="flex justify-between items-start">
                             <p className="text-[10px] font-black text-white uppercase tracking-wider">{log.action}</p>
                             <span className="text-[8px] font-mono text-gray-600 uppercase">{log.date}</span>
                           </div>
                           <p className="text-[10px] text-gray-500 font-medium mt-1 leading-relaxed">{log.note || 'No additional telemetry data recorded.'}</p>
-                          <p className="text-[8px] font-mono text-[#A855F7]/50 uppercase mt-1">Authorized By: {log.user}</p>
+                          <p className="text-[8px] font-mono text-[#B000FF]/50 uppercase mt-1">Authorized By: {log.user}</p>
                         </div>
                       </div>
                     ))}
@@ -730,7 +730,7 @@ export default function AdminRepairs() {
                   {['diagnosing', 'in_progress', 'testing', 'awaiting_parts'].includes(selectedRepair.status) && (
                     <button
                       onClick={() => handleStatusChange(selectedRepair.id, 'completed')}
-                      className="px-6 py-3 bg-[#A855F7] text-black font-black rounded-2xl text-xs uppercase tracking-[0.2em] hover:bg-[#9333EA] transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)] flex items-center gap-2"
+                      className="px-6 py-3 bg-[#B000FF] text-black font-black rounded-2xl text-xs uppercase tracking-[0.2em] hover:bg-[#9333EA] transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)] flex items-center gap-2"
                     >
                       <CheckCircle size={18} /> Finalize Protocol
                     </button>
@@ -744,9 +744,9 @@ export default function AdminRepairs() {
 
       {/* Stats Matrix */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl relative overflow-hidden group">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Activity className="h-12 w-12 text-[#A855F7]" />
+            <Activity className="h-12 w-12 text-[#B000FF]" />
           </div>
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Repair Efficiency</p>
           <div className="flex items-end space-x-2">
@@ -757,21 +757,21 @@ export default function AdminRepairs() {
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: '94.2%' }}
-              className="bg-[#A855F7] h-full shadow-[0_0_10px_#A855F7]"
+              className="bg-[#B000FF] h-full shadow-[0_0_10px_#B000FF]"
             />
           </div>
         </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Pending Tickets</p>
           <p className="text-3xl font-bold text-amber-500 tracking-tighter">{repairs.filter(r => r.status === 'pending').length}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Awaiting Protocol</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">In Progress</p>
           <p className="text-3xl font-bold text-blue-500 tracking-tighter">{repairs.filter(r => ['diagnosing', 'in_progress', 'testing', 'awaiting_parts'].includes(r.status)).length}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Active Matrix</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-2xl">
+        <div className="bg-[#080112] border border-white/10 p-6 rounded-2xl">
           <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Critical Status</p>
           <p className="text-3xl font-bold text-red-500 tracking-tighter">{repairs.filter(r => r.priority === 'critical' || (r.priority === 'high' && r.status !== 'completed')).length}</p>
           <p className="text-gray-600 text-[10px] font-mono mt-2 uppercase">Immediate Attention</p>
@@ -779,7 +779,7 @@ export default function AdminRepairs() {
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-col md:flex-row gap-4 bg-[#0a0a0a] p-4 rounded-2xl border border-white/10">
+      <div className="flex flex-col md:flex-row gap-4 bg-[#080112] p-4 rounded-2xl border border-white/10">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <input
@@ -787,7 +787,7 @@ export default function AdminRepairs() {
             placeholder="Search repair matrix..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] w-full"
+            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#B000FF] w-full"
           />
         </div>
         <div className="flex items-center space-x-3 overflow-x-auto pb-2 md:pb-0">
@@ -797,7 +797,7 @@ export default function AdminRepairs() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all whitespace-nowrap ${
-                filter === f ? 'bg-[#A855F7] text-white border-[#A855F7]' : 'bg-black text-gray-500 border-white/10 hover:border-white/20'
+                filter === f ? 'bg-[#B000FF] text-white border-[#B000FF]' : 'bg-black text-gray-500 border-white/10 hover:border-white/20'
               }`}
             >
               {f.replace('_', ' ')}
@@ -807,7 +807,7 @@ export default function AdminRepairs() {
       </div>
 
       {/* Content Matrix */}
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="bg-[#080112] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-white/[0.02] text-gray-500 text-[10px] font-mono uppercase tracking-widest">
@@ -833,7 +833,7 @@ export default function AdminRepairs() {
                   } : {}}
                 >
                   <td className="px-6 py-4">
-                    <span className="text-[#A855F7] font-bold tracking-tighter block">[{repair.id}]</span>
+                    <span className="text-[#B000FF] font-bold tracking-tighter block">[{repair.id}]</span>
                     <span className="text-[8px] text-gray-600 mt-1 block uppercase">Matrix_Node</span>
                   </td>
                   <td className="px-6 py-4">
@@ -890,10 +890,10 @@ export default function AdminRepairs() {
                       )}
                       <button
                         onClick={() => setSelectedRepair(repair)}
-                        className="p-2 bg-white/5 hover:bg-[#A855F7]/20 border border-white/5 hover:border-[#A855F7]/30 text-gray-400 hover:text-white rounded-xl transition-all group/btn"
+                        className="p-2 bg-white/5 hover:bg-[#B000FF]/20 border border-white/5 hover:border-[#B000FF]/30 text-gray-400 hover:text-white rounded-xl transition-all group/btn"
                         title="Open Command Center"
                       >
-                        <Zap className="h-4 w-4 group-hover/btn:fill-[#A855F7]" />
+                        <Zap className="h-4 w-4 group-hover/btn:fill-[#B000FF]" />
                       </button>
                     </div>
                   </td>
@@ -911,7 +911,7 @@ export default function AdminRepairs() {
             {repairs.length === 0 ? (
               <button
                 onClick={handleSeedRepairs}
-                className="px-6 py-2 bg-[#A855F7] text-black rounded-xl font-black uppercase tracking-widest hover:bg-[#9333EA] transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                className="px-6 py-2 bg-[#B000FF] text-black rounded-xl font-black uppercase tracking-widest hover:bg-[#9333EA] transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]"
               >
                 Seed Mock Repairs
               </button>
@@ -919,7 +919,7 @@ export default function AdminRepairs() {
               <div className="flex flex-col gap-4 items-center mt-4">
                 <button
                   onClick={() => { setFilter('all'); setSearch(''); }}
-                  className="text-[10px] font-black text-[#A855F7] uppercase tracking-widest hover:underline"
+                  className="text-[10px] font-black text-[#B000FF] uppercase tracking-widest hover:underline"
                 >
                   Reset Matrix Filters
                 </button>
@@ -937,3 +937,4 @@ export default function AdminRepairs() {
     </div>
   );
 }
+

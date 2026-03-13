@@ -2,18 +2,18 @@
 @import "leaflet/dist/leaflet.css";
 
 @theme {
-  --color-gaming-bg: var(--bg, #0a0a0a);
-  --color-gaming-card: var(--card, #121212);
-  --color-gaming-accent: var(--accent, #00f0ff);
-  /* Neon Cyan */
-  --color-gaming-secondary: var(--secondary, #7000ff);
-  /* Neon Purple */
-  --color-gaming-text: var(--text, #e0e0e0);
-  --color-gaming-muted: var(--muted, #a0a0a0);
-  --color-gaming-border: var(--border, #2a2a2a);
+  --color-gaming-bg: var(--bg, #080112);
+  --color-gaming-card: var(--card, #0c021a);
+  --color-gaming-accent: var(--accent, #B000FF);
+  /* Bright Purple Glow */
+  --color-gaming-secondary: var(--secondary, #4D008C);
+  /* Dark Purple Ring */
+  --color-gaming-text: var(--text, #FFFFFF);
+  --color-gaming-muted: var(--muted, #BFBFBF);
+  --color-gaming-border: var(--border, #4D008C);
 
-  --color-royal-purple: #8B5CF6;
-  --color-neon-purple: #A855F7;
+  --color-royal-purple: #4D008C;
+  --color-neon-purple: #B000FF;
 
   --font-sans: var(--font-body, "Inter", ui-sans-serif, system-ui, sans-serif);
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
@@ -23,17 +23,17 @@
   color-scheme: dark;
   
   /* Standard Variables from Customizer */
-  --bg: #0a0a0a;
-  --card: #121212;
-  --accent: #00f0ff;
-  --secondary: #7000ff;
-  --text: #e0e0e0;
-  --muted: #a0a0a0;
-  --border: #2a2a2a;
+  --bg: #080112;
+  --card: #0c021a;
+  --accent: #B000FF;
+  --secondary: #4D008C;
+  --text: #FFFFFF;
+  --muted: #BFBFBF;
+  --border: #4D008C;
 
   /* RGB Helpers for Tailwind Opacity */
-  --accent-rgb: 0, 240, 255;
-  --secondary-rgb: 112, 0, 255;
+  --accent-rgb: 176, 0, 255;
+  --secondary-rgb: 77, 0, 140;
 }
 
 body {
@@ -67,15 +67,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .neon-text {
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  text-shadow: 0 0 10px rgba(176, 0, 255, 0.5), 0 0 20px rgba(198, 59, 255, 0.3);
 }
 
 .neon-border {
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+  box-shadow: 0 0 10px rgba(176, 0, 255, 0.2), 0 0 20px rgba(198, 59, 255, 0.1);
 }
 
 .purple-glow {
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 20px rgba(77, 0, 140, 0.4), 0 0 40px rgba(176, 0, 255, 0.2);
 }
 
 @keyframes pulse {

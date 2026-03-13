@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+﻿import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { formatCurrency } from '../lib/utils';
 
@@ -44,7 +44,7 @@ class InvoiceService {
     });
 
     // Colors
-    const primaryColor = [168, 85, 247]; // #A855F7
+    const primaryColor = [168, 85, 247]; // #B000FF
     const darkColor = [17, 17, 17];
     const grayColor = [107, 114, 128];
 
@@ -288,3 +288,4 @@ class InvoiceService {
 }
 
 export const invoiceService = new InvoiceService();
+

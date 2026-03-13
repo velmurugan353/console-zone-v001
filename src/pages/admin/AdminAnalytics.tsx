@@ -1,4 +1,4 @@
-import {
+﻿import {
   BarChart,
   Bar,
   XAxis,
@@ -46,17 +46,17 @@ const analyticsData = [
   { name: 'Jul', revenue: 72000, rentals: 42000, sales: 21000, repairs: 9000 },
 ];
 
-const COLORS = ['#A855F7', '#3B82F6', '#10B981', '#F59E0B'];
+const COLORS = ['#B000FF', '#3B82F6', '#10B981', '#F59E0B'];
 
 const StatCard = ({ title, value, change, icon: Icon, trend, label }: any) => (
-  <div className="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 relative overflow-hidden group hover:border-[#A855F7]/30 transition-all">
+  <div className="bg-[#080112] p-6 rounded-xl border border-white/10 relative overflow-hidden group hover:border-[#B000FF]/30 transition-all">
     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-      <Icon className="h-16 w-16 text-[#A855F7]" />
+      <Icon className="h-16 w-16 text-[#B000FF]" />
     </div>
     <div className="relative z-10">
       <div className="flex items-center justify-between mb-4">
         <div className="p-2 bg-white/5 border border-white/5 rounded-lg">
-          <Icon className="h-5 w-5 text-[#A855F7]" />
+          <Icon className="h-5 w-5 text-[#B000FF]" />
         </div>
         <div className={`flex items-center text-[10px] font-mono font-bold ${trend === 'up' ? 'text-emerald-500' : 'text-red-500'}`}>
           {change}
@@ -86,10 +86,10 @@ export default function AdminAnalytics() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-8">
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <BarChart3 className="h-3 w-3 text-[#A855F7] animate-pulse" />
-            <span className="text-[10px] font-mono text-[#A855F7] uppercase tracking-[0.2em]">Data Analytics // Revenue Matrix</span>
+            <BarChart3 className="h-3 w-3 text-[#B000FF] animate-pulse" />
+            <span className="text-[10px] font-mono text-[#B000FF] uppercase tracking-[0.2em]">Data Analytics // Revenue Matrix</span>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">System <span className="text-[#A855F7]">Insights</span></h1>
+          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">System <span className="text-[#B000FF]">Insights</span></h1>
           <p className="text-gray-500 font-mono text-xs mt-1">Real-time Performance Metrics & Revenue Distribution</p>
         </div>
 
@@ -104,7 +104,7 @@ export default function AdminAnalytics() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Revenue"
-          value="₹72,400"
+          value="â‚¹72,400"
           change="+14.2%"
           trend="up"
           icon={DollarSign}
@@ -112,7 +112,7 @@ export default function AdminAnalytics() {
         />
         <StatCard
           title="Rental Yield"
-          value="₹42,000"
+          value="â‚¹42,000"
           change="+8.5%"
           trend="up"
           icon={Activity}
@@ -120,7 +120,7 @@ export default function AdminAnalytics() {
         />
         <StatCard
           title="Product Sales"
-          value="₹21,400"
+          value="â‚¹21,400"
           change="+12.1%"
           trend="up"
           icon={ShoppingBag}
@@ -128,7 +128,7 @@ export default function AdminAnalytics() {
         />
         <StatCard
           title="Repair Revenue"
-          value="₹9,000"
+          value="â‚¹9,000"
           change="+18.4%"
           trend="up"
           icon={Zap}
@@ -137,15 +137,15 @@ export default function AdminAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-[#0a0a0a] p-6 rounded-xl border border-white/10">
+        <div className="lg:col-span-2 bg-[#080112] p-6 rounded-xl border border-white/10">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
-              <TrendingUp className="h-4 w-4 text-[#A855F7]" />
+              <TrendingUp className="h-4 w-4 text-[#B000FF]" />
               <h3 className="text-xs font-mono uppercase tracking-widest text-white">Revenue Distribution Trend</h3>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1.5">
-                <div className="h-2 w-2 rounded-full bg-[#A855F7]" />
+                <div className="h-2 w-2 rounded-full bg-[#B000FF]" />
                 <span className="text-[8px] font-mono text-gray-500 uppercase">Rentals</span>
               </div>
               <div className="flex items-center space-x-1.5">
@@ -163,8 +163,8 @@ export default function AdminAnalytics() {
               <AreaChart data={analyticsData}>
                 <defs>
                   <linearGradient id="colorRentals" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#A855F7" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#A855F7" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#B000FF" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#B000FF" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
@@ -186,13 +186,13 @@ export default function AdminAnalytics() {
                   fontFamily="monospace"
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => `₹${value / 1000}k`}
+                  tickFormatter={(value) => `â‚¹${value / 1000}k`}
                 />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', borderRadius: '8px', fontFamily: 'monospace', fontSize: '10px' }}
+                  contentStyle={{ backgroundColor: '#080112', border: '1px solid #ffffff10', borderRadius: '8px', fontFamily: 'monospace', fontSize: '10px' }}
                   itemStyle={{ color: '#fff' }}
                 />
-                <Area type="monotone" dataKey="rentals" stroke="#A855F7" fillOpacity={1} fill="url(#colorRentals)" strokeWidth={2} />
+                <Area type="monotone" dataKey="rentals" stroke="#B000FF" fillOpacity={1} fill="url(#colorRentals)" strokeWidth={2} />
                 <Area type="monotone" dataKey="sales" stroke="#3B82F6" fillOpacity={1} fill="url(#colorSales)" strokeWidth={2} />
                 <Area type="monotone" dataKey="repairs" stroke="#10B981" fillOpacity={0} strokeWidth={2} strokeDasharray="5 5" />
               </AreaChart>
@@ -200,9 +200,9 @@ export default function AdminAnalytics() {
           </div>
         </div>
 
-        <div className="bg-[#0a0a0a] p-6 rounded-xl border border-white/10">
+        <div className="bg-[#080112] p-6 rounded-xl border border-white/10">
           <div className="flex items-center space-x-3 mb-8">
-            <Target className="h-4 w-4 text-[#A855F7]" />
+            <Target className="h-4 w-4 text-[#B000FF]" />
             <h3 className="text-xs font-mono uppercase tracking-widest text-white">Efficiency Index</h3>
           </div>
           <div className="h-[300px]">
@@ -213,8 +213,8 @@ export default function AdminAnalytics() {
                 <Radar
                   name="Current"
                   dataKey="A"
-                  stroke="#A855F7"
-                  fill="#A855F7"
+                  stroke="#B000FF"
+                  fill="#B000FF"
                   fillOpacity={0.5}
                 />
                 <Radar
@@ -233,16 +233,16 @@ export default function AdminAnalytics() {
               <span className="text-[10px] font-mono text-emerald-500 uppercase">Optimal</span>
             </div>
             <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-[#A855F7] w-[78%]" />
+              <div className="h-full bg-[#B000FF] w-[78%]" />
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-[#0a0a0a] p-6 rounded-xl border border-white/10">
+        <div className="bg-[#080112] p-6 rounded-xl border border-white/10">
           <div className="flex items-center space-x-3 mb-8">
-            <Terminal className="h-4 w-4 text-[#A855F7]" />
+            <Terminal className="h-4 w-4 text-[#B000FF]" />
             <h3 className="text-xs font-mono uppercase tracking-widest text-white">Performance Logs</h3>
           </div>
           <div className="space-y-4">
@@ -258,7 +258,7 @@ export default function AdminAnalytics() {
                   <span className="text-[10px] text-white uppercase tracking-tighter">{log.event}</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-[10px] text-[#A855F7]">{log.value}</span>
+                  <span className="text-[10px] text-[#B000FF]">{log.value}</span>
                   <span className="text-[9px] text-emerald-500 uppercase font-bold">{log.status}</span>
                 </div>
               </div>
@@ -266,17 +266,17 @@ export default function AdminAnalytics() {
           </div>
         </div>
 
-        <div className="bg-[#0a0a0a] p-6 rounded-xl border border-white/10">
+        <div className="bg-[#080112] p-6 rounded-xl border border-white/10">
           <div className="flex items-center space-x-3 mb-8">
-            <Globe className="h-4 w-4 text-[#A855F7]" />
+            <Globe className="h-4 w-4 text-[#B000FF]" />
             <h3 className="text-xs font-mono uppercase tracking-widest text-white">Market Distribution</h3>
           </div>
           <div className="space-y-6">
             {[
-              { name: 'Consoles', revenue: '₹28,400', growth: '+12.5%', color: 'bg-[#A855F7]' },
-              { name: 'VR Gear', revenue: '₹15,600', growth: '+8.2%', color: 'bg-[#3B82F6]' },
-              { name: 'Games', revenue: '₹12,500', growth: '+15.1%', color: 'bg-[#10B981]' },
-              { name: 'Repairs', revenue: '₹9,000', growth: '+18.4%', color: 'bg-[#F59E0B]' },
+              { name: 'Consoles', revenue: 'â‚¹28,400', growth: '+12.5%', color: 'bg-[#B000FF]' },
+              { name: 'VR Gear', revenue: 'â‚¹15,600', growth: '+8.2%', color: 'bg-[#3B82F6]' },
+              { name: 'Games', revenue: 'â‚¹12,500', growth: '+15.1%', color: 'bg-[#10B981]' },
+              { name: 'Repairs', revenue: 'â‚¹9,000', growth: '+18.4%', color: 'bg-[#F59E0B]' },
             ].map((cat) => (
               <div key={cat.name} className="space-y-2">
                 <div className="flex justify-between items-center">
@@ -300,3 +300,4 @@ export default function AdminAnalytics() {
     </div>
   );
 }
+

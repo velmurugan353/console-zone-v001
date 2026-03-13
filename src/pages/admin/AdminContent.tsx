@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { 
   Layout, 
   FileText, 
@@ -35,7 +35,7 @@ export default function AdminContent() {
           <h1 className="text-3xl font-bold text-white">Content Management</h1>
           <p className="text-gray-400 mt-2">Manage banners, blog posts, and site content.</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-[#A855F7] text-white rounded-xl hover:bg-[#9333EA] transition-colors shadow-lg shadow-[#A855F7]/20">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-[#B000FF] text-white rounded-xl hover:bg-[#9333EA] transition-colors shadow-lg shadow-[#B000FF]/20">
           <Plus className="h-4 w-4" />
           <span>Create New</span>
         </button>
@@ -45,38 +45,38 @@ export default function AdminContent() {
         <button
           onClick={() => setActiveTab('banners')}
           className={`pb-4 px-4 text-sm font-medium transition-colors relative ${
-            activeTab === 'banners' ? 'text-[#A855F7]' : 'text-gray-400 hover:text-white'
+            activeTab === 'banners' ? 'text-[#B000FF]' : 'text-gray-400 hover:text-white'
           }`}
         >
           <div className="flex items-center space-x-2">
             <ImageIcon className="h-4 w-4" />
             <span>Banners & Media</span>
           </div>
-          {activeTab === 'banners' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#A855F7]" />}
+          {activeTab === 'banners' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#B000FF]" />}
         </button>
         <button
           onClick={() => setActiveTab('blog')}
           className={`pb-4 px-4 text-sm font-medium transition-colors relative ${
-            activeTab === 'blog' ? 'text-[#A855F7]' : 'text-gray-400 hover:text-white'
+            activeTab === 'blog' ? 'text-[#B000FF]' : 'text-gray-400 hover:text-white'
           }`}
         >
           <div className="flex items-center space-x-2">
             <FileText className="h-4 w-4" />
             <span>Blog Posts</span>
           </div>
-          {activeTab === 'blog' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#A855F7]" />}
+          {activeTab === 'blog' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#B000FF]" />}
         </button>
         <button
           onClick={() => setActiveTab('pages')}
           className={`pb-4 px-4 text-sm font-medium transition-colors relative ${
-            activeTab === 'pages' ? 'text-[#A855F7]' : 'text-gray-400 hover:text-white'
+            activeTab === 'pages' ? 'text-[#B000FF]' : 'text-gray-400 hover:text-white'
           }`}
         >
           <div className="flex items-center space-x-2">
             <Layout className="h-4 w-4" />
             <span>Static Pages</span>
           </div>
-          {activeTab === 'pages' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#A855F7]" />}
+          {activeTab === 'pages' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#B000FF]" />}
         </button>
       </div>
 
@@ -121,9 +121,9 @@ export default function AdminContent() {
               </div>
             </div>
           ))}
-          <button className="border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center p-12 hover:border-[#A855F7]/50 hover:bg-[#A855F7]/5 transition-all group">
-            <div className="p-4 bg-white/5 rounded-full group-hover:bg-[#A855F7]/10 transition-colors mb-4">
-              <Plus className="h-8 w-8 text-gray-500 group-hover:text-[#A855F7]" />
+          <button className="border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center p-12 hover:border-[#B000FF]/50 hover:bg-[#B000FF]/5 transition-all group">
+            <div className="p-4 bg-white/5 rounded-full group-hover:bg-[#B000FF]/10 transition-colors mb-4">
+              <Plus className="h-8 w-8 text-gray-500 group-hover:text-[#B000FF]" />
             </div>
             <span className="text-gray-400 font-medium group-hover:text-white">Add New Banner</span>
           </button>
@@ -138,7 +138,7 @@ export default function AdminContent() {
               <input
                 type="text"
                 placeholder="Search articles..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white focus:outline-none focus:border-[#A855F7] transition-colors"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white focus:outline-none focus:border-[#B000FF] transition-colors"
               />
             </div>
           </div>
@@ -207,3 +207,4 @@ export default function AdminContent() {
     </div>
   );
 }
+

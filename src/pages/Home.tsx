@@ -5,7 +5,6 @@ import { useCart } from "../context/CartContext";
 import { formatCurrency } from "../lib/utils";
 import { EditableText, EditableImage } from "../components/Editable";
 
-import AIConcierge from "../components/AIConcierge";
 import VaultPassSection from "../components/VaultPassSection";
 
 export default function Home() {
@@ -117,15 +116,15 @@ export default function Home() {
                         className="flex flex-col sm:flex-row gap-6 justify-center mt-8"
                     >
                         <Link to="/rentals" className="group">
-                            <button className="px-12 py-5 bg-gaming-accent text-black font-black uppercase tracking-[0.2em] rounded-none skew-x-[-20deg] flex items-center gap-3 hover:opacity-90 transition-all">
-                                <span className="skew-x-[20deg] block text-lg font-black">RENTALS</span>
+                            <button className="px-12 py-5 bg-[#B000FF] text-white font-black uppercase tracking-[0.2em] rounded-none skew-x-[-20deg] flex items-center gap-3 hover:shadow-[0_0_30px_rgba(176,0,255,0.6)] transition-all">
+                                <span className="skew-x-[20deg] block text-lg font-black">Explore Rentals</span>
                                 <ArrowRight className="w-6 h-6 skew-x-[20deg]" strokeWidth={3} />
                             </button>
                         </Link>
 
                         <Link to="/shop" className="group">
-                            <button className="px-12 py-5 bg-white/5 border border-white/10 text-white font-black uppercase tracking-[0.2em] rounded-none skew-x-[-20deg] backdrop-blur-sm hover:bg-white/10 transition-colors">
-                                <span className="skew-x-[20deg] block text-lg font-black">SHOPPING</span>
+                            <button className="px-12 py-5 bg-white/5 border border-white/10 text-white font-black uppercase tracking-[0.2em] rounded-none skew-x-[-20deg] backdrop-blur-sm hover:bg-white/10 hover:border-[#B000FF]/50 transition-colors">
+                                <span className="skew-x-[20deg] block text-lg font-black">Shop Now</span>
                             </button>
                         </Link>
                     </motion.div>
@@ -259,41 +258,44 @@ export default function Home() {
                     ))}
                 </div>
 
-                {/* AI Concierge Section */}
-                <AIConcierge />
-
                 {/* User Reviews Section */}
-                <div className="pt-24 border-t border-gaming-border mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
-                    <div className="text-center mb-16 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
-                        <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4">
+                <div className="pt-32 pb-16 mx-auto w-full relative" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+                    {/* Background Glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-[#B000FF]/5 blur-[120px] rounded-full pointer-events-none" />
+                    
+                    <div className="text-center mb-16 mx-auto w-full relative z-10" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+                        <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4 drop-shadow-[0_0_15px_rgba(176,0,255,0.3)]">
                             <EditableText pageKey="home" itemKey="reviews_title" defaultText="WHAT GAMERS SAY" />
                         </h2>
-                        <div className="h-1 w-20 bg-gaming-accent mx-auto rounded-full" />
+                        <div className="h-1 w-20 bg-gradient-to-r from-transparent via-[#B000FF] to-transparent mx-auto rounded-full" />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 'var(--layout-grid-gap, 2rem)' }}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 relative z-10" style={{ gap: 'var(--layout-grid-gap, 2rem)' }}>
                         {[
                             { name: "Arjun R.", rating: 5, comment: "Rental process was super smooth. The PS5 arrived in pristine condition. Highly recommended!", location: "Chennai" },
                             { name: "Sarah K.", rating: 5, comment: "Sold my old PS4 for a great price. Payout was instant as promised. Best place to sell gear.", location: "Bangalore" },
                             { name: "Vivek M.", rating: 5, comment: "The 144Hz monitor rental changed my weekend tournament experience. Professional service!", location: "Mumbai" }
                         ].map((review, i) => (
-                            <div key={i} className="bg-gaming-card border border-gaming-border p-8 rounded-[2.5rem] space-y-6 relative group overflow-hidden hover:border-gaming-accent/30 transition-colors" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
-                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                                    <Gamepad2 size={80} className="text-white" />
+                            <div key={i} className="bg-white/[0.02] backdrop-blur-xl border border-white/10 p-8 rounded-[2.5rem] space-y-6 relative group overflow-hidden hover:border-[#B000FF]/50 transition-all duration-500 hover:-translate-y-2 shadow-2xl" style={{ borderRadius: 'var(--layout-border-radius, 2.5rem)' }}>
+                                {/* Glassmorphism Highlight */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                
+                                <div className="absolute -top-4 -right-4 p-8 opacity-5 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500">
+                                    <Gamepad2 size={100} className="text-[#B000FF] -rotate-12" />
                                 </div>
-                                <div className="flex text-gaming-accent gap-1">
+                                <div className="flex text-[#B000FF] gap-1 drop-shadow-[0_0_5px_rgba(176,0,255,0.5)]">
                                     {[...Array(review.rating)].map((_, i) => <span key={i} className="text-xl">★</span>)}
                                 </div>
-                                <p className="text-gaming-muted text-sm leading-relaxed italic">
-                                    <EditableText pageKey="home" itemKey={`review_comment_${i}`} defaultText={review.comment} />
+                                <p className="text-gray-300 text-sm leading-relaxed italic relative z-10">
+                                    "<EditableText pageKey="home" itemKey={`review_comment_${i}`} defaultText={review.comment} />"
                                 </p>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gaming-accent to-gaming-secondary flex items-center justify-center font-bold text-xs text-white">
+                                <div className="flex items-center gap-4 relative z-10 pt-4 border-t border-white/5">
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#B000FF] to-[#4D008C] flex items-center justify-center font-black text-sm text-white shadow-[0_0_15px_rgba(176,0,255,0.4)]">
                                         {review.name.charAt(0)}
                                     </div>
                                     <div>
                                         <div className="text-white font-bold text-sm uppercase tracking-wider">{review.name}</div>
-                                        <div className="text-gaming-muted text-[10px] font-bold uppercase tracking-[0.2em]">{review.location}</div>
+                                        <div className="text-[#B000FF] text-[10px] font-black uppercase tracking-[0.2em]">{review.location}</div>
                                     </div>
                                 </div>
                             </div>
@@ -301,33 +303,76 @@ export default function Home() {
                     </div>
                 </div>
 
-                {/* FAQ Section */}
-                <div className="pt-32 pb-12 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
-                    <div className="text-center mb-16 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
-                        <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase mb-4">
-                            MISSION SUPPORT
-                        </h2>
-                        <p className="text-gaming-muted font-mono text-sm uppercase tracking-widest">Everything you need to know about ConsoleZone</p>
-                        <div className="h-1 w-20 bg-gaming-accent mx-auto rounded-full mt-4" />
-                    </div>
-
-                    <div className="max-w-3xl mx-auto space-y-4">
-                        {[
-                            { q: "How does the rental deposit work?", a: "We take a minimal security deposit which is 100% refundable upon return of the console in original condition." },
-                            { q: "What documents are needed for KYC?", a: "Just a valid ID proof (Aadhar/Voter ID) and current address proof. The process takes less than 5 minutes." },
-                            { q: "Do you offer doorstep delivery?", a: "Yes! We offer same-day doorstep delivery and pickup across all major areas of Chennai." },
-                            { q: "Can I buy a console I'm currently renting?", a: "Absolutely! We offer special conversion prices if you decide to permanently own your rental gear." }
-                        ].map((faq, i) => (
-                            <div key={i} className="bg-gaming-card border border-gaming-border rounded-2xl p-6 hover:border-gaming-accent/30 transition-all cursor-pointer group">
-                                <h3 className="text-white font-black uppercase text-sm tracking-widest flex items-center justify-between">
-                                    {faq.q}
-                                    <ArrowRight size={16} className="text-gaming-accent group-hover:translate-x-1 transition-transform" />
-                                </h3>
-                                <p className="mt-4 text-gaming-muted text-xs leading-relaxed group-hover:text-gaming-text transition-colors">{faq.a}</p>
+                {/* FAQ & Contact Section */}
+                <div className="py-24 mx-auto w-full border-t border-white/10 bg-gradient-to-b from-transparent to-black/50" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 px-4 sm:px-6 lg:px-8">
+                        {/* FAQ */}
+                        <div>
+                            <div className="mb-12">
+                                <h2 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter uppercase mb-4 drop-shadow-[0_0_15px_rgba(176,0,255,0.3)]">
+                                    MISSION SUPPORT
+                                </h2>
+                                <p className="text-gray-400 font-mono text-xs uppercase tracking-widest">Knowledge Base // Comm-Link</p>
+                                <div className="h-1 w-20 bg-gradient-to-r from-[#B000FF] to-transparent mt-4 rounded-full" />
                             </div>
-                        ))}
+
+                            <div className="space-y-4">
+                                {[
+                                    { q: "How does the rental deposit work?", a: "We take a minimal security deposit which is 100% refundable upon return of the console in original condition." },
+                                    { q: "What documents are needed for KYC?", a: "Just a valid ID proof (Aadhar/Voter ID) and a quick liveness selfie video. The process is fully automated and takes less than 2 minutes." },
+                                    { q: "Do you offer doorstep delivery?", a: "Yes! We offer same-day doorstep delivery and pickup across all major operational zones." },
+                                    { q: "Can I buy a console I'm currently renting?", a: "Absolutely! We offer special conversion prices if you decide to permanently own your rental gear." }
+                                ].map((faq, i) => (
+                                    <div key={i} className="bg-white/[0.02] backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-[#B000FF]/50 transition-all cursor-pointer group">
+                                        <h3 className="text-white font-black uppercase text-xs md:text-sm tracking-widest flex items-center justify-between">
+                                            {faq.q}
+                                            <ArrowRight size={18} className="text-[#B000FF] group-hover:translate-x-1 transition-transform" />
+                                        </h3>
+                                        <p className="mt-4 text-gray-400 text-xs md:text-sm leading-relaxed group-hover:text-white transition-colors">{faq.a}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Contact Card */}
+                        <div className="flex flex-col justify-center">
+                            <div className="bg-[#080112] border border-[#4D008C] rounded-[3rem] p-8 md:p-12 relative overflow-hidden shadow-[0_0_50px_rgba(77,0,140,0.2)]">
+                                {/* Animated Glow */}
+                                <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#B000FF]/20 blur-[80px] rounded-full animate-pulse" />
+                                
+                                <div className="relative z-10 space-y-8">
+                                    <div>
+                                        <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-2">Direct Uplink</h3>
+                                        <p className="text-gray-400 text-sm font-mono tracking-widest uppercase">Need immediate assistance? Establish connection.</p>
+                                    </div>
+
+                                    <form className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <input type="text" placeholder="CALLSIGN (NAME)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-xs font-mono text-white placeholder-gray-600 focus:outline-none focus:border-[#B000FF] transition-colors" />
+                                            <input type="email" placeholder="COMM-LINK (EMAIL)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-xs font-mono text-white placeholder-gray-600 focus:outline-none focus:border-[#B000FF] transition-colors" />
+                                        </div>
+                                        <textarea placeholder="TRANSMIT MESSAGE..." rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-xs font-mono text-white placeholder-gray-600 focus:outline-none focus:border-[#B000FF] transition-colors resize-none" />
+                                        <button type="button" className="w-full py-5 bg-[#B000FF] text-white font-black uppercase tracking-[0.2em] rounded-xl hover:shadow-[0_0_30px_rgba(176,0,255,0.4)] transition-all flex items-center justify-center gap-3">
+                                            Send Transmission <ArrowRight size={18} />
+                                        </button>
+                                    </form>
+
+                                    <div className="pt-8 border-t border-white/10 grid grid-cols-2 gap-4 text-center">
+                                        <div>
+                                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Support Hotline</p>
+                                            <p className="text-white font-mono text-sm">+91 98765 43210</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Base of Operations</p>
+                                            <p className="text-white font-mono text-sm">Chennai, TN</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
             </section>
         </div>
     );

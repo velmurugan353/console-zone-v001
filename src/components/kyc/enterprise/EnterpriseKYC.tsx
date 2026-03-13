@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -331,7 +331,7 @@ export default function EnterpriseKYC() {
 
 
     return (
-        <div className="min-h-dvh bg-[#050505] font-sans">
+        <div className="min-h-dvh bg-[#080112] font-sans">
             <PageHero
                 title="AGENT VERIFICATION"
                 subtitle="Identity & Security Clearance"
@@ -344,7 +344,7 @@ export default function EnterpriseKYC() {
                     <div className="mb-8">
                         <Link
                             to="/dashboard"
-                            className="inline-flex items-center gap-2 text-gray-500 hover:text-[#A855F7] transition-colors group"
+                            className="inline-flex items-center gap-2 text-gray-500 hover:text-[#B000FF] transition-colors group"
                         >
                             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Back to Records</span>
@@ -352,7 +352,7 @@ export default function EnterpriseKYC() {
                     </div>
 
                     {/* FORM PANEL */}
-                    <div className="relative bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 md:p-12 lg:p-16 text-white shadow-2xl shadow-black/50">
+                    <div className="relative bg-[#080112] border border-white/10 rounded-3xl p-6 md:p-12 lg:p-16 text-white shadow-2xl shadow-black/50">
                         <div className="max-w-3xl mx-auto flex flex-col justify-center">
 
                             {/* Progress Stepper */}
@@ -360,16 +360,16 @@ export default function EnterpriseKYC() {
                                 <div className="flex justify-between items-center relative">
                                     <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/5 -translate-y-1/2" />
                                     <div
-                                        className="absolute top-1/2 left-0 h-0.5 bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] -translate-y-1/2 transition-all duration-500"
+                                        className="absolute top-1/2 left-0 h-0.5 bg-gradient-to-r from-[#B000FF] to-[#B000FF] -translate-y-1/2 transition-all duration-500"
                                         style={{ width: `${((step - 1) / 2) * 100}%` }}
                                     />
                                     {[1, 2, 3].map((s) => (
                                         <div key={s} className="relative z-10 flex flex-col items-center gap-2 group">
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all duration-300 border ${step === s
-                                                ? 'bg-[#8B5CF6] text-white border-[#8B5CF6] shadow-[0_0_20px_rgba(139,92,246,0.5)]'
+                                                ? 'bg-[#B000FF] text-white border-[#B000FF] shadow-[0_0_20px_rgba(139,92,246,0.5)]'
                                                 : step > s
                                                     ? 'bg-emerald-500 text-white border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                                                    : 'bg-[#0a0a0a] text-gray-600 border-white/10 group-hover:border-white/20'
+                                                    : 'bg-[#080112] text-gray-600 border-white/10 group-hover:border-white/20'
                                                 }`}>
                                                 {step > s ? <CheckCircle2 size={20} /> : s}
                                             </div>
@@ -392,14 +392,14 @@ export default function EnterpriseKYC() {
                                             className="space-y-8"
                                         >
                                             <div className="flex items-center gap-3 mb-2">
-                                                <div className="w-8 h-8 rounded-lg bg-[#A855F7]/20 flex items-center justify-center text-[#A855F7] font-black">1</div>
+                                                <div className="w-8 h-8 rounded-lg bg-[#B000FF]/20 flex items-center justify-center text-[#B000FF] font-black">1</div>
                                                 <h2 className="text-xl font-black tracking-widest uppercase italic">Personal Identity</h2>
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Full Legal Name</label>
-                                                    <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'name' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Full Legal Name</label>
+                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'name' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                                                             <User size={18} />
                                                         </div>
@@ -417,8 +417,8 @@ export default function EnterpriseKYC() {
                                                 </div>
 
                                                 <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Primary Mobile (10 Digits)</label>
-                                                    <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'phone' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Primary Mobile (10 Digits)</label>
+                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'phone' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                                                             <Phone size={18} />
                                                         </div>
@@ -439,8 +439,8 @@ export default function EnterpriseKYC() {
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Secondary Mobile (10 Digits)</label>
-                                                    <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'phone2' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Secondary Mobile (10 Digits)</label>
+                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'phone2' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                                                             <Phone size={18} className="opacity-50" />
                                                         </div>
@@ -458,8 +458,8 @@ export default function EnterpriseKYC() {
                                                 </div>
 
                                                 <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Driving License Number</label>
-                                                    <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'dl' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.drivingLicenseNumber ? 'border-red-500/50' : 'border-white/10'}`}>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Driving License Number</label>
+                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'dl' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.drivingLicenseNumber ? 'border-red-500/50' : 'border-white/10'}`}>
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                                                             <Fingerprint size={18} />
                                                         </div>
@@ -480,8 +480,8 @@ export default function EnterpriseKYC() {
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Secondary ID Type</label>
-                                                    <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'secIdType' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.secondaryIdType ? 'border-red-500/50' : 'border-white/10'}`}>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Secondary ID Type</label>
+                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'secIdType' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.secondaryIdType ? 'border-red-500/50' : 'border-white/10'}`}>
                                                         <select
                                                             required
                                                             value={secondaryIdType}
@@ -490,11 +490,11 @@ export default function EnterpriseKYC() {
                                                             onBlur={() => setActiveField(null)}
                                                             className="w-full bg-transparent p-4 text-white outline-none font-bold appearance-none cursor-pointer"
                                                         >
-                                                            <option value="" disabled className="bg-[#0A0A0A]">Select ID Type</option>
-                                                            <option value="VOTER" className="bg-[#0A0A0A]">Voter ID</option>
-                                                            <option value="PASSPORT" className="bg-[#0A0A0A]">Passport</option>
-                                                            <option value="AADHAR" className="bg-[#0A0A0A]">Aadhar Card</option>
-                                                            <option value="OTHERS" className="bg-[#0A0A0A]">Others</option>
+                                                            <option value="" disabled className="bg-[#080112]">Select ID Type</option>
+                                                            <option value="VOTER" className="bg-[#080112]">Voter ID</option>
+                                                            <option value="PASSPORT" className="bg-[#080112]">Passport</option>
+                                                            <option value="AADHAR" className="bg-[#080112]">Aadhar Card</option>
+                                                            <option value="OTHERS" className="bg-[#080112]">Others</option>
                                                         </select>
                                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
                                                             <ChevronRight size={18} className="rotate-90" />
@@ -504,8 +504,8 @@ export default function EnterpriseKYC() {
                                                 </div>
 
                                                 <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#A855F7] transition-colors">Secondary ID Number</label>
-                                                    <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'secIdNum' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.secondaryIdNumber ? 'border-red-500/50' : 'border-white/10'}`}>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Secondary ID Number</label>
+                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'secIdNum' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.secondaryIdNumber ? 'border-red-500/50' : 'border-white/10'}`}>
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                                                             <FileCheck size={18} />
                                                         </div>
@@ -526,12 +526,12 @@ export default function EnterpriseKYC() {
 
                                             <div className="group">
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 group-focus-within:text-[#A855F7] transition-colors">Residential Address</label>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 group-focus-within:text-[#B000FF] transition-colors">Residential Address</label>
                                                     <div className="flex gap-2">
                                                         <button
                                                             type="button"
                                                             onClick={() => setIsMapActive(!isMapActive)}
-                                                            className={`text-[10px] font-black flex items-center gap-1 uppercase tracking-[0.1em] transition-colors ${isMapActive ? 'text-[#A855F7]' : 'text-gray-500 hover:text-white'}`}
+                                                            className={`text-[10px] font-black flex items-center gap-1 uppercase tracking-[0.1em] transition-colors ${isMapActive ? 'text-[#B000FF]' : 'text-gray-500 hover:text-white'}`}
                                                         >
                                                             <Crosshair size={12} />
                                                             {isMapActive ? "Close Map" : "Mark on Map"}
@@ -540,7 +540,7 @@ export default function EnterpriseKYC() {
                                                             type="button"
                                                             onClick={detectLocation}
                                                             disabled={isLocating}
-                                                            className="text-[10px] font-black text-[#A855F7] hover:text-[#A855F7]/80 flex items-center gap-1 disabled:opacity-50 uppercase tracking-[0.1em]"
+                                                            className="text-[10px] font-black text-[#B000FF] hover:text-[#B000FF]/80 flex items-center gap-1 disabled:opacity-50 uppercase tracking-[0.1em]"
                                                         >
                                                             {isLocating ? <Loader2 size={12} className="animate-spin" /> : <Target size={12} />}
                                                             {isLocating ? "Locating..." : "Auto-Locate"}
@@ -554,12 +554,12 @@ export default function EnterpriseKYC() {
                                                             initial={{ height: 0, opacity: 0, marginBottom: 0 }}
                                                             animate={{ height: 350, opacity: 1, marginBottom: 16 }}
                                                             exit={{ height: 0, opacity: 0, marginBottom: 0 }}
-                                                            className="relative rounded-xl border border-white/10 bg-[#0a0a0a] overflow-hidden group/map"
+                                                            className="relative rounded-xl border border-white/10 bg-[#080112] overflow-hidden group/map"
                                                         >
                                                             <MapContainer 
                                                                 center={[20.5937, 78.9629]} 
                                                                 zoom={5} 
-                                                                style={{ height: '100%', width: '100%', background: '#050505' }}
+                                                                style={{ height: '100%', width: '100%', background: '#080112' }}
                                                                 attributionControl={false}
                                                             >
                                                                 <TileLayer
@@ -582,7 +582,7 @@ export default function EnterpriseKYC() {
                                                             <div className="absolute bottom-4 right-4 z-[1000] pointer-events-none text-right">
                                                                 <p className="text-[8px] font-mono text-gray-500 uppercase tracking-widest mb-1">Global Positioning Matrix v4.2</p>
                                                                 {mapPosition && (
-                                                                    <p className="text-[10px] font-mono text-[#A855F7] bg-black/60 backdrop-blur-md px-2 py-1 rounded">COORD: {mapPosition.lat.toFixed(4)}°N / {mapPosition.lng.toFixed(4)}°E</p>
+                                                                    <p className="text-[10px] font-mono text-[#B000FF] bg-black/60 backdrop-blur-md px-2 py-1 rounded">COORD: {mapPosition.lat.toFixed(4)}Â°N / {mapPosition.lng.toFixed(4)}Â°E</p>
                                                                 )}
                                                             </div>
 
@@ -595,7 +595,7 @@ export default function EnterpriseKYC() {
                                                     )}
                                                 </AnimatePresence>
 
-                                                <div className={`relative bg-[#0A0A0A] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'address' ? 'border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
+                                                <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'address' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
                                                     <div className="absolute left-4 top-4 text-gray-500">
                                                         <MapPin size={18} />
                                                     </div>
@@ -623,7 +623,7 @@ export default function EnterpriseKYC() {
                                             className="space-y-8"
                                         >
                                             <div className="flex items-center gap-3 mb-2">
-                                                <div className="w-8 h-8 rounded-lg bg-[#A855F7]/20 flex items-center justify-center text-[#A855F7] font-black">2</div>
+                                                <div className="w-8 h-8 rounded-lg bg-[#B000FF]/20 flex items-center justify-center text-[#B000FF] font-black">2</div>
                                                 <h2 className="text-xl font-black tracking-widest uppercase italic">Secure Document Sync</h2>
                                             </div>
 
@@ -631,7 +631,7 @@ export default function EnterpriseKYC() {
                                                 {/* ID Front Upload */}
                                                 <div className="space-y-4">
                                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Primary ID (Front)</label>
-                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center overflow-hidden ${idFrontFile ? 'border-emerald-500 bg-emerald-500/5' : scanningFront ? 'border-[#A855F7] bg-[#A855F7]/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
+                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center overflow-hidden ${idFrontFile ? 'border-emerald-500 bg-emerald-500/5' : scanningFront ? 'border-[#B000FF] bg-[#B000FF]/5' : 'border-white/10 hover:border-[#B000FF] hover:bg-white/5'}`}>
                                                         <input 
                                                             type="file" 
                                                             className="absolute inset-0 opacity-0 cursor-pointer z-10" 
@@ -642,14 +642,14 @@ export default function EnterpriseKYC() {
 
                                                         {scanningFront ? (
                                                             <div className="text-center space-y-3 relative z-20">
-                                                                <Loader2 className="animate-spin text-[#A855F7] mx-auto" size={24} />
-                                                                <p className="text-[10px] font-black uppercase text-[#A855F7] animate-pulse">Scanning Integrity...</p>
+                                                                <Loader2 className="animate-spin text-[#B000FF] mx-auto" size={24} />
+                                                                <p className="text-[10px] font-black uppercase text-[#B000FF] animate-pulse">Scanning Integrity...</p>
                                                                 {/* Scan Line Effect */}
                                                                 <motion.div 
                                                                     initial={{ top: '0%' }}
                                                                     animate={{ top: '100%' }}
                                                                     transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                                                                    className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#A855F7] to-transparent shadow-[0_0_15px_#A855F7]"
+                                                                    className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#B000FF] to-transparent shadow-[0_0_15px_#B000FF]"
                                                                 />
                                                             </div>
                                                         ) : idFrontFile ? (
@@ -659,7 +659,7 @@ export default function EnterpriseKYC() {
                                                             </div>
                                                         ) : (
                                                             <div className="text-center">
-                                                                <FileCheck className="text-[#A855F7] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
+                                                                <FileCheck className="text-[#B000FF] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
                                                                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Front Side</p>
                                                             </div>
                                                         )}
@@ -669,7 +669,7 @@ export default function EnterpriseKYC() {
                                                 {/* ID Back Upload */}
                                                 <div className="space-y-4">
                                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Primary ID (Back)</label>
-                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center overflow-hidden ${idBackFile ? 'border-emerald-500 bg-emerald-500/5' : scanningBack ? 'border-[#A855F7] bg-[#A855F7]/5' : 'border-white/10 hover:border-[#A855F7] hover:bg-white/5'}`}>
+                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center overflow-hidden ${idBackFile ? 'border-emerald-500 bg-emerald-500/5' : scanningBack ? 'border-[#B000FF] bg-[#B000FF]/5' : 'border-white/10 hover:border-[#B000FF] hover:bg-white/5'}`}>
                                                         <input 
                                                             type="file" 
                                                             className="absolute inset-0 opacity-0 cursor-pointer z-10" 
@@ -680,14 +680,14 @@ export default function EnterpriseKYC() {
 
                                                         {scanningBack ? (
                                                             <div className="text-center space-y-3 relative z-20">
-                                                                <Loader2 className="animate-spin text-[#A855F7] mx-auto" size={24} />
-                                                                <p className="text-[10px] font-black uppercase text-[#A855F7] animate-pulse">Scanning Security...</p>
+                                                                <Loader2 className="animate-spin text-[#B000FF] mx-auto" size={24} />
+                                                                <p className="text-[10px] font-black uppercase text-[#B000FF] animate-pulse">Scanning Security...</p>
                                                                 {/* Scan Line Effect */}
                                                                 <motion.div 
                                                                     initial={{ top: '0%' }}
                                                                     animate={{ top: '100%' }}
                                                                     transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                                                                    className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#A855F7] to-transparent shadow-[0_0_15px_#A855F7]"
+                                                                    className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#B000FF] to-transparent shadow-[0_0_15px_#B000FF]"
                                                                 />
                                                             </div>
                                                         ) : idBackFile ? (
@@ -697,7 +697,7 @@ export default function EnterpriseKYC() {
                                                             </div>
                                                         ) : (
                                                             <div className="text-center">
-                                                                <FileCheck className="text-[#A855F7] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
+                                                                <FileCheck className="text-[#B000FF] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
                                                                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Back Side</p>
                                                             </div>
                                                         )}
@@ -707,7 +707,7 @@ export default function EnterpriseKYC() {
                                                 {/* Selfie Video Verification */}
                                                 <div className="space-y-4">
                                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Video Liveness Check</label>
-                                                    <div className={`relative rounded-2xl p-4 text-center transition-all min-h-[200px] flex flex-col items-center justify-center overflow-hidden border-2 ${selfieVideoFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-[#A855F7]/30 bg-black/40'}`}>
+                                                    <div className={`relative rounded-2xl p-4 text-center transition-all min-h-[200px] flex flex-col items-center justify-center overflow-hidden border-2 ${selfieVideoFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-[#B000FF]/30 bg-black/40'}`}>
                                                         
                                                         {selfieVideoFile ? (
                                                             <div className="text-center space-y-3">
@@ -742,12 +742,12 @@ export default function EnterpriseKYC() {
                                                                         />
                                                                     </div>
                                                                 </div>
-                                                                <p className="text-[10px] font-black text-[#A855F7] animate-pulse uppercase tracking-[0.2em]">Please move your head slightly</p>
+                                                                <p className="text-[10px] font-black text-[#B000FF] animate-pulse uppercase tracking-[0.2em]">Please move your head slightly</p>
                                                             </div>
                                                         ) : (
                                                             <div className="text-center space-y-4 py-4">
-                                                                <div className="w-16 h-16 bg-[#A855F7]/10 rounded-full flex items-center justify-center mx-auto border border-[#A855F7]/20">
-                                                                    <Scan size={32} className="text-[#A855F7]" />
+                                                                <div className="w-16 h-16 bg-[#B000FF]/10 rounded-full flex items-center justify-center mx-auto border border-[#B000FF]/20">
+                                                                    <Scan size={32} className="text-[#B000FF]" />
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Biometric Scan Required</p>
@@ -756,7 +756,7 @@ export default function EnterpriseKYC() {
                                                                 <button
                                                                     type="button"
                                                                     onClick={startRecording}
-                                                                    className="flex items-center gap-2 px-6 py-2 bg-[#A855F7] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#9333EA] transition-all"
+                                                                    className="flex items-center gap-2 px-6 py-2 bg-[#B000FF] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#9333EA] transition-all"
                                                                 >
                                                                     <Camera size={14} /> Initialize Camera
                                                                 </button>
@@ -791,7 +791,7 @@ export default function EnterpriseKYC() {
                                             className="space-y-8"
                                         >
                                             <div className="flex items-center gap-3 mb-2">
-                                                <div className="w-8 h-8 rounded-lg bg-[#A855F7]/20 flex items-center justify-center text-[#A855F7] font-black">3</div>
+                                                <div className="w-8 h-8 rounded-lg bg-[#B000FF]/20 flex items-center justify-center text-[#B000FF] font-black">3</div>
                                                 <h2 className="text-xl font-black tracking-widest uppercase italic">
                                                     {isSubmitting ? 'AI Verification Active' : 'Review & Encrypt'}
                                                 </h2>
@@ -802,12 +802,12 @@ export default function EnterpriseKYC() {
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div className="flex items-center gap-3">
                                                             <div className="relative">
-                                                                <Loader2 className="animate-spin text-[#A855F7]" size={24} />
-                                                                <div className="absolute inset-0 bg-[#A855F7]/20 blur-xl animate-pulse" />
+                                                                <Loader2 className="animate-spin text-[#B000FF]" size={24} />
+                                                                <div className="absolute inset-0 bg-[#B000FF]/20 blur-xl animate-pulse" />
                                                             </div>
                                                             <div>
                                                                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Protocol Status</p>
-                                                                <p className="text-sm font-bold text-[#A855F7] animate-pulse">ANALYZING BIO-METRIC DATA</p>
+                                                                <p className="text-sm font-bold text-[#B000FF] animate-pulse">ANALYZING BIO-METRIC DATA</p>
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
@@ -821,9 +821,9 @@ export default function EnterpriseKYC() {
                                                             const isDone = agentStatus.some(s => s.name === agent.name && s.status === 'PASS');
                                                             const isProcessing = currentAgent === agent.name;
                                                             return (
-                                                                <div key={agent.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-500 ${isDone ? 'bg-emerald-500/10 border-emerald-500/20' : isProcessing ? 'bg-[#A855F7]/10 border-[#A855F7]/20 animate-pulse' : 'bg-white/5 border-white/5 opacity-40'}`}>
+                                                                <div key={agent.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-500 ${isDone ? 'bg-emerald-500/10 border-emerald-500/20' : isProcessing ? 'bg-[#B000FF]/10 border-[#B000FF]/20 animate-pulse' : 'bg-white/5 border-white/5 opacity-40'}`}>
                                                                     <div className="flex items-center gap-4">
-                                                                        <div className={`p-2 rounded-lg ${isDone ? 'bg-emerald-500 text-white' : isProcessing ? 'bg-[#A855F7] text-white' : 'bg-gray-800 text-gray-500'}`}>
+                                                                        <div className={`p-2 rounded-lg ${isDone ? 'bg-emerald-500 text-white' : isProcessing ? 'bg-[#B000FF] text-white' : 'bg-gray-800 text-gray-500'}`}>
                                                                             <agent.icon size={18} />
                                                                         </div>
                                                                         <div>
@@ -835,7 +835,7 @@ export default function EnterpriseKYC() {
                                                                         {isDone ? (
                                                                             <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded">Clearance Granted</span>
                                                                         ) : isProcessing ? (
-                                                                            <span className="text-[9px] font-black text-[#A855F7] uppercase tracking-widest animate-pulse">Analyzing...</span>
+                                                                            <span className="text-[9px] font-black text-[#B000FF] uppercase tracking-widest animate-pulse">Analyzing...</span>
                                                                         ) : (
                                                                             <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Awaiting Sync</span>
                                                                         )}
@@ -846,7 +846,7 @@ export default function EnterpriseKYC() {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-8 space-y-6">
+                                                <div className="bg-[#080112] border border-white/5 rounded-3xl p-8 space-y-6">
                                                     <div className="grid grid-cols-2 gap-8">
                                                         <div className="space-y-4">
                                                             <div>
@@ -882,8 +882,8 @@ export default function EnterpriseKYC() {
                                                         <p className="text-sm text-gray-300 leading-relaxed italic">{address || 'No location data'}</p>
                                                     </div>
 
-                                                    <div className="bg-[#A855F7]/10 border border-[#A855F7]/20 rounded-2xl p-4 flex gap-3">
-                                                        <ShieldCheck className="text-[#A855F7] shrink-0" size={20} />
+                                                    <div className="bg-[#B000FF]/10 border border-[#B000FF]/20 rounded-2xl p-4 flex gap-3">
+                                                        <ShieldCheck className="text-[#B000FF] shrink-0" size={20} />
                                                         <p className="text-[10px] text-gray-400 font-mono leading-relaxed uppercase tracking-wider">
                                                             Finalizing this step will hash your identity into our private ledger. This action is irreversible once the verification process begins.
                                                         </p>
@@ -908,7 +908,7 @@ export default function EnterpriseKYC() {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className={`flex-[2] py-4 bg-[#A855F7] text-white font-black rounded-xl shadow-[0_4px_30px_rgba(168,85,247,0.3)] hover:shadow-[0_4px_40px_rgba(168,85,247,0.5)] transition-all transform hover:-translate-y-1 relative overflow-hidden group uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        className={`flex-[2] py-4 bg-[#B000FF] text-white font-black rounded-xl shadow-[0_4px_30px_rgba(168,85,247,0.3)] hover:shadow-[0_4px_40px_rgba(168,85,247,0.5)] transition-all transform hover:-translate-y-1 relative overflow-hidden group uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed`}
                                     >
                                         <span className="relative z-10 flex items-center justify-center gap-2">
                                             {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (step === 3 ? 'Finalize Verification' : 'Continue')}
@@ -921,7 +921,7 @@ export default function EnterpriseKYC() {
 
                             {/* Footer */}
                             <div className="mt-12 text-center">
-                                <p className="text-[#A855F7]/40 text-[9px] font-black uppercase tracking-[0.3em]">
+                                <p className="text-[#B000FF]/40 text-[9px] font-black uppercase tracking-[0.3em]">
                                     End-to-End Encrypted Verification Protocol v2.4.0
                                 </p>
                             </div>
@@ -932,3 +932,4 @@ export default function EnterpriseKYC() {
         </div>
     );
 }
+

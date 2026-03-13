@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -50,7 +50,7 @@ export default function BookingConfirmationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#080112] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00d4ff]"></div>
       </div>
     );
@@ -58,10 +58,10 @@ export default function BookingConfirmationPage() {
 
   if (!consoleData) {
     return (
-      <div className="min-h-dvh bg-[#050505] flex items-center justify-center">
+      <div className="min-h-dvh bg-[#080112] flex items-center justify-center">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">Booking not found</h1>
-          <Link to="/rentals" className="text-[#A855F7] hover:underline">Back to Rentals</Link>
+          <Link to="/rentals" className="text-[#B000FF] hover:underline">Back to Rentals</Link>
         </div>
       </div>
     );
@@ -72,7 +72,7 @@ export default function BookingConfirmationPage() {
   const endDate = bookingData?.endDate ? new Date(bookingData.endDate) : new Date();
 
   return (
-    <div className="min-h-dvh bg-[#050505] text-white pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-dvh bg-[#080112] text-white pt-32 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-12 text-center">
         {/* Success Header */}
         <div className="flex flex-col items-center space-y-6">
@@ -112,7 +112,7 @@ export default function BookingConfirmationPage() {
                 <div className="mt-2 flex flex-wrap gap-4">
                   <div className="flex items-center gap-2 text-sm text-gray-400">
                     <Calendar size={14} className="text-[#00d4ff]" />
-                    <span>{format(startDate, 'MMM d')} — {format(endDate, 'MMM d, yyyy')}</span>
+                    <span>{format(startDate, 'MMM d')} â€” {format(endDate, 'MMM d, yyyy')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-400">
                     <Truck size={14} className="text-[#00d4ff]" />
@@ -179,3 +179,4 @@ export default function BookingConfirmationPage() {
     </div>
   );
 }
+

@@ -42,13 +42,13 @@ interface CustomizerContextType {
 }
 
 const DEFAULT_THEME: ThemePalette = {
-  bg: '#0a0a0a',
-  card: '#121212',
-  accent: '#00f0ff',
-  secondary: '#7000ff',
-  text: '#e0e0e0',
-  muted: '#a0a0a0',
-  border: '#2a2a2a',
+  bg: '#080112',
+  card: '#0c021a',
+  accent: '#B000FF',
+  secondary: '#4D008C',
+  text: '#FFFFFF',
+  muted: '#8a8a8a',
+  border: '#4D008C',
   headingFont: 'Inter',
   bodyFont: 'Inter',
 };

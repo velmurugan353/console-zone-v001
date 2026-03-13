@@ -1,21 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ShoppingBag, Calendar, Wrench, DollarSign, Activity, ShieldCheck, RefreshCw, FileText } from 'lucide-react';
+import { ShoppingBag, Calendar, DollarSign, Activity, ShieldCheck, RefreshCw, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminOrders from './AdminOrders';
 import AdminRentals from './AdminRentals';
-import AdminRepairs from './AdminRepairs';
 import AdminSellRequests from './AdminSellRequests';
 import AdminInventory from './AdminInventory';
 import AdminInvoices from './AdminInvoices';
 
-type OperationTab = 'orders' | 'rentals' | 'repairs' | 'sell-requests' | 'inventory' | 'invoices';
+type OperationTab = 'orders' | 'rentals' | 'sell-requests' | 'inventory' | 'invoices';
 
 const tabs: { id: OperationTab; name: string; icon: any }[] = [
   { id: 'orders', name: 'Orders', icon: ShoppingBag },
   { id: 'rentals', name: 'Rentals', icon: Calendar },
   { id: 'inventory', name: 'Inventory', icon: Activity },
-  { id: 'repairs', name: 'Repairs', icon: Wrench },
   { id: 'sell-requests', name: 'Sell Requests', icon: DollarSign },
   { id: 'invoices', name: 'Invoices', icon: FileText },
 ];
@@ -42,11 +40,11 @@ export default function AdminOperations() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-8">
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <Activity className="h-3 w-3 text-[#A855F7] animate-pulse" />
-            <span className="text-[10px] font-mono text-[#A855F7] uppercase tracking-[0.2em]">System Operations // Matrix Control</span>
+            <Activity className="h-3 w-3 text-[#B000FF] animate-pulse" />
+            <span className="text-[10px] font-mono text-[#B000FF] uppercase tracking-[0.2em]">System Operations // Matrix Control</span>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Operations <span className="text-[#A855F7]">Matrix</span></h1>
-          <p className="text-gray-500 font-mono text-xs mt-1">Unified Management Protocol // Orders, Rentals, Repairs & Acquisitions</p>
+          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Operations <span className="text-[#B000FF]">Matrix</span></h1>
+          <p className="text-gray-500 font-mono text-xs mt-1">Unified Management Protocol // Orders, Rentals & Acquisitions</p>
         </div>
         <div className="flex items-center space-x-3">
           <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 flex items-center space-x-3">
@@ -63,7 +61,7 @@ export default function AdminOperations() {
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
             className={`flex items-center space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold uppercase tracking-widest text-[9px] md:text-[10px] transition-all duration-300 border whitespace-nowrap ${activeTab === tab.id
-                ? 'bg-[#A855F7] text-white border-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.4)]'
+                ? 'bg-[#B000FF] text-white border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.4)]'
                 : 'bg-white/5 text-gray-500 border-white/10 hover:bg-white/10 hover:text-white'
               }`}
           >
@@ -79,13 +77,12 @@ export default function AdminOperations() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-2xl"
+        className="bg-[#080112] border border-white/10 rounded-2xl p-6 shadow-2xl"
       >
         <AnimatePresence mode="wait">
           {activeTab === 'orders' && <AdminOrders />}
           {activeTab === 'rentals' && <AdminRentals />}
           {activeTab === 'inventory' && <AdminInventory />}
-          {activeTab === 'repairs' && <AdminRepairs />}
           {activeTab === 'sell-requests' && <AdminSellRequests />}
           {activeTab === 'invoices' && <AdminInvoices />}
         </AnimatePresence>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { User, Lock, Mail, AlertCircle, X, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './AuthModal.css';
@@ -125,7 +125,7 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
 
                         <div className="regi-link animation" style={{ '--D': 4, '--S': 25 } as React.CSSProperties}>
                             <p>Don't have an account? <br />
-                                <button type="button" onClick={() => { setIsRegistering(true); setError(''); }} className="text-[#A855F7] font-bold hover:underline bg-transparent border-0 mt-1 cursor-pointer">
+                                <button type="button" onClick={() => { setIsRegistering(true); setError(''); }} className="text-[#B000FF] font-bold hover:underline bg-transparent border-0 mt-1 cursor-pointer">
                                     Sign Up
                                 </button>
                             </p>
@@ -206,7 +206,7 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
 
                         <div className="regi-link animation" style={{ '--li': 21, '--S': 5 } as React.CSSProperties}>
                             <p>Already have an account? <br />
-                                <button type="button" onClick={() => { setIsRegistering(false); setError(''); }} className="text-[#A855F7] font-bold hover:underline bg-transparent border-0 mt-1 cursor-pointer">
+                                <button type="button" onClick={() => { setIsRegistering(false); setError(''); }} className="text-[#B000FF] font-bold hover:underline bg-transparent border-0 mt-1 cursor-pointer">
                                     Sign In
                                 </button>
                             </p>
@@ -230,3 +230,4 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
         </div>
     );
 }
+

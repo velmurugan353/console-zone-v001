@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { formatCurrency } from '../../lib/utils';
 import { CheckCircle, XCircle, Search, Filter, Eye, DollarSign, RefreshCw, ShieldCheck, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -100,10 +100,10 @@ export default function AdminUsedConsoles() {
       {/* Offer Modal */}
       {selectedRequest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-          <div className="bg-[#0a0a0a] border border-white/10 rounded-lg w-full max-w-md p-6 shadow-2xl">
+          <div className="bg-[#080112] border border-white/10 rounded-lg w-full max-w-md p-6 shadow-2xl">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-xs font-mono uppercase tracking-widest text-[#A855F7]">Request_Review</h3>
+                <h3 className="text-xs font-mono uppercase tracking-widest text-[#B000FF]">Request_Review</h3>
                 <p className="text-xl font-bold text-white tracking-tighter uppercase italic">Asset Acquisition</p>
               </div>
               <button
@@ -130,7 +130,7 @@ export default function AdminUsedConsoles() {
                 </div>
                 <div className="bg-white/[0.02] p-3 border border-white/5 rounded">
                   <span className="text-gray-500 block text-[9px] font-mono uppercase mb-1">Expected Price</span>
-                  <span className="text-[#A855F7] font-mono text-sm font-bold">{formatCurrency(selectedRequest.expectedPrice)}</span>
+                  <span className="text-[#B000FF] font-mono text-sm font-bold">{formatCurrency(selectedRequest.expectedPrice)}</span>
                 </div>
               </div>
 
@@ -142,19 +142,19 @@ export default function AdminUsedConsoles() {
               {selectedRequest.status === 'pending' && (
                 <div className="pt-6 border-t border-white/10 space-y-4">
                   <div>
-                    <label className="block text-[10px] font-mono uppercase text-gray-400 mb-2">Acquisition Offer (₹)</label>
+                    <label className="block text-[10px] font-mono uppercase text-gray-400 mb-2">Acquisition Offer (â‚¹)</label>
                     <div className="flex space-x-2">
                       <input
                         type="number"
                         value={offerAmount}
                         onChange={(e) => setOfferAmount(e.target.value)}
                         placeholder={selectedRequest.expectedPrice.toString()}
-                        className="flex-1 bg-black border border-white/10 rounded p-2 text-white font-mono text-sm focus:border-[#A855F7] focus:outline-none"
+                        className="flex-1 bg-black border border-white/10 rounded p-2 text-white font-mono text-sm focus:border-[#B000FF] focus:outline-none"
                       />
                       <button
                         onClick={() => handleStatusChange(selectedRequest.id, 'approved', parseFloat(offerAmount))}
                         disabled={!offerAmount}
-                        className="px-4 py-2 bg-[#A855F7] text-black font-bold rounded text-xs uppercase tracking-widest hover:bg-[#9333EA] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        className="px-4 py-2 bg-[#B000FF] text-black font-bold rounded text-xs uppercase tracking-widest hover:bg-[#9333EA] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                       >
                         Send Offer
                       </button>
@@ -177,10 +177,10 @@ export default function AdminUsedConsoles() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-8">
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <RefreshCw className="h-3 w-3 text-[#A855F7] animate-spin-slow" />
-            <span className="text-[10px] font-mono text-[#A855F7] uppercase tracking-[0.2em]">Asset Acquisition // Used Consoles</span>
+            <RefreshCw className="h-3 w-3 text-[#B000FF] animate-spin-slow" />
+            <span className="text-[10px] font-mono text-[#B000FF] uppercase tracking-[0.2em]">Asset Acquisition // Used Consoles</span>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Hardware <span className="text-[#A855F7]">Matrix</span></h1>
+          <h1 className="text-4xl font-bold text-white tracking-tighter uppercase italic">Hardware <span className="text-[#B000FF]">Matrix</span></h1>
           <p className="text-gray-500 font-mono text-xs mt-1">Deep Inventory & Identity Protocols // Used Console Requests</p>
         </div>
         <div className="flex items-center space-x-3">
@@ -196,7 +196,7 @@ export default function AdminUsedConsoles() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-[#0a0a0a] p-4 rounded-lg border border-white/5">
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-[#080112] p-4 rounded-lg border border-white/5">
         <div className="relative flex-grow w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <input
@@ -204,7 +204,7 @@ export default function AdminUsedConsoles() {
             placeholder="Search acquisition matrix..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] w-full"
+            className="pl-10 pr-4 py-2 bg-black border border-white/10 rounded text-white font-mono text-xs focus:outline-none focus:border-[#B000FF] w-full"
           />
         </div>
         <div className="flex items-center space-x-2 w-full md:w-auto">
@@ -212,7 +212,7 @@ export default function AdminUsedConsoles() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="bg-black border border-white/10 rounded px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#A855F7] flex-grow md:flex-grow-0"
+            className="bg-black border border-white/10 rounded px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#B000FF] flex-grow md:flex-grow-0"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -224,7 +224,7 @@ export default function AdminUsedConsoles() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-lg overflow-hidden">
+      <div className="bg-[#080112] border border-white/10 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-white/[0.02] text-gray-500 text-[10px] font-mono uppercase tracking-widest">
@@ -240,7 +240,7 @@ export default function AdminUsedConsoles() {
             <tbody className="divide-y divide-white/5 text-xs font-mono text-gray-400">
               {filteredRequests.map((req) => (
                 <tr key={req.id} className="hover:bg-white/[0.01] transition-colors group">
-                  <td className="px-6 py-4 text-[#A855F7] font-bold tracking-tighter">[{req.id}]</td>
+                  <td className="px-6 py-4 text-[#B000FF] font-bold tracking-tighter">[{req.id}]</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <span className="text-white uppercase font-bold">{req.customer}</span>
@@ -265,7 +265,7 @@ export default function AdminUsedConsoles() {
                   <td className="px-6 py-4">
                     <div className="text-gray-600 line-through text-[10px]">{formatCurrency(req.expectedPrice)}</div>
                     {req.offeredPrice && (
-                      <div className="text-[#A855F7] font-bold">{formatCurrency(req.offeredPrice)}</div>
+                      <div className="text-[#B000FF] font-bold">{formatCurrency(req.offeredPrice)}</div>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -281,7 +281,7 @@ export default function AdminUsedConsoles() {
                             setSelectedRequest(req);
                             setOfferAmount(req.expectedPrice.toString());
                           }}
-                          className="p-2 bg-[#A855F7]/10 text-[#A855F7] hover:bg-[#A855F7]/20 border border-[#A855F7]/20 rounded transition-all"
+                          className="p-2 bg-[#B000FF]/10 text-[#B000FF] hover:bg-[#B000FF]/20 border border-[#B000FF]/20 rounded transition-all"
                           title="Review & Offer"
                         >
                           <DollarSign className="h-4 w-4" />
@@ -316,3 +316,4 @@ export default function AdminUsedConsoles() {
     </div>
   );
 }
+

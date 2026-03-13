@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+﻿/// <reference types="vite/client" />
 declare const Razorpay: any;
 
 export interface RazorpayOptions {
@@ -42,7 +42,7 @@ class RazorpayService {
             handler: options.handler || ((res: any) => console.log('Payment Success:', res)),
             modal: options.modal || {},
             theme: {
-                color: '#A855F7',
+                color: '#B000FF',
                 ...options.theme
             }
         };
@@ -53,3 +53,4 @@ class RazorpayService {
 }
 
 export const razorpayService = new RazorpayService();
+
