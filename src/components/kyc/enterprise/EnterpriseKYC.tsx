@@ -88,6 +88,21 @@ export default function EnterpriseKYC() {
             setStream(mediaStream);
             if (videoRef.current) videoRef.current.srcObject = mediaStream;
 
+            // Capture a still frame as selfie
+            const video = document.createElement('video');
+            video.srcObject = mediaStream;
+            await video.play();
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            canvas.getContext('2d')?.drawImage(video, 0, 0);
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                    setSelfieFile(file);
+                }
+            }, 'image/jpeg');
+
             const mediaRecorder = new MediaRecorder(mediaStream);
             mediaRecorderRef.current = mediaRecorder;
             const chunks: Blob[] = [];
@@ -224,6 +239,14 @@ export default function EnterpriseKYC() {
                 setUploadProgress(prev => ({ ...prev, back: progress }));
             });
 
+            // Upload Selfie Image
+            let selfieUrl = "";
+            if (selfieFile) {
+                selfieUrl = await uploadKYCDocument(user.id, selfieFile, 'selfie', (progress) => {
+                    setUploadProgress(prev => ({ ...prev, selfie: progress }));
+                });
+            }
+
             // Upload Selfie Video
             const selfieVideoUrl = await uploadKYCDocument(user.id, selfieVideoFile, 'selfie-video', (progress) => {
                 setUploadProgress(prev => ({ ...prev, video: progress }));
@@ -264,6 +287,7 @@ export default function EnterpriseKYC() {
                 address,
                 idFrontUrl,
                 idBackUrl,
+                selfieUrl,
                 selfieVideoUrl,
                 livenessCheck: 'PASSED'
             });

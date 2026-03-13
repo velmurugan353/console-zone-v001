@@ -33,7 +33,7 @@ const sidebarItems = [
   { name: 'Customers', icon: Users, path: '/admin/customers' },
   { name: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
   { name: 'Invoices', icon: FileText, path: '/admin/invoices' },
-  { name: 'KYC Review', icon: ShieldCheck, path: '/admin/kyc' },
+  { name: 'Identity Vault', icon: ShieldCheck, path: '/admin/kyc' },
   { name: 'Settings', icon: Settings, path: '/admin/settings' },
   { name: 'Customer View', icon: User, path: '/dashboard' },
 ];
@@ -46,7 +46,7 @@ export default function AdminSidebar() {
     switch (itemName) {
       case 'Operations Matrix':
         return notifications.filter(n => !n.read && (n.type === 'order' || n.type === 'rental' || n.type === 'reward')).length;
-      case 'KYC Review':
+      case 'Identity Vault':
         return notifications.filter(n => !n.read && n.type === 'kyc').length;
       default:
         return 0;
@@ -60,9 +60,9 @@ export default function AdminSidebar() {
           <div className="p-2 bg-[#A855F7]/10 rounded-lg">
             <Gamepad2 className="h-6 w-6 text-[#A855F7]" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-white">
-            Game<span className="text-[#A855F7]">Vault</span>
-            <span className="text-xs ml-1 text-gray-500 font-normal">Admin</span>
+          <span className="text-xl font-bold tracking-tight text-white italic">
+            Console<span className="text-[#A855F7]">Zone</span>
+            <span className="text-xs ml-1 text-gray-500 font-normal not-italic">Admin</span>
           </span>
         </Link>
       </div>

@@ -16,13 +16,16 @@ import {
   TrendingUp,
   CreditCard,
   Package,
-  RefreshCw
+  RefreshCw,
+  FileCheck
 } from 'lucide-react';
 import { collection, onSnapshot, query, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { motion } from 'framer-motion';
 import { formatCurrency } from '../../lib/utils';
 import { googleAutomationService } from '../../services/googleAutomationService';
+import AdminKYCModal from '../../components/admin/AdminKYCModal';
+import ViewKYCModal from '../../components/admin/ViewKYCModal';
 
 interface Customer {
   id: string;
@@ -34,17 +37,20 @@ interface Customer {
   orders: number;
   totalSpent: number;
   status: 'active' | 'banned';
-  tier?: 'Novice' | 'Pro' | 'Legendary';
+  tier: 'Novice' | 'Pro' | 'Legendary';
+  kyc_status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'MANUAL_REVIEW';
 }
 
 export default function AdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [syncingId, setSyncingId] = useState<string | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const handleNeuralSync = async (customer: Customer) => {
     setSyncingId(customer.id);
-    // Simulate real agent processing time
     await new Promise(resolve => setTimeout(resolve, 1500));
     await googleAutomationService.syncCustomerToSheets(customer);
     await googleAutomationService.createCustomerDriveFolder(customer);
@@ -68,7 +74,9 @@ export default function AdminCustomers() {
           joinDate: data.created_at?.toDate ? data.created_at.toDate().toLocaleDateString() : 'Unknown',
           orders: data.orders_count || 0,
           totalSpent: data.total_spent || 0,
-          status: data.status || 'active'
+          status: data.status || 'active',
+          tier: data.tier || 'Novice',
+          kyc_status: data.kyc_status
         };
       });
       setCustomers(fetchedCustomers);
@@ -81,6 +89,16 @@ export default function AdminCustomers() {
     return () => unsubscribe();
   }, []);
 
+  const handleUpdateTier = async (id: string, currentTier: string) => {
+    const tiers: Customer['tier'][] = ['Novice', 'Pro', 'Legendary'];
+    const currentIndex = tiers.indexOf(currentTier as any);
+    const nextTier = tiers[(currentIndex + 1) % tiers.length];
+    
+    if (confirm(`Promote ${id.substring(0,5)} to ${nextTier} status?`)) {
+      await updateDoc(doc(db, 'users', id), { tier: nextTier });
+    }
+  };
+
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'banned' : 'active';
     const confirmMessage = newStatus === 'banned'
@@ -92,6 +110,26 @@ export default function AdminCustomers() {
     }
   };
 
+  const openKYCModal = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsKYCModalOpen(true);
+  };
+
+  const openViewModal = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsViewModalOpen(true);
+  };
+
+  const getKYCBadge = (status?: string) => {
+    switch (status) {
+      case 'APPROVED': return <span className="flex items-center gap-1 text-[8px] font-black text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20"><ShieldCheck size={10}/> VERIFIED</span>;
+      case 'PENDING': return <span className="flex items-center gap-1 text-[8px] font-black text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20"><Activity size={10}/> PENDING</span>;
+      case 'MANUAL_REVIEW': return <span className="flex items-center gap-1 text-[8px] font-black text-[#A855F7] bg-[#A855F7]/10 px-1.5 py-0.5 rounded border border-[#A855F7]/20"><Eye size={10}/> REVIEW</span>;
+      case 'REJECTED': return <span className="flex items-center gap-1 text-[8px] font-black text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20"><XCircle size={10}/> REJECTED</span>;
+      default: return <span className="flex items-center gap-1 text-[8px] font-black text-gray-600 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">UNVERIFIED</span>;
+    }
+  };
+
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(search.toLowerCase()) ||
     customer.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -100,6 +138,19 @@ export default function AdminCustomers() {
 
   return (
     <div className="space-y-8 pb-20">
+      <AdminKYCModal 
+        isOpen={isKYCModalOpen}
+        onClose={() => setIsKYCModalOpen(false)}
+        customer={selectedCustomer || { id: '', name: '', email: '', phone: '', address: '' }}
+      />
+
+      <ViewKYCModal 
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        userId={selectedCustomer?.id || ''}
+        userName={selectedCustomer?.name || ''}
+      />
+      
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-8">
         <div>
           <div className="flex items-center space-x-2 mb-2">
@@ -160,8 +211,7 @@ export default function AdminCustomers() {
             <thead className="bg-white/[0.02] text-gray-500 text-[10px] font-mono uppercase tracking-widest">
               <tr>
                 <th className="px-6 py-4">Personnel</th>
-                <th className="px-6 py-4">Signal_Address</th>
-                <th className="px-6 py-4">Location_Node</th>
+                <th className="px-6 py-4">KYC_Clearance</th>
                 <th className="px-6 py-4">Ops_Count</th>
                 <th className="px-6 py-4">Credit_Volume</th>
                 <th className="px-6 py-4 text-right">Actions</th>
@@ -178,10 +228,20 @@ export default function AdminCustomers() {
                         {customer.name.charAt(0)}
                       </div>
                       <div>
-                        <div className="font-bold text-white flex items-center uppercase italic tracking-tight">
+                        <div className="font-bold text-white flex items-center gap-2 uppercase italic tracking-tight">
                           {customer.name}
+                          <button 
+                            onClick={() => handleUpdateTier(customer.id, customer.tier)}
+                            className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase border transition-all hover:scale-110 ${
+                              customer.tier === 'Legendary' ? 'bg-amber-500/20 text-amber-500 border-amber-500/20' :
+                              customer.tier === 'Pro' ? 'bg-blue-500/20 text-blue-500 border-blue-500/20' :
+                              'bg-gray-500/20 text-gray-500 border-white/10'
+                            }`}
+                          >
+                            {customer.tier}
+                          </button>
                           {customer.status === 'banned' && (
-                            <span className="ml-2 px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 text-[8px] font-black uppercase border border-red-500/20">
+                            <span className="px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 text-[8px] font-black uppercase border border-red-500/20">
                               Terminated
                             </span>
                           )}
@@ -191,22 +251,7 @@ export default function AdminCustomers() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2 text-gray-300">
-                        <Mail className="h-3 w-3 text-[#A855F7]" />
-                        <span>{customer.email}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-gray-500 text-[10px]">
-                        <Phone className="h-3 w-3" />
-                        <span>{customer.phone}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2 text-gray-500">
-                      <MapPin className="h-3 w-3 text-[#A855F7]" />
-                      <span className="truncate max-w-[150px] uppercase">{customer.address}</span>
-                    </div>
+                    {getKYCBadge(customer.kyc_status)}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
@@ -223,14 +268,25 @@ export default function AdminCustomers() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
+                        onClick={() => openKYCModal(customer)}
+                        className="p-2 bg-[#A855F7]/10 text-[#A855F7] border border-[#A855F7]/20 rounded-lg hover:bg-[#A855F7] hover:text-black transition-all"
+                        title="Manual KYC Filling"
+                      >
+                        <ShieldCheck size={14} />
+                      </button>
+                      <button 
                         onClick={() => handleNeuralSync(customer)}
                         disabled={syncingId === customer.id}
-                        className="p-2 bg-[#A855F7]/10 text-[#A855F7] border border-[#A855F7]/20 rounded-lg hover:bg-[#A855F7] hover:text-black transition-all flex items-center gap-2 group/sync disabled:opacity-50"
+                        className="p-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-lg hover:bg-emerald-500 hover:text-black transition-all flex items-center gap-2 group/sync disabled:opacity-50"
                         title="Neural Sync (Sheets/Drive/Gmail)"
                       >
                         <RefreshCw size={14} className={syncingId === customer.id ? 'animate-spin' : 'group-hover/sync:rotate-180 transition-transform duration-500'} />
                       </button>
-                      <button className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-all">
+                      <button 
+                        onClick={() => openViewModal(customer)}
+                        className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-all"
+                        title="View KYC Dossier"
+                      >
                         <Eye className="h-4 w-4" />
                       </button>
                       <button 

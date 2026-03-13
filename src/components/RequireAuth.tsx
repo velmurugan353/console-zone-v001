@@ -20,8 +20,9 @@ export default function RequireAuth({ children, onLoginRequired }: RequireAuthPr
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gaming-accent"></div>
+            <div className="flex flex-col items-center justify-center min-h-dvh bg-[#050505] gap-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#A855F7]"></div>
+                <p className="text-[10px] font-mono text-[#A855F7]/70 uppercase tracking-[0.4em]">Verifying Credentials...</p>
             </div>
         );
     }

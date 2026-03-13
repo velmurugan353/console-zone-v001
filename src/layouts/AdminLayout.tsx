@@ -142,7 +142,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-dvh flex bg-[#050505] text-gaming-text font-sans overflow-x-hidden relative admin-layout" style={{ zoom: '0.85' }}>
+    <div className="min-h-dvh flex bg-[#050505] text-gaming-text font-sans overflow-x-hidden relative admin-layout">
       {/* Mobile Mach Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-gaming-card border-b border-gaming-border z-50 flex items-center justify-between px-6">
         <Link to="/" className="flex items-center space-x-2">

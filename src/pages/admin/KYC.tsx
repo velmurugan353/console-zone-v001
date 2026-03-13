@@ -7,6 +7,8 @@ import {
     Video, VideoOff
 } from 'lucide-react';
 import { updateKYCStatus, KYCData } from '../../services/kyc';
+import { db } from '../../lib/firebase';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 
 export default function AdminKYC() {
     const [documents, setDocuments] = useState<(KYCData & { id: string })[]>([]);
@@ -15,37 +17,38 @@ export default function AdminKYC() {
     const [searchQuery, setSearchSearchQuery] = useState('');
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
-    const fetchDocuments = () => {
+    useEffect(() => {
         setLoading(true);
-        try {
-            const stored = localStorage.getItem('consolezone_kyc_data');
-            const allData = stored ? JSON.parse(stored) : {};
-            const docsList = Object.keys(allData).map(userId => ({
-                ...allData[userId],
-                id: userId,
+        const q = query(collection(db, "kyc"), orderBy("submittedAt", "desc"));
+        
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const docsList = snapshot.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id,
                 // Fallback mappings if missing
-                user: allData[userId].fullName,
+                user: doc.data().fullName,
                 avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100",
                 type: "ID Card & Selfie",
-                date: allData[userId].submittedAt?.split('T')[0] || 'N/A',
-            }));
+                date: doc.data().submittedAt?.toDate?.()?.toLocaleDateString() || 'N/A',
+            })) as (KYCData & { id: string })[];
+            
             setDocuments(docsList);
-        } catch (e) {
-            console.error("Failed to parse KYC data:", e);
-            setDocuments([]);
-        }
-        setLoading(false);
-    };
+            setLoading(false);
+        }, (error) => {
+            console.error("Failed to fetch KYC data:", error);
+            setLoading(false);
+        });
 
-    useEffect(() => {
-        fetchDocuments();
-        window.addEventListener('kyc-updated', fetchDocuments);
-        return () => window.removeEventListener('kyc-updated', fetchDocuments);
+        return () => unsubscribe();
     }, []);
 
-    const handleAction = async (id: string, status: 'APPROVED' | 'REJECTED') => {
-        await updateKYCStatus(id, status);
-        fetchDocuments();
+    const handleAction = async (id: string, status: 'APPROVED' | 'REJECTED' | 'MANUAL_REVIEW') => {
+        try {
+            await updateKYCStatus(id, status);
+        } catch (error) {
+            console.error("Action failed:", error);
+            alert("Failed to update status. Check permissions.");
+        }
     };
 
     const filteredDocs = documents.filter(doc => {
@@ -178,20 +181,20 @@ export default function AdminKYC() {
                                         {expandedId === docItem.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                                     </button>
                                     <button
-                                        onClick={() => handleAction(docItem.id, 'APPROVED')}
-                                        disabled={docItem.status === 'APPROVED'}
+                                        onClick={() => handleAction(docItem.id, 'MANUAL_REVIEW')}
+                                        disabled={docItem.status === 'MANUAL_REVIEW'}
                                         className="flex items-center gap-2 px-4 py-2.5 bg-[#A855F7]/10 text-[#A855F7] rounded-xl border border-[#A855F7]/20 hover:bg-[#A855F7] hover:text-white transition-all disabled:opacity-30 text-[10px] font-black uppercase tracking-widest"
-                                        title="Manual Verification"
+                                        title="Mark for Manual Review"
                                     >
                                         <ShieldCheck size={16} />
-                                        PROVED
+                                        MANUAL REVIEW
                                     </button>
                                     <div className="h-8 w-[1px] bg-white/10 mx-2" />
                                     <button
                                         onClick={() => handleAction(docItem.id, 'APPROVED')}
                                         disabled={docItem.status === 'APPROVED'}
                                         className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-30"
-                                        title="Approve"
+                                        title="Approve (Verify)"
                                     >
                                         <Check size={18} strokeWidth={3} />
                                     </button>
@@ -221,45 +224,69 @@ export default function AdminKYC() {
                                                 <div className="grid grid-cols-4 gap-2">
                                                     <div className="space-y-2">
                                                         <p className="text-[8px] font-mono text-gray-600 uppercase text-center">ID Front</p>
-                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative">
-                                                            <img src={docItem.idFrontUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
-                                                                <Eye size={14} />
-                                                            </div>
+                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative flex items-center justify-center">
+                                                            {docItem.idFrontUrl === 'MANUAL_ENTRY' ? (
+                                                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Manual<br/>Entry</span>
+                                                            ) : (
+                                                                <>
+                                                                    <img src={docItem.idFrontUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
+                                                                        <Eye size={14} />
+                                                                    </div>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="space-y-2">
                                                         <p className="text-[8px] font-mono text-gray-600 uppercase text-center">ID Back</p>
-                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative">
-                                                            <img src={docItem.idBackUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
-                                                                <Eye size={14} />
-                                                            </div>
+                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative flex items-center justify-center">
+                                                            {docItem.idBackUrl === 'MANUAL_ENTRY' ? (
+                                                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Manual<br/>Entry</span>
+                                                            ) : (
+                                                                <>
+                                                                    <img src={docItem.idBackUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
+                                                                        <Eye size={14} />
+                                                                    </div>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="space-y-2">
                                                         <p className="text-[8px] font-mono text-gray-600 uppercase text-center">Bio-Video Sync</p>
                                                         <div className="aspect-[4/3] rounded-lg bg-white/5 border border-[#A855F7]/30 overflow-hidden group cursor-pointer relative flex items-center justify-center">
-                                                            {docItem.selfieVideoUrl ? (
-                                                                <div className="text-center">
-                                                                    <Video size={20} className="text-[#A855F7] mx-auto mb-1" />
-                                                                    <p className="text-[7px] font-black text-[#A855F7] uppercase">Liveness Video</p>
-                                                                </div>
+                                                            {docItem.selfieVideoUrl === 'MANUAL_ENTRY' ? (
+                                                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Manual<br/>Entry</span>
+                                                            ) : docItem.selfieVideoUrl ? (
+                                                                <>
+                                                                    <div className="text-center">
+                                                                        <Video size={20} className="text-[#A855F7] mx-auto mb-1" />
+                                                                        <p className="text-[7px] font-black text-[#A855F7] uppercase">Liveness Video</p>
+                                                                    </div>
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
+                                                                        <Eye size={14} />
+                                                                    </div>
+                                                                </>
                                                             ) : (
                                                                 <VideoOff size={20} className="text-gray-700" />
                                                             )}
-                                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
-                                                                <Eye size={14} />
-                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div className="space-y-2">
                                                         <p className="text-[8px] font-mono text-gray-600 uppercase text-center">Live Selfie</p>
-                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative">
-                                                            <img src={docItem.selfieUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
-                                                                <Eye size={14} />
-                                                            </div>
+                                                        <div className="aspect-[4/3] rounded-lg bg-white/5 border border-white/10 overflow-hidden group cursor-pointer relative flex items-center justify-center">
+                                                            {docItem.idFrontUrl === 'MANUAL_ENTRY' || docItem.selfieUrl === 'MANUAL_ENTRY' ? (
+                                                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Manual<br/>Entry</span>
+                                                            ) : docItem.selfieUrl ? (
+                                                                <>
+                                                                    <img src={docItem.selfieUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
+                                                                        <Eye size={14} />
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <User className="text-gray-700" />
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>

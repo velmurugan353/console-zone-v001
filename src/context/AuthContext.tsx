@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       try {
         if (firebaseUser) {
           // Recover our extended properties from localStorage if possible (roles, avatars)
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
           let kycData = null;
           try {
-            kycData = getKYCStatus(firebaseUser.uid);
+            kycData = await getKYCStatus(firebaseUser.uid);
           } catch (e) {
             console.error("Failed to load KYC status:", e);
           }
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
             email: firebaseUser.email || '',
             role: resolvedRole,
-            avatar: firebaseUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100',
+            avatar: firebaseUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-auto=format&fit=crop&q=80&w=100',
             kyc_status: kycData?.status,
             kyc_address: kycData?.address
           });
@@ -97,9 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const refreshUser = () => {
+  const refreshUser = async () => {
     if (user) {
-      const kycData = getKYCStatus(user.id);
+      const kycData = await getKYCStatus(user.id);
       setUser(prev => prev ? { ...prev, kyc_status: kycData?.status, kyc_address: kycData?.address } : null);
     }
   };
