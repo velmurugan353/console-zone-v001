@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -81,13 +81,13 @@ function StepIndicator({ currentStep, completedSteps }: { currentStep: Step, com
   ];
 
   return (
-    <div className="flex items-center gap-4 md:justify-between mb-12 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+    <div className="flex items-center gap-2 md:gap-4 md:justify-between mb-8 md:mb-12 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
       {steps.map((step, index) => (
-        <div key={step.id} className="flex items-center">
+        <div key={step.id} className="flex items-center shrink-0">
           <div className="flex flex-col items-center">
             <div
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center font-mono text-sm border-2 transition-all duration-300",
+                "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-mono text-xs md:text-sm border-2 transition-all duration-300",
                 currentStep === step.id
                   ? "border-[#00d4ff] text-[#00d4ff] shadow-[0_0_15px_rgba(0,212,255,0.4)]"
                   : completedSteps.includes(step.id)
@@ -95,10 +95,10 @@ function StepIndicator({ currentStep, completedSteps }: { currentStep: Step, com
                     : "border-white/10 text-white/30"
               )}
             >
-              {completedSteps.includes(step.id) ? <Check size={18} strokeWidth={3} /> : step.id}
+              {completedSteps.includes(step.id) ? <Check size={16} strokeWidth={3} /> : step.id}
             </div>
             <span className={cn(
-              "mt-2 text-[10px] font-bold tracking-widest uppercase transition-colors duration-300",
+              "mt-2 text-[8px] md:text-[10px] font-bold tracking-widest uppercase transition-colors duration-300",
               currentStep === step.id ? "text-[#00d4ff]" : "text-white/30"
             )}>
               {step.label}
@@ -106,7 +106,7 @@ function StepIndicator({ currentStep, completedSteps }: { currentStep: Step, com
           </div>
           {index < steps.length - 1 && (
             <div className={cn(
-              "w-8 md:w-16 h-[2px] mx-2 mb-6 transition-colors duration-300",
+              "w-6 md:w-16 h-[2px] mx-1 md:mx-2 mb-6 transition-colors duration-300",
               completedSteps.includes(step.id) ? "bg-green-500" : "bg-white/10"
             )} />
           )}
@@ -411,16 +411,16 @@ export default function RentalBookingPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-[#050505] text-white pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-dvh bg-[#050505] text-white pt-20 md:pt-24 pb-32 md:pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumbs & Back */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
           <button
             onClick={() => navigate('/rentals')}
             className="flex items-center text-gray-400 hover:text-white transition-colors group"
           >
             <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="ml-1 font-medium uppercase tracking-widest text-xs">Back to Rentals</span>
+            <span className="ml-1 font-bold uppercase tracking-widest text-[10px] md:text-xs">Back to Rentals</span>
           </button>
           <div className="hidden md:flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-gray-500">
             <Link to="/" className="hover:text-white">Home</Link>
@@ -431,7 +431,7 @@ export default function RentalBookingPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           {/* Left Column: Form */}
           <div className="lg:col-span-7 xl:col-span-8">
             <StepIndicator currentStep={currentStep} completedSteps={completedSteps} />
@@ -478,7 +478,7 @@ export default function RentalBookingPage() {
 
           {/* Right Column: Sticky Summary */}
           <div className="lg:col-span-5 xl:col-span-4">
-            <div className="sticky top-24">
+            <div className="lg:sticky lg:top-24">
               <OrderSummary
                 selectedConsole={consoleData}
                 state={bookingState}
@@ -493,14 +493,14 @@ export default function RentalBookingPage() {
       </div>
 
       {/* Mobile Sticky Summary Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-xl border-t border-white/10 p-4">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-t border-white/10 p-4 pb-safe">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg overflow-hidden border border-white/10 shrink-0">
               <img src={consoleData?.image} alt="" className="w-full h-full object-cover" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-[#00d4ff] uppercase tracking-tighter truncate max-w-[100px]">
+              <p className="text-[10px] font-black text-[#00d4ff] uppercase tracking-tighter truncate max-w-[80px] xs:max-w-[120px]">
                 {consoleData?.name}
               </p>
               <p className="text-sm font-black text-white">
@@ -515,7 +515,7 @@ export default function RentalBookingPage() {
               (currentStep === 3 && (!bookingState.delivery.phone || (bookingState.delivery.method === 'delivery' && !bookingState.delivery.address))) ||
               (currentStep === 4 && !bookingState.payment.termsAccepted)
             }
-            className="flex-1 py-3 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-[10px] rounded-xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] disabled:opacity-50"
+            className="flex-1 py-3.5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-[10px] rounded-xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] disabled:opacity-50"
           >
             {currentStep === 4 ? 'Confirm' : 'Continue'}
           </button>
@@ -558,10 +558,10 @@ function Step1ConsoleDetails({ selectedConsole, state, setState, onNext }: { sel
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-8"
+      className="space-y-6 md:space-y-8"
     >
-      <div className="bg-[#0a0f1e] border border-white/10 rounded-3xl p-8 md:p-12">
-        <div className="flex flex-col md:flex-row gap-12">
+      <div className="bg-[#0a0f1e] border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-12">
+        <div className="flex flex-col md:flex-row gap-8 md:gap-12">
           <div className="md:w-1/2">
             <div className="aspect-square rounded-2xl overflow-hidden bg-black/40 border border-white/5 relative group">
               <img
@@ -571,7 +571,7 @@ function Step1ConsoleDetails({ selectedConsole, state, setState, onNext }: { sel
                 referrerPolicy="no-referrer"
               />
               <div className="absolute top-4 left-4">
-                <span className="bg-[#00d4ff] text-black text-[10px] font-black px-3 py-1 rounded-full uppercase shadow-[0_0_15px_rgba(0,212,255,0.5)]">
+                <span className="bg-[#00d4ff] text-black text-[8px] md:text-[10px] font-black px-3 py-1 rounded-full uppercase shadow-[0_0_15px_rgba(0,212,255,0.5)]">
                   {selectedConsole.condition} Condition
                 </span>
               </div>
@@ -579,19 +579,19 @@ function Step1ConsoleDetails({ selectedConsole, state, setState, onNext }: { sel
           </div>
           <div className="md:w-1/2 space-y-6">
             <div>
-              <h2 className="text-3xl font-black uppercase tracking-tight text-white mb-2">{selectedConsole.name}</h2>
+              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white mb-2">{selectedConsole.name}</h2>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-bold text-green-500 uppercase tracking-widest">{selectedConsole.available} Units Available</span>
+                <span className="text-[10px] md:text-xs font-bold text-green-500 uppercase tracking-widest">{selectedConsole.available} Units Available</span>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Key Specs</h3>
-              <div className="grid grid-cols-1 gap-3">
+              <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Key Specs</h3>
+              <div className="grid grid-cols-1 gap-2 md:gap-3">
                 {selectedConsole.specs.map((spec, i) => (
-                  <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#00d4ff]" />
+                  <div key={i} className="flex items-center gap-3 text-xs md:text-sm text-gray-300">
+                    <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#00d4ff]" />
                     {spec}
                   </div>
                 ))}
@@ -599,59 +599,59 @@ function Step1ConsoleDetails({ selectedConsole, state, setState, onNext }: { sel
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">What's Included</h3>
+              <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">What's Included</h3>
               <div className="flex flex-wrap gap-2">
                 {selectedConsole.included.map((item, i) => (
-                  <span key={i} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs font-medium text-gray-300">
+                  <span key={i} className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[10px] md:text-xs font-medium text-gray-300">
                     {item}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="w-full h-px bg-white/5 my-6" />
+            <div className="w-full h-px bg-white/5 my-4 md:my-6" />
 
             {/* Optional Addons Section */}
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 pt-2 md:pt-4">
               <div className="flex items-center gap-2">
                 <Gamepad2 size={16} className="text-[#00d4ff]" />
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Add-On Equipment</h3>
+                <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Add-On Equipment</h3>
               </div>
               <div className={cn(
-                "relative group overflow-hidden rounded-2xl border transition-all duration-500",
+                "relative group overflow-hidden rounded-xl md:rounded-2xl border transition-all duration-500",
                 state.addons.extraControllers > 0 
                   ? "bg-[#00d4ff]/5 border-[#00d4ff]/30 shadow-[0_0_30px_rgba(0,212,255,0.1)]" 
                   : "bg-white/[0.02] border-white/10 hover:border-white/20"
               )}>
-                <div className="p-5 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
+                <div className="p-4 md:p-5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 md:gap-4">
                     <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500",
+                      "w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-500",
                       state.addons.extraControllers > 0 ? "bg-[#00d4ff] text-black shadow-[0_0_20px_rgba(0,212,255,0.4)]" : "bg-white/5 text-gray-500"
                     )}>
                       <Gamepad2 size={24} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white uppercase tracking-tight">Extra Controller</h4>
-                      <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mt-0.5">
+                      <h4 className="text-xs md:text-sm font-bold text-white uppercase tracking-tight">Extra Controller</h4>
+                      <p className="text-[8px] md:text-[9px] text-gray-500 font-black uppercase tracking-widest mt-0.5">
                         Wireless Gear // ₹{extraControllerRate} Day
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 bg-black/60 p-1.5 rounded-xl border border-white/5">
+                  <div className="flex items-center gap-3 bg-black/60 p-1 rounded-xl border border-white/5">
                     <button
                       onClick={() => updateExtraControllers(-1)}
                       disabled={state.addons.extraControllers === 0}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                      className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
                     >
                       <MinusCircle size={18} />
                     </button>
-                    <span className="w-6 text-center font-black text-[#00d4ff] font-mono text-sm">{state.addons.extraControllers}</span>
+                    <span className="w-5 md:w-6 text-center font-black text-[#00d4ff] font-mono text-xs md:text-sm">{state.addons.extraControllers}</span>
                     <button
                       onClick={() => updateExtraControllers(1)}
                       disabled={state.addons.extraControllers === 3}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00d4ff] hover:bg-[#00d4ff]/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                      className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00d4ff] hover:bg-[#00d4ff]/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
                     >
                       <PlusCircle size={18} />
                     </button>
@@ -668,43 +668,43 @@ function Step1ConsoleDetails({ selectedConsole, state, setState, onNext }: { sel
           </div>
         </div>
 
-        <div className="mt-12 pt-12 border-t border-white/5 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="mt-8 md:mt-12 pt-8 md:pt-12 border-t border-white/5 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-[#00d4ff]">
               <ShieldCheck size={18} />
-              <span className="text-xs font-bold uppercase tracking-widest">Deposit Policy</span>
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Deposit Policy</span>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-[10px] md:text-xs text-gray-400 leading-relaxed">
               A refundable deposit of {formatCurrency(selectedConsole.deposit)} is required. Released within 3 days of return.
             </p>
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-amber-500">
               <Clock size={18} />
-              <span className="text-xs font-bold uppercase tracking-widest">Late Fees</span>
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Late Fees</span>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-[10px] md:text-xs text-gray-400 leading-relaxed">
               Returned late? A fee of ₹15/day applies. Please notify us 24h in advance for extensions.
             </p>
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-[#A855F7]">
               <Info size={18} />
-              <span className="text-xs font-bold uppercase tracking-widest">Max Duration</span>
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Max Duration</span>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-[10px] md:text-xs text-gray-400 leading-relaxed">
               Standard rentals are capped at 30 days. Contact us for long-term corporate leasing.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-4">
         <button
           onClick={onNext}
-          className="group relative px-12 py-5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-sm rounded-2xl overflow-hidden transition-all hover:shadow-[0_0_30px_rgba(0,212,255,0.4)]"
+          className="group relative w-full md:w-auto px-12 py-5 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs md:text-sm rounded-xl md:rounded-2xl overflow-hidden transition-all hover:shadow-[0_0_30px_rgba(0,212,255,0.4)]"
         >
-          <span className="relative z-10 flex items-center gap-2">
+          <span className="relative z-10 flex items-center justify-center gap-2">
             Looks Good — Continue <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </span>
           <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
@@ -800,14 +800,14 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-8"
+      className="space-y-6 md:space-y-8"
     >
-      <div className="bg-[#0a0f1e] border border-white/10 rounded-3xl p-8">
-        <div className="space-y-8">
+      <div className="bg-[#0a0f1e] border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8">
+        <div className="space-y-6 md:space-y-8">
           {/* Custom Duration Type */}
           <div className="space-y-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Select Booking Duration</h3>
-            <div className="flex flex-wrap gap-3">
+            <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Select Booking Duration</h3>
+            <div className="flex flex-wrap gap-2 md:gap-3">
               {durationTypes.map(type => (
                 <button
                   key={type.id}
@@ -831,7 +831,7 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
                     });
                   }}
                   className={cn(
-                    "px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs border transition-all",
+                    "flex-1 md:flex-none px-4 md:px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] md:text-xs border transition-all",
                     state.duration.type === type.id
                       ? "bg-[#00d4ff] text-black border-[#00d4ff] shadow-[0_0_15px_rgba(0,212,255,0.3)]"
                       : "bg-white/5 text-gray-400 border-white/10 hover:border-white/30"
@@ -846,41 +846,41 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
           {/* Pick Your Dates */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Pick Your Dates</h3>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Available</span>
+              <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Pick Your Dates</h3>
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500" />
+                  <span className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest">Available</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-500" />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Booked</span>
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-red-500" />
+                  <span className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest">Booked</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-black/40 border border-white/5 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-6 px-2">
+            <div className="bg-black/40 border border-white/5 rounded-2xl p-4 md:p-6">
+              <div className="flex items-center justify-between mb-4 md:mb-6 px-1 md:px-2">
                 <button
                   onClick={() => setViewDate(subMonths(viewDate, 1))}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                  className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
                 >
                   <ChevronLeft size={20} />
                 </button>
-                <h4 className="text-sm font-black uppercase tracking-[0.3em] text-white">
+                <h4 className="text-xs md:text-sm font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-white">
                   {format(viewDate, 'MMMM yyyy')}
                 </h4>
                 <button
                   onClick={() => setViewDate(addMonths(viewDate, 1))}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                  className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
                 >
                   <ChevronRight size={20} />
                 </button>
               </div>
 
-              <div className="grid grid-cols-7 gap-1 md:gap-2 mb-4">
-                {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
-                  <div key={day} className="text-center text-[10px] font-black text-gray-600 py-2">{day}</div>
+              <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2 md:mb-4">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
+                  <div key={day} className="text-center text-[8px] md:text-[10px] font-black text-gray-600 py-1 md:py-2">{day}</div>
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-1 md:gap-2">
@@ -900,7 +900,7 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
                       onMouseEnter={() => setHoverDate(date)}
                       onMouseLeave={() => setHoverDate(null)}
                       className={cn(
-                        "aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all duration-200",
+                        "aspect-square rounded-lg md:rounded-xl flex flex-col items-center justify-center relative transition-all duration-200",
                         (isPast || !isCurrentMonth) ? "opacity-20 cursor-not-allowed" : "hover:scale-110",
                         isBooked ? "bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20" : "bg-white/5 text-white",
                         isToday && !selected && "border border-[#00d4ff]/50",
@@ -908,7 +908,7 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
                         inRange ? "bg-[#00d4ff]/20 text-[#00d4ff]" : ""
                       )}
                     >
-                      <span className="text-sm font-bold">{format(date, 'd')}</span>
+                      <span className="text-xs md:text-sm font-bold">{format(date, 'd')}</span>
                       {isToday && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-[#00d4ff]" />}
                     </button>
                   );
@@ -920,10 +920,10 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
           {/* Time Slot */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Preferred Deployment Window</h3>
-              <span className="text-[9px] font-mono text-emerald-500 uppercase">Office Hours: 10AM - 08PM</span>
+              <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Preferred Deployment Window</h3>
+              <span className="text-[8px] md:text-[9px] font-mono text-emerald-500 uppercase">10AM - 08PM</span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
               {[
                 '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', 
                 '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM'
@@ -932,32 +932,31 @@ function Step2DurationDates({ state, setState, onNext, onBack }: { state: Bookin
                   key={slot}
                   onClick={() => setState((prev: BookingState) => ({ ...prev, duration: { ...prev.duration, timeSlot: slot } }))}
                   className={cn(
-                    "py-3 rounded-xl border text-center transition-all duration-300",
+                    "py-2.5 md:py-3 rounded-xl border text-center transition-all duration-300",
                     state.duration.timeSlot === slot
                       ? "bg-[#00d4ff] text-black border-[#00d4ff] shadow-[0_0_15px_rgba(0,212,255,0.3)] font-black"
                       : "bg-white/5 border-white/10 text-gray-400 hover:border-[#00d4ff]/50 hover:text-white"
                   )}
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-tighter">{slot}</span>
+                  <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-tighter">{slot}</span>
                 </button>
               ))}
             </div>
-            <p className="text-[9px] text-gray-600 italic">Deliveries/Pickups are processed hourly within our secure operating window.</p>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-4">
         <button
           onClick={onBack}
-          className="px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-xs rounded-xl border border-white/10 hover:bg-white/10 transition-all"
+          className="flex-1 md:flex-none px-6 md:px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-[10px] md:text-xs rounded-xl border border-white/10 hover:bg-white/10 transition-all"
         >
           Back
         </button>
         <button
           onClick={onNext}
           disabled={!state.duration.startDate || !state.duration.endDate}
-          className="px-12 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-[2] md:flex-none px-10 md:px-12 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-[10px] md:text-xs rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Continue
         </button>
@@ -998,11 +997,11 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-8"
+      className="space-y-6 md:space-y-8"
     >
-      <div className="bg-[#0a0f1e] border border-white/10 rounded-3xl p-8">
-        <div className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="bg-[#0a0f1e] border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8">
+        <div className="space-y-6 md:space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <button
               onClick={() => {
                 if (isFirstBooking) {
@@ -1012,25 +1011,25 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                 }
               }}
               className={cn(
-                "p-8 rounded-2xl border text-left transition-all group relative overflow-hidden",
+                "p-6 md:p-8 rounded-2xl border text-left transition-all group relative overflow-hidden",
                 state.delivery.method === 'pickup'
                   ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
                   : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30",
                 isFirstBooking && "opacity-50 grayscale cursor-not-allowed hover:border-white/10"
               )}
             >
-              <Store size={32} className="mb-4" />
+              <Store size={24} className="mb-3 md:mb-4" />
               <div className="flex justify-between items-start">
-                <h4 className="text-xl font-black uppercase tracking-tight mb-2">Store Pickup</h4>
+                <h4 className="text-lg md:text-xl font-black uppercase tracking-tight mb-1 md:mb-2">Store Pickup</h4>
                 {isFirstBooking && (
-                  <span className="text-[9px] font-black bg-red-500/20 text-red-500 px-2 py-0.5 rounded border border-red-500/30 uppercase tracking-widest">Locked</span>
+                  <span className="text-[8px] md:text-[9px] font-black bg-red-500/20 text-red-500 px-2 py-0.5 rounded border border-red-500/30 uppercase tracking-widest">Locked</span>
                 )}
               </div>
-              <p className="text-xs leading-relaxed opacity-70">
+              <p className="text-[10px] md:text-xs leading-relaxed opacity-70">
                 {isFirstBooking ? "Restricted for first-time deployments." : "Pick up from our central hub. Free of charge."}
               </p>
-              <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest">Free</span>
+              <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/10 flex items-center gap-2">
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">Free</span>
               </div>
             </button>
 
@@ -1050,27 +1049,27 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                 }
               }}
               className={cn(
-                "p-8 rounded-2xl border text-left transition-all group relative overflow-hidden",
+                "p-6 md:p-8 rounded-2xl border text-left transition-all group relative overflow-hidden",
                 state.delivery.method === 'delivery'
                   ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
                   : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30",
                 !isKycApproved && "opacity-50 grayscale hover:border-white/10"
               )}
             >
-              <Truck size={32} className="mb-4" />
-              <h4 className="text-xl font-black uppercase tracking-tight mb-2">Home Delivery</h4>
-              <p className="text-xs leading-relaxed opacity-70">We bring the game to your doorstep. Same-day available.</p>
+              <Truck size={24} className="mb-3 md:mb-4" />
+              <h4 className="text-lg md:text-xl font-black uppercase tracking-tight mb-1 md:mb-2">Home Delivery</h4>
+              <p className="text-[10px] md:text-xs leading-relaxed opacity-70">We bring the game to your doorstep. Same-day available.</p>
               {!isKycApproved && (
                 <div className="mt-2 flex items-center justify-between">
-                  <div className="text-[10px] text-amber-500 font-bold uppercase tracking-widest flex items-center gap-1">
+                  <div className="text-[8px] md:text-[10px] text-amber-500 font-bold uppercase tracking-widest flex items-center gap-1">
                     <ShieldCheck size={12} />
                     KYC Required
                   </div>
-                  <span className="text-[9px] font-black text-[#00d4ff] underline uppercase tracking-widest">Verify Now</span>
+                  <span className="text-[8px] md:text-[9px] font-black text-[#00d4ff] underline uppercase tracking-widest">Verify Now</span>
                 </div>
               )}
-              <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest">+₹9.99</span>
+              <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/10 flex items-center gap-2">
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">+₹9.99</span>
               </div>
             </button>
           </div>
@@ -1078,7 +1077,7 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Contact Phone (10 Digits)</label>
+                <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Contact Phone</label>
                 <div className="relative">
                   <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input
@@ -1090,7 +1089,7 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                       const val = e.target.value.replace(/\D/g, '');
                       setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, phone: val } }));
                     }}
-                    className={`w-full bg-black/40 border rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all ${
+                    className={`w-full bg-black/40 border rounded-xl py-3.5 md:py-4 pl-11 md:pl-12 pr-4 text-sm outline-none transition-all ${
                       state.delivery.phone.length === 10 ? 'border-emerald-500/50 focus:border-emerald-500' : 'border-white/10 focus:border-[#00d4ff]'
                     }`}
                   />
@@ -1098,13 +1097,10 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                     <CheckCircle2 size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500" />
                   )}
                 </div>
-                {state.delivery.phone && state.delivery.phone.length !== 10 && (
-                  <p className="text-[8px] text-red-500 font-mono uppercase tracking-widest mt-1">Requires exactly 10 digits</p>
-                )}
               </div>
               
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Delivery Address</label>
+                <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Delivery Address</label>
                 
                 {state.delivery.method === 'pickup' ? (
                   <div className="relative opacity-70">
@@ -1113,7 +1109,7 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                       type="text"
                       readOnly
                       value="123 Gaming Hub, Tech District"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-sm outline-none cursor-not-allowed"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 md:py-4 pl-11 md:pl-12 pr-4 text-sm outline-none cursor-not-allowed"
                     />
                   </div>
                 ) : (
@@ -1126,23 +1122,22 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                           setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: kycAddress } }));
                         }}
                         className={cn(
-                          "w-full p-4 rounded-xl border text-left transition-all flex items-start gap-3 group",
+                          "w-full p-3.5 md:p-4 rounded-xl border text-left transition-all flex items-start gap-3 group",
                           !showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address)
                             ? "bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]"
                             : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30"
                         )}
                       >
                         <div className={cn(
-                          "mt-1 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors",
+                          "mt-1 w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors",
                           !showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address) ? "border-[#00d4ff]" : "border-gray-600 group-hover:border-gray-400"
                         )}>
-                          {!showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address) && <div className="w-2 h-2 rounded-full bg-[#00d4ff]" />}
+                          {!showManualAddress && (state.delivery.address === kycAddress || !state.delivery.address) && <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#00d4ff]" />}
                         </div>
                         <div className="flex-1">
-                          <p className="text-[10px] font-black uppercase tracking-widest mb-1">Use KYC Verified Address</p>
-                          <p className="text-xs opacity-80 line-clamp-2 leading-relaxed">{kycAddress}</p>
+                          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 md:mb-1">Use Verified Address</p>
+                          <p className="text-[10px] md:text-xs opacity-80 line-clamp-2 leading-relaxed">{kycAddress}</p>
                         </div>
-                        <div className="bg-emerald-500/20 text-emerald-500 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest self-start">Verified</div>
                       </button>
                     )}
 
@@ -1151,23 +1146,11 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                         <MapPin size={16} className="absolute left-4 top-4 text-gray-500 group-focus-within:text-[#00d4ff] transition-colors" />
                         <textarea
                           autoFocus={showManualAddress}
-                          placeholder="Enter your full delivery address..."
+                          placeholder="Enter delivery address..."
                           value={state.delivery.address}
                           onChange={(e) => setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: e.target.value } }))}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl py-4 pl-12 pr-12 text-sm focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none transition-all h-24 resize-none"
+                          className="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 md:py-4 pl-11 md:pl-12 pr-4 text-sm focus:border-[#00d4ff] outline-none transition-all h-24 resize-none"
                         />
-                        {isKycApproved && kycAddress && (
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              setShowManualAddress(false);
-                              setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: kycAddress } }));
-                            }}
-                            className="absolute right-4 top-4 text-[10px] font-black text-gray-500 hover:text-white uppercase tracking-widest transition-colors"
-                          >
-                            Cancel
-                          </button>
-                        )}
                       </div>
                     ) : (
                       <button
@@ -1176,41 +1159,31 @@ function Step3DeliveryOptions({ state, setState, onNext, onBack, kycStatus, kycA
                           setShowManualAddress(true);
                           setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, address: '' } }));
                         }}
-                        className="w-full p-4 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-[#00d4ff] hover:border-[#00d4ff]/50 transition-all flex items-center justify-center gap-2 group"
+                        className="w-full p-3.5 md:p-4 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-[#00d4ff] hover:border-[#00d4ff]/50 transition-all flex items-center justify-center gap-2"
                       >
-                        <PlusCircle size={16} className="group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Add Different Delivery Address</span>
+                        <PlusCircle size={16} />
+                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">New Address</span>
                       </button>
                     )}
                   </div>
                 )}
               </div>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Access Notes / Apartment #</label>
-              <textarea
-                placeholder="Gate codes, floor number, or specific instructions..."
-                value={state.delivery.notes}
-                onChange={(e) => setState((prev: BookingState) => ({ ...prev, delivery: { ...prev.delivery, notes: e.target.value } }))}
-                className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-4 text-sm focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none transition-all h-24 resize-none"
-              />
-            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-4">
         <button
           onClick={onBack}
-          className="px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-xs rounded-xl border border-white/10 hover:bg-white/10 transition-all"
+          className="flex-1 md:flex-none px-6 md:px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-widest text-[10px] md:text-xs rounded-xl border border-white/10 hover:bg-white/10 transition-all"
         >
           Back
         </button>
         <button
           onClick={onNext}
           disabled={!state.delivery.phone || (state.delivery.method === 'delivery' && !state.delivery.address)}
-          className="px-12 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-xs rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-[2] md:flex-none px-10 md:px-12 py-4 bg-[#00d4ff] text-black font-black uppercase tracking-widest text-[10px] md:text-xs rounded-xl transition-all hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Continue
         </button>

@@ -23,29 +23,6 @@ const GAMES_LIST = [
   "The Callisto Protocol"
 ];
 
-function GameController({ size, className }: { size?: number, className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size || 24}
-      height={size || 24}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <line x1="6" x2="10" y1="12" y2="12" />
-      <line x1="8" x2="8" y1="10" y2="14" />
-      <line x1="15" x2="15.01" y1="13" y2="13" />
-      <line x1="18" x2="18.01" y1="11" y2="11" />
-      <rect x="2" y="6" width="20" height="12" rx="2" />
-    </svg>
-  );
-}
-
 export default function Rentals() {
   const [rentals, setRentals] = useState<RentalConsole[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +47,6 @@ export default function Rentals() {
         } as RentalConsole;
       });
 
-      // If Firestore is empty, fallback to constants for initial population
       if (fetched.length === 0) {
         setRentals(RENTAL_CONSOLES);
       } else {
@@ -88,12 +64,10 @@ export default function Rentals() {
 
   const activeStock = rentals.find(s => s.id === activeTab) || rentals[0];
 
-  // Dynamic plan generator using Admin Catalog Settings
   const getPlans = (consoleId: string) => {
     const catalog = getCatalogSettings();
     const controllers = getControllerSettings();
 
-    // Map console IDs to catalog keys
     const idToKey: Record<string, string> = {
       'ps5': 'Sony PlayStation 5',
       'xbox': 'Xbox Series X',
@@ -104,11 +78,9 @@ export default function Rentals() {
     const key = idToKey[consoleId] || idToKey['ps5'];
     const config = catalog[key] || catalog['Sony PlayStation 5'];
     
-    // Use dynamic stock and deposit from catalog
     const currentStock = config.totalStock || activeStock?.available || 0;
     const currentDeposit = config.securityDeposit || activeStock?.deposit || 0;
 
-    // Map console IDs to controller keys
     const idToCtrl: Record<string, keyof typeof controllers.pricing> = {
       'ps5': 'ps5',
       'xbox': 'xbox',
@@ -163,7 +135,7 @@ export default function Rentals() {
   return (
     <div className="min-h-dvh bg-gaming-bg">
       {/* Hero Section */}
-      <section className="relative h-[] flex flex-col items-center justify-center text-center px-4 overflow-hidden">
+      <section className="relative min-h-[60vh] md:h-[80vh] flex flex-col items-center justify-center text-center px-4 overflow-hidden pt-20 md:pt-0">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-gaming-bg/30 via-gaming-bg/80 to-gaming-bg z-10" />
           <img
@@ -173,26 +145,26 @@ export default function Rentals() {
           />
         </div>
 
-        <div className="relative z-20 max-w-5xl mx-auto space-y-8 mt-20">
+        <div className="relative z-20 max-w-5xl mx-auto space-y-6 md:space-y-8">
           <motion.h1
             key={activeTab}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-5xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.9]"
+            className="text-4xl sm:text-5xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.9]"
           >
             {activeStock ? activeStock.name.split(' ').slice(0, 2).join(' ') : "RENTALS"}
           </motion.h1>
-          <p className="text-gaming-muted text-lg md:text-xl font-mono uppercase tracking-widest max-w-2xl mx-auto opacity-80">
+          <p className="text-gaming-muted text-sm sm:text-lg md:text-xl font-mono uppercase tracking-widest max-w-2xl mx-auto opacity-80 px-4">
             <EditableText pageKey="rentals" itemKey="hero_subtitle" defaultText="Select from our elite fleet of current-gen and classic consoles" />
           </p>
 
-          <div className="flex md:inline-flex bg-black/40 backdrop-blur-md p-1 rounded-2xl border border-white/10 overflow-x-auto max-w-full mt-8 scrollbar-hide mx-auto">
+          <div className="flex bg-black/40 backdrop-blur-md p-1 rounded-2xl border border-white/10 overflow-x-auto max-w-[95vw] md:max-w-max mt-4 md:mt-8 scrollbar-hide mx-auto">
             {rentals.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`px-6 md:px-10 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all whitespace-nowrap ${activeTab === item.id
+                className={`px-4 sm:px-6 md:px-10 py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-[10px] sm:text-xs md:text-sm transition-all whitespace-nowrap ${activeTab === item.id
                   ? 'bg-gaming-accent text-black shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]'
                   : 'text-gray-400 hover:text-white'
                   }`}
@@ -204,9 +176,9 @@ export default function Rentals() {
         </div>
       </section>
 
-      <div className="relative z-10 py-20 px-4 sm:px-6 lg:px-8 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
+      <div className="relative z-10 py-12 md:py-20 px-4 sm:px-6 lg:px-8 mx-auto w-full" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-24">
           <AnimatePresence mode="wait">
             {activeTab && getPlans(activeTab).map((plan: any, index: number) => (
               <motion.div
@@ -215,48 +187,47 @@ export default function Rentals() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ delay: index * 0.1 }}
-                className={`group relative bg-gaming-card border border-gaming-border rounded-3xl overflow-hidden hover:border-gaming-accent/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(var(--accent-rgb),0.15)] flex flex-col ${plan.recommended ? 'ring-2 ring-gaming-accent shadow-[0_0_40px_rgba(var(--accent-rgb),0.2)]' : ''}`}
+                className={`group relative bg-gaming-card border border-gaming-border rounded-[2rem] md:rounded-3xl overflow-hidden hover:border-gaming-accent/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(var(--accent-rgb),0.15)] flex flex-col ${plan.recommended ? 'ring-2 ring-gaming-accent shadow-[0_0_40px_rgba(var(--accent-rgb),0.2)]' : ''}`}
               >
                 {plan.recommended && (
-                  <div className="absolute top-0 inset-x-0 h-1.5 bg-gaming-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)] z-20" />
+                  <div className="absolute top-0 inset-x-0 h-1 md:h-1.5 bg-gaming-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)] z-20" />
                 )}
 
-                <div className={`p-10 ${plan.color} ${plan.recommended ? 'text-black' : 'text-white'} text-center relative overflow-hidden`}>
+                <div className={`p-6 md:p-10 ${plan.color} ${plan.recommended ? 'text-black' : 'text-white'} text-center relative overflow-hidden`}>
                   <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px]" />
 
-                  <h3 className="font-display text-2xl font-black uppercase tracking-widest relative z-10">{plan.duration}</h3>
-                  <div className="mt-4 relative z-10 flex flex-col items-center justify-center gap-1">
-                    <span className="text-5xl font-black tracking-tighter">{formatCurrency(plan.price)}</span>
-                    {/* Availability Badge */}
-                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${plan.available > 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                  <h3 className="font-display text-xl md:text-2xl font-black uppercase tracking-widest relative z-10">{plan.duration}</h3>
+                  <div className="mt-3 md:mt-4 relative z-10 flex flex-col items-center justify-center gap-1">
+                    <span className="text-4xl md:text-5xl font-black tracking-tighter">{formatCurrency(plan.price)}</span>
+                    <span className={`text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${plan.available > 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
                       {plan.available > 0 ? `${plan.available} Units Available` : 'Out of Stock'}
                     </span>
                   </div>
                   {plan.recommended && (
-                    <span className="absolute top-4 right-4 bg-white text-black text-[10px] font-black px-3 py-1 rounded-full uppercase z-10 shadow-lg">Best Value</span>
+                    <span className="absolute top-3 right-3 md:top-4 md:right-4 bg-white text-black text-[8px] md:text-[10px] font-black px-2 md:px-3 py-1 rounded-full uppercase z-10 shadow-lg">Best Value</span>
                   )}
                 </div>
 
-                <div className="p-8 flex-1 flex flex-col bg-gradient-to-b from-gaming-card to-gaming-bg">
-                  <ul className="space-y-4 mb-10 flex-1">
+                <div className="p-6 md:p-8 flex-1 flex flex-col bg-gradient-to-b from-gaming-card to-gaming-bg">
+                  <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10 flex-1">
                     {plan.features.map((feature: string, i: number) => (
                       <li key={i} className="flex items-start gap-3 text-gaming-text opacity-80 group/item">
-                        <div className={`mt-1 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${plan.recommended ? 'bg-gaming-accent/10 text-gaming-accent' : 'bg-gaming-secondary/10 text-gaming-secondary'}`}>
+                        <div className={`mt-1 w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center shrink-0 ${plan.recommended ? 'bg-gaming-accent/10 text-gaming-accent' : 'bg-gaming-secondary/10 text-gaming-secondary'}`}>
                           <Check size={12} strokeWidth={4} />
                         </div>
-                        <span className="text-sm font-medium group-hover/item:opacity-100 transition-opacity">{feature}</span>
+                        <span className="text-xs md:text-sm font-medium group-hover/item:opacity-100 transition-opacity">{feature}</span>
                       </li>
                     ))}
-                    <li className="flex items-center gap-3 text-gaming-muted pt-6 border-t border-gaming-border">
+                    <li className="flex items-center gap-3 text-gaming-muted pt-4 md:pt-6 border-t border-gaming-border">
                       <ArrowRight size={18} className="shrink-0 opacity-50" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Extra Controller: <span className="text-gaming-text">{formatCurrency(plan.extraController)}</span></span>
+                      <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">Extra Controller: <span className="text-gaming-text">{formatCurrency(plan.extraController)}</span></span>
                     </li>
                   </ul>
 
-                  <div className="space-y-4 pt-4">
+                  <div className="space-y-4 pt-2">
                     <Link
                       to={`/rentals/${activeStock?.slug}/book`}
-                      className={`group/btn relative overflow-hidden block w-full text-center py-5 rounded-2xl font-black text-lg transition-all ${plan.available > 0
+                      className={`group/btn relative overflow-hidden block w-full text-center py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-sm md:text-lg transition-all ${plan.available > 0
                         ? (plan.recommended ? 'bg-gaming-accent text-black shadow-[0_0_25px_rgba(var(--accent-rgb),0.4)] hover:opacity-90' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-gaming-accent/50')
                         : 'bg-white/5 text-gaming-muted border border-white/5 cursor-not-allowed grayscale'
                         }`}

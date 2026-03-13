@@ -84,39 +84,64 @@ export default function EnterpriseKYC() {
 
     const startRecording = async () => {
         try {
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { width: 1280, height: 720, facingMode: "user" }, 
+                audio: false 
+            });
             setStream(mediaStream);
             if (videoRef.current) videoRef.current.srcObject = mediaStream;
 
-            // Capture a still frame as selfie
-            const video = document.createElement('video');
-            video.srcObject = mediaStream;
-            await video.play();
-            const canvas = document.createElement('canvas');
-            canvas.width = 640;
-            canvas.height = 480;
-            canvas.getContext('2d')?.drawImage(video, 0, 0);
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' });
-                    setSelfieFile(file);
-                }
-            }, 'image/jpeg');
-
-            const mediaRecorder = new MediaRecorder(mediaStream);
+            // Define supported mime types for better cross-browser compatibility
+            const mimeTypes = [
+                'video/webm;codecs=vp9,opus',
+                'video/webm;codecs=vp8,opus',
+                'video/webm',
+                'video/mp4'
+            ];
+            
+            const supportedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type));
+            
+            const mediaRecorder = new MediaRecorder(mediaStream, {
+                mimeType: supportedMimeType
+            });
+            
             mediaRecorderRef.current = mediaRecorder;
             const chunks: Blob[] = [];
 
-            mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunks.push(e.data);
+            };
+
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
-                const file = new File([blob], `selfie-video-${Date.now()}.webm`, { type: 'video/webm' });
+                const blob = new Blob(chunks, { type: supportedMimeType || 'video/webm' });
+                const extension = (supportedMimeType && supportedMimeType.includes('mp4')) ? 'mp4' : 'webm';
+                const file = new File([blob], `selfie-video-${Date.now()}.${extension}`, { type: blob.type });
                 setSelfieVideoFile(file);
                 
                 // Stop all tracks
                 mediaStream.getTracks().forEach(track => track.stop());
                 setStream(null);
             };
+
+            // Capture a still frame as selfie (do this after stream is ready)
+            setTimeout(async () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 640;
+                    canvas.height = 480;
+                    if (videoRef.current) {
+                        canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                                setSelfieFile(file);
+                            }
+                        }, 'image/jpeg');
+                    }
+                } catch (e) {
+                    console.error("Selfie frame capture failed:", e);
+                }
+            }, 1000);
 
             mediaRecorder.start();
             setIsRecording(true);
@@ -135,7 +160,7 @@ export default function EnterpriseKYC() {
 
         } catch (err) {
             console.error("Camera access error:", err);
-            alert("Camera access denied. Video verification is mandatory.");
+            alert("Camera access denied. Video verification is mandatory. Please ensure you have granted camera permissions.");
         }
     };
 
