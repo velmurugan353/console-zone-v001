@@ -38,7 +38,9 @@ const LocationMarker = ({ position, setPosition, setAddress }: { position: L.Lat
 };
 
 export default function EnterpriseKYC() {
-    const [step, setStep] = useState(1);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [step, setStep] = useState(2);
     const [activeField, setActiveField] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLocating, setIsLocating] = useState(false);
@@ -48,10 +50,19 @@ export default function EnterpriseKYC() {
     const [phone, setPhone] = useState("");
     const [secondaryPhone, setSecondaryPhone] = useState("");
 
-    const [drivingLicenseNumber, setDrivingLicenseNumber] = useState("");
-    const [secondaryIdType, setSecondaryIdType] = useState("");
-    const [secondaryIdNumber, setSecondaryIdNumber] = useState("");
-    const [address, setAddress] = useState("");
+    const [drivingLicenseNumber, setDrivingLicenseNumber] = useState("V-MODE-MOCKED");
+    const [secondaryIdType, setSecondaryIdType] = useState("VIDEO_ONLY");
+    const [secondaryIdNumber, setSecondaryIdNumber] = useState("V-MODE-MOCKED");
+    const [address, setAddress] = useState("V-MODE-MOCKED");
+
+    useEffect(() => {
+        if (user) {
+            setFullName(user.name || "");
+            // If there's a phone on the user object, we could set it too, 
+            // but for now we'll just use the name and leave phone for manual entry or mock it.
+            setPhone("9876543210"); 
+        }
+    }, [user]);
     const [mapPosition, setMapPosition] = useState<L.LatLng | null>(null);
     const [isMapActive, setIsMapActive] = useState(false);
     const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
@@ -182,8 +193,7 @@ export default function EnterpriseKYC() {
     const [agentStatus, setAgentStatus] = useState<{ name: string, status: string }[]>([]);
     const [currentAgent, setCurrentAgent] = useState<string | null>(null);
 
-    const { user } = useAuth();
-    const navigate = useNavigate();
+
 
     const AGENTS = [
         { id: 'doc', name: 'Document Specialist', icon: FileCheck, desc: 'OCR & Integrity Scan' },
@@ -244,31 +254,25 @@ export default function EnterpriseKYC() {
         }
 
         if (step === 2) {
-            if (!idFrontFile || !idBackFile || !selfieVideoFile) {
-                alert("Please upload ID documents and complete the Video Liveness Check.");
+            if (!selfieVideoFile) {
+                alert("Please complete the 5-second Video Liveness Check.");
                 return;
             }
             setStep(3);
             return;
         }
 
-        if (!user || !idFrontFile || !idBackFile || !selfieVideoFile) {
-            alert("Please ensure you are logged in and all biometric nodes are active.");
+        if (!user || !selfieVideoFile) {
+            alert("Please ensure you are logged in and the camera is initialized.");
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            // Upload ID Front
-            const idFrontUrl = await uploadKYCDocument(user.id, idFrontFile, 'id-front', (progress) => {
-                setUploadProgress(prev => ({ ...prev, front: progress }));
-            });
-
-            // Upload ID Back
-            const idBackUrl = await uploadKYCDocument(user.id, idBackFile, 'id-back', (progress) => {
-                setUploadProgress(prev => ({ ...prev, back: progress }));
-            });
+            // Skip ID Front/Back uploads for Video-Only mode
+            const idFrontUrl = "https://placehold.co/600x400/18181B/A855F7?text=VIDEO_ONLY_MODE_FRONT";
+            const idBackUrl = "https://placehold.co/600x400/18181B/A855F7?text=VIDEO_ONLY_MODE_BACK";
 
             // Upload Selfie Image
             let selfieUrl = "";
@@ -369,7 +373,7 @@ export default function EnterpriseKYC() {
                                         className="absolute top-1/2 left-0 h-0.5 bg-gradient-to-r from-[#B000FF] to-[#B000FF] -translate-y-1/2 transition-all duration-500"
                                         style={{ width: `${((step - 1) / 2) * 100}%` }}
                                     />
-                                    {[1, 2, 3].map((s) => (
+                                    {[2, 3].map((s) => (
                                         <div key={s} className="relative z-10 flex flex-col items-center gap-2 group">
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all duration-300 border ${step === s
                                                 ? 'bg-[#B000FF] text-white border-[#B000FF] shadow-[0_0_20px_rgba(139,92,246,0.5)]'
@@ -377,10 +381,10 @@ export default function EnterpriseKYC() {
                                                     ? 'bg-emerald-500 text-white border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
                                                     : 'bg-[#080112] text-gray-600 border-white/10 group-hover:border-white/20'
                                                 }`}>
-                                                {step > s ? <CheckCircle2 size={20} /> : s}
+                                                {step > s ? <CheckCircle2 size={20} /> : s === 2 ? 1 : 2}
                                             </div>
                                             <span className={`text-[9px] font-black uppercase tracking-widest ${step >= s ? 'text-white' : 'text-gray-600'}`}>
-                                                {s === 1 ? 'IDENTITY' : s === 2 ? 'DOCUMENTS' : 'FINALIZE'}
+                                                {s === 2 ? 'BIOMETRICS' : 'FINALIZE'}
                                             </span>
                                         </div>
                                     ))}
@@ -389,237 +393,6 @@ export default function EnterpriseKYC() {
 
                             <form onSubmit={handleSubmit} className="space-y-12 min-h-[400px]">
                                 <AnimatePresence mode="wait">
-                                    {step === 1 && (
-                                        <motion.div
-                                            key="step1"
-                                            initial={{ opacity: 0, x: 20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: -20 }}
-                                            className="space-y-8"
-                                        >
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <div className="w-8 h-8 rounded-lg bg-[#B000FF]/20 flex items-center justify-center text-[#B000FF] font-black">1</div>
-                                                <h2 className="text-xl font-black tracking-widest uppercase italic">Personal Identity</h2>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Full Legal Name</label>
-                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'name' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
-                                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                                            <User size={18} />
-                                                        </div>
-                                                        <input
-                                                            required
-                                                            type="text"
-                                                            value={fullName}
-                                                            onChange={(e) => setFullName(e.target.value)}
-                                                            placeholder="John Doe"
-                                                            onFocus={() => setActiveField('name')}
-                                                            onBlur={() => setActiveField(null)}
-                                                            className="w-full bg-transparent p-4 pl-12 text-white outline-none placeholder:text-gray-700 font-bold"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Primary Mobile (10 Digits)</label>
-                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'phone' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
-                                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                                            <Phone size={18} />
-                                                        </div>
-                                                        <input
-                                                            required
-                                                            type="tel"
-                                                            maxLength={10}
-                                                            value={phone}
-                                                            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                                                            placeholder="9876543210"
-                                                            onFocus={() => setActiveField('phone')}
-                                                            onBlur={() => setActiveField(null)}
-                                                            className="w-full bg-transparent p-4 pl-12 font-mono outline-none placeholder:text-gray-700 text-white"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Secondary Mobile (10 Digits)</label>
-                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'phone2' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
-                                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                                            <Phone size={18} className="opacity-50" />
-                                                        </div>
-                                                        <input
-                                                            type="tel"
-                                                            maxLength={10}
-                                                            value={secondaryPhone}
-                                                            onChange={(e) => setSecondaryPhone(e.target.value.replace(/\D/g, ''))}
-                                                            placeholder="9876543210"
-                                                            onFocus={() => setActiveField('phone2')}
-                                                            onBlur={() => setActiveField(null)}
-                                                            className="w-full bg-transparent p-4 pl-12 font-mono outline-none placeholder:text-gray-700 text-white"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Driving License Number</label>
-                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'dl' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.drivingLicenseNumber ? 'border-red-500/50' : 'border-white/10'}`}>
-                                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                                            <Fingerprint size={18} />
-                                                        </div>
-                                                        <input
-                                                            required
-                                                            type="text"
-                                                            value={drivingLicenseNumber}
-                                                            onChange={(e) => setDrivingLicenseNumber(e.target.value)}
-                                                            placeholder="DL-XXXXXXXXXXXXX"
-                                                            onFocus={() => setActiveField('dl')}
-                                                            onBlur={() => setActiveField(null)}
-                                                            className="w-full bg-transparent p-4 pl-12 text-white font-mono outline-none placeholder:text-gray-700"
-                                                        />
-                                                    </div>
-                                                    {errors.drivingLicenseNumber && <p className="text-[10px] text-red-500 mt-1 ml-2 font-bold uppercase tracking-tighter">{errors.drivingLicenseNumber}</p>}
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Secondary ID Type</label>
-                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'secIdType' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.secondaryIdType ? 'border-red-500/50' : 'border-white/10'}`}>
-                                                        <select
-                                                            required
-                                                            value={secondaryIdType}
-                                                            onChange={(e) => setSecondaryIdType(e.target.value)}
-                                                            onFocus={() => setActiveField('secIdType')}
-                                                            onBlur={() => setActiveField(null)}
-                                                            className="w-full bg-transparent p-4 text-white outline-none font-bold appearance-none cursor-pointer"
-                                                        >
-                                                            <option value="" disabled className="bg-[#080112]">Select ID Type</option>
-                                                            <option value="VOTER" className="bg-[#080112]">Voter ID</option>
-                                                            <option value="PASSPORT" className="bg-[#080112]">Passport</option>
-                                                            <option value="AADHAR" className="bg-[#080112]">Aadhar Card</option>
-                                                            <option value="OTHERS" className="bg-[#080112]">Others</option>
-                                                        </select>
-                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                                                            <ChevronRight size={18} className="rotate-90" />
-                                                        </div>
-                                                    </div>
-                                                    {errors.secondaryIdType && <p className="text-[10px] text-red-500 mt-1 ml-2 font-bold uppercase tracking-tighter">{errors.secondaryIdType}</p>}
-                                                </div>
-
-                                                <div className="group">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-[#B000FF] transition-colors">Secondary ID Number</label>
-                                                    <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'secIdNum' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : errors.secondaryIdNumber ? 'border-red-500/50' : 'border-white/10'}`}>
-                                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                                            <FileCheck size={18} />
-                                                        </div>
-                                                        <input
-                                                            required
-                                                            type="text"
-                                                            value={secondaryIdNumber}
-                                                            onChange={(e) => setSecondaryIdNumber(e.target.value)}
-                                                            placeholder="Enter ID number"
-                                                            onFocus={() => setActiveField('secIdNum')}
-                                                            onBlur={() => setActiveField(null)}
-                                                            className="w-full bg-transparent p-4 pl-12 text-white font-mono outline-none placeholder:text-gray-700"
-                                                        />
-                                                    </div>
-                                                    {errors.secondaryIdNumber && <p className="text-[10px] text-red-500 mt-1 ml-2 font-bold uppercase tracking-tighter">{errors.secondaryIdNumber}</p>}
-                                                </div>
-                                            </div>
-
-                                            <div className="group">
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 group-focus-within:text-[#B000FF] transition-colors">Residential Address</label>
-                                                    <div className="flex gap-2">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setIsMapActive(!isMapActive)}
-                                                            className={`text-[10px] font-black flex items-center gap-1 uppercase tracking-[0.1em] transition-colors ${isMapActive ? 'text-[#B000FF]' : 'text-gray-500 hover:text-white'}`}
-                                                        >
-                                                            <Crosshair size={12} />
-                                                            {isMapActive ? "Close Map" : "Mark on Map"}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={detectLocation}
-                                                            disabled={isLocating}
-                                                            className="text-[10px] font-black text-[#B000FF] hover:text-[#B000FF]/80 flex items-center gap-1 disabled:opacity-50 uppercase tracking-[0.1em]"
-                                                        >
-                                                            {isLocating ? <Loader2 size={12} className="animate-spin" /> : <Target size={12} />}
-                                                            {isLocating ? "Locating..." : "Auto-Locate"}
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <AnimatePresence>
-                                                    {isMapActive && (
-                                                        <motion.div
-                                                            initial={{ height: 0, opacity: 0, marginBottom: 0 }}
-                                                            animate={{ height: 350, opacity: 1, marginBottom: 16 }}
-                                                            exit={{ height: 0, opacity: 0, marginBottom: 0 }}
-                                                            className="relative rounded-xl border border-white/10 bg-[#080112] overflow-hidden group/map"
-                                                        >
-                                                            <MapContainer 
-                                                                center={[20.5937, 78.9629]} 
-                                                                zoom={5} 
-                                                                style={{ height: '100%', width: '100%', background: '#080112' }}
-                                                                attributionControl={false}
-                                                            >
-                                                                <TileLayer
-                                                                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                                                                />
-                                                                <LocationMarker 
-                                                                    position={mapPosition} 
-                                                                    setPosition={setMapPosition} 
-                                                                    setAddress={setAddress} 
-                                                                />
-                                                            </MapContainer>
-                                                            
-                                                            {/* Overlay elements */}
-                                                            <div className="absolute top-4 left-4 z-[1000] pointer-events-none">
-                                                                <div className="bg-black/60 backdrop-blur-md border border-white/10 p-2 rounded-lg">
-                                                                    <p className="text-[8px] font-black text-white uppercase tracking-widest">OpenSource Mapping Engine</p>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="absolute bottom-4 right-4 z-[1000] pointer-events-none text-right">
-                                                                <p className="text-[8px] font-mono text-gray-500 uppercase tracking-widest mb-1">Global Positioning Matrix v4.2</p>
-                                                                {mapPosition && (
-                                                                    <p className="text-[10px] font-mono text-[#B000FF] bg-black/60 backdrop-blur-md px-2 py-1 rounded">COORD: {mapPosition.lat.toFixed(4)}Â°N / {mapPosition.lng.toFixed(4)}Â°E</p>
-                                                                )}
-                                                            </div>
-
-                                                            {!mapPosition && (
-                                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 group-hover/map:opacity-100 transition-opacity z-[1000]">
-                                                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">Tap to place landing pin</p>
-                                                                </div>
-                                                            )}
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
-
-                                                <div className={`relative bg-[#080112] border rounded-xl overflow-hidden transition-all duration-300 ${activeField === 'address' ? 'border-[#B000FF] shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'border-white/10'}`}>
-                                                    <div className="absolute left-4 top-4 text-gray-500">
-                                                        <MapPin size={18} />
-                                                    </div>
-                                                    <textarea
-                                                        required
-                                                        rows={3}
-                                                        placeholder="Enter full verification address"
-                                                        value={address}
-                                                        onChange={(e) => setAddress(e.target.value)}
-                                                        onFocus={() => setActiveField('address')}
-                                                        onBlur={() => setActiveField(null)}
-                                                        className="w-full bg-transparent p-4 pl-12 text-white outline-none placeholder:text-gray-700 resize-none font-bold"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    )}
-
                                     {step === 2 && (
                                         <motion.div
                                             key="step2"
@@ -628,92 +401,11 @@ export default function EnterpriseKYC() {
                                             exit={{ opacity: 0, x: -20 }}
                                             className="space-y-8"
                                         >
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <div className="w-8 h-8 rounded-lg bg-[#B000FF]/20 flex items-center justify-center text-[#B000FF] font-black">2</div>
-                                                <h2 className="text-xl font-black tracking-widest uppercase italic">Secure Document Sync</h2>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                {/* ID Front Upload */}
-                                                <div className="space-y-4">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Primary ID (Front)</label>
-                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center overflow-hidden ${idFrontFile ? 'border-emerald-500 bg-emerald-500/5' : scanningFront ? 'border-[#B000FF] bg-[#B000FF]/5' : 'border-white/10 hover:border-[#B000FF] hover:bg-white/5'}`}>
-                                                        <input 
-                                                            type="file" 
-                                                            className="absolute inset-0 opacity-0 cursor-pointer z-10" 
-                                                            onChange={(e) => handleFileChangeWithScan(e, setIdFrontFile, 'front')} 
-                                                            disabled={scanningFront}
-                                                            accept="image/*,.pdf" 
-                                                        />
-
-                                                        {scanningFront ? (
-                                                            <div className="text-center space-y-3 relative z-20">
-                                                                <Loader2 className="animate-spin text-[#B000FF] mx-auto" size={24} />
-                                                                <p className="text-[10px] font-black uppercase text-[#B000FF] animate-pulse">Scanning Integrity...</p>
-                                                                {/* Scan Line Effect */}
-                                                                <motion.div 
-                                                                    initial={{ top: '0%' }}
-                                                                    animate={{ top: '100%' }}
-                                                                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                                                                    className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#B000FF] to-transparent shadow-[0_0_15px_#B000FF]"
-                                                                />
-                                                            </div>
-                                                        ) : idFrontFile ? (
-                                                            <div className="text-center">
-                                                                <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={24} />
-                                                                <p className="text-[10px] font-mono text-white truncate max-w-[150px] mx-auto">{idFrontFile.name}</p>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="text-center">
-                                                                <FileCheck className="text-[#B000FF] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
-                                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Front Side</p>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* ID Back Upload */}
-                                                <div className="space-y-4">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Primary ID (Back)</label>
-                                                    <div className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all min-h-[160px] flex flex-col items-center justify-center overflow-hidden ${idBackFile ? 'border-emerald-500 bg-emerald-500/5' : scanningBack ? 'border-[#B000FF] bg-[#B000FF]/5' : 'border-white/10 hover:border-[#B000FF] hover:bg-white/5'}`}>
-                                                        <input 
-                                                            type="file" 
-                                                            className="absolute inset-0 opacity-0 cursor-pointer z-10" 
-                                                            onChange={(e) => handleFileChangeWithScan(e, setIdBackFile, 'back')} 
-                                                            disabled={scanningBack}
-                                                            accept="image/*,.pdf" 
-                                                        />
-
-                                                        {scanningBack ? (
-                                                            <div className="text-center space-y-3 relative z-20">
-                                                                <Loader2 className="animate-spin text-[#B000FF] mx-auto" size={24} />
-                                                                <p className="text-[10px] font-black uppercase text-[#B000FF] animate-pulse">Scanning Security...</p>
-                                                                {/* Scan Line Effect */}
-                                                                <motion.div 
-                                                                    initial={{ top: '0%' }}
-                                                                    animate={{ top: '100%' }}
-                                                                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                                                                    className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#B000FF] to-transparent shadow-[0_0_15px_#B000FF]"
-                                                                />
-                                                            </div>
-                                                        ) : idBackFile ? (
-                                                            <div className="text-center">
-                                                                <CheckCircle2 className="text-emerald-500 mx-auto mb-2" size={24} />
-                                                                <p className="text-[10px] font-mono text-white truncate max-w-[150px] mx-auto">{idBackFile.name}</p>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="text-center">
-                                                                <FileCheck className="text-[#B000FF] mx-auto mb-2 group-hover:scale-110 transition-transform" size={24} />
-                                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Back Side</p>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-
+                                            <div className="flex flex-col items-center justify-center">
                                                 {/* Selfie Video Verification */}
-                                                <div className="space-y-4">
+                                                <div className="space-y-4 w-full max-w-lg">
                                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block text-center">Video Liveness Check</label>
-                                                    <div className={`relative rounded-2xl p-4 text-center transition-all min-h-[200px] flex flex-col items-center justify-center overflow-hidden border-2 ${selfieVideoFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-[#B000FF]/30 bg-black/40'}`}>
+                                                    <div className={`relative rounded-2xl p-4 text-center transition-all min-h-[300px] flex flex-col items-center justify-center overflow-hidden border-2 ${selfieVideoFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-[#B000FF]/30 bg-black/40'}`}>
                                                         
                                                         {selfieVideoFile ? (
                                                             <div className="text-center space-y-3">
@@ -779,9 +471,9 @@ export default function EnterpriseKYC() {
                                                 <div>
                                                     <h4 className="text-sm font-black uppercase tracking-wider text-white mb-1">Security Guidelines</h4>
                                                     <ul className="text-xs text-gray-500 space-y-2 list-disc pl-4 font-mono">
-                                                        <li>ID text must be readable without glare</li>
-                                                        <li>Position face within the camera frame</li>
+                                                        <li>Postion face within the camera frame</li>
                                                         <li>Ensure adequate lighting for liveness check</li>
+                                                        <li>Maintain a neutral expression during scan</li>
                                                     </ul>
                                                 </div>
                                             </div>
