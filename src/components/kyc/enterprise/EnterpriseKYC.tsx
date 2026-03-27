@@ -171,6 +171,12 @@ export default function EnterpriseKYC() {
         }
     };
 
+    useEffect(() => {
+        if (isRecording && videoRef.current && stream) {
+            videoRef.current.srcObject = stream;
+        }
+    }, [isRecording, stream]);
+
     const [uploadProgress, setUploadProgress] = useState({ front: 0, back: 0, selfie: 0, video: 0 });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [agentStatus, setAgentStatus] = useState<{ name: string, status: string }[]>([]);
