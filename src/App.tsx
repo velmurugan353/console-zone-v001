@@ -71,9 +71,74 @@ function App() {
           <SplashScreen />
           <Router>
             <Routes>
-              {/* Force Coming Soon as the only active public view */}
-              <Route path="/" element={<ComingSoon />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* Public Routes */}
+              <Route path="/" element={<MainLayout onAuthClick={() => setIsAuthOpen(true)} />}>
+                <Route index element={<Home />} />
+                <Route path="shop" element={<Shop />} />
+                <Route path="product/:id" element={<ProductDetails />} />
+                <Route path="rentals" element={<Rentals />} />
+                <Route path="sell" element={<Sell />} />
+                <Route path="repair" element={<Repair />} />
+                <Route path="cart" element={<Cart />} />
+                <Route path="rental-booking" element={<RentalBookingPage />} />
+                <Route path="booking-confirmation" element={<BookingConfirmationPage />} />
+                <Route path="book" element={<BookPage />} />
+                <Route path="coming-soon" element={<ComingSoon />} />
+              </Route>
+
+              {/* User Routes */}
+              <Route path="/dashboard" element={
+                <RequireAuth onLoginRequired={() => setIsAuthOpen(true)}>
+                  <UserLayout />
+                </RequireAuth>
+              }>
+                <Route index element={<UserDashboard />} />
+                <Route path="orders" element={<MyOrders />} />
+                <Route path="rentals" element={<MyRentals />} />
+                <Route path="repairs" element={<MyRepairRequests />} />
+                <Route path="wishlist" element={<Wishlist />} />
+                <Route path="addresses" element={<AddressManagement />} />
+                <Route path="notifications" element={<Notifications />} />
+                <Route path="kyc" element={<UserKYC />} />
+              </Route>
+
+              {/* Admin Routes */}
+              <Route path="/admin" element={
+                <RequireAuth onLoginRequired={() => setIsAuthOpen(true)}>
+                  <AdminLayout />
+                </RequireAuth>
+              }>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="rentals" element={<AdminRentals />} />
+                <Route path="repairs" element={<AdminRepairs />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="customers" element={<AdminCustomers />} />
+                <Route path="analytics" element={<AdminAnalytics />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="rental-status" element={<RentalStatus />} />
+                <Route path="rental-settings" element={<RentalSettingsPage />} />
+                <Route path="sell-requests" element={<AdminSellRequests />} />
+                <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="content" element={<AdminContent />} />
+                <Route path="kyc" element={<KYCPage />} />
+                <Route path="fleet" element={<FleetPage />} />
+                <Route path="inventory" element={<InventoryPage />} />
+                <Route path="controls" element={<AdminControls />} />
+                <Route path="used-consoles" element={<AdminUsedConsoles />} />
+                <Route path="operations" element={<AdminOperations />} />
+                <Route path="automation" element={<AdminAutomation />} />
+                <Route path="invoices" element={<AdminInvoices />} />
+                <Route path="customizer" element={<AdminCustomizer />} />
+              </Route>
+
+              {/* Auth Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+
+              {/* Fallback */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
             <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
           </Router>
@@ -84,4 +149,3 @@ function App() {
 }
 
 export default App;
-

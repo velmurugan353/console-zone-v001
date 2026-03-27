@@ -1,5 +1,5 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -29,7 +29,7 @@ import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user, isAdmin, loading } = useAuth();
@@ -351,7 +351,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </AnimatePresence>
           </div>
         </div>
-        {children}
+        <Outlet />
       </main>
     </div>
   );

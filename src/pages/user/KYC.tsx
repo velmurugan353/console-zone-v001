@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, ShieldAlert } from "lucide-react";
 import EnterpriseKYC from "../../components/kyc/enterprise/EnterpriseKYC";
@@ -78,5 +78,3 @@ export default function UserKYC() {
 
     return <EnterpriseKYC />;
 }
-
-

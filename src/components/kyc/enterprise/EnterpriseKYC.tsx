@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -149,10 +149,10 @@ export default function EnterpriseKYC() {
 
             const timer = setInterval(() => {
                 setRecordingTime(prev => {
-                    if (prev >= 3) {
+                    if (prev >= 5) {
                         stopRecording();
                         clearInterval(timer);
-                        return 3;
+                        return 5;
                     }
                     return prev + 1;
                 });
@@ -737,12 +737,12 @@ export default function EnterpriseKYC() {
                                                                     <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10">
                                                                         <motion.div 
                                                                             initial={{ width: 0 }}
-                                                                            animate={{ width: `${(recordingTime / 3) * 100}%` }}
+                                                                            animate={{ width: `${(recordingTime / 5) * 100}%` }}
                                                                             className="h-full bg-red-500"
                                                                         />
                                                                     </div>
                                                                 </div>
-                                                                <p className="text-[10px] font-black text-[#B000FF] animate-pulse uppercase tracking-[0.2em]">Please move your head slightly</p>
+                                                                <p className="text-[10px] font-black text-[#B000FF] animate-pulse uppercase tracking-[0.2em]">Look up, then down, then center</p>
                                                             </div>
                                                         ) : (
                                                             <div className="text-center space-y-4 py-4">
@@ -751,7 +751,7 @@ export default function EnterpriseKYC() {
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Biometric Scan Required</p>
-                                                                    <p className="text-[9px] text-gray-500 font-mono mt-1 px-4">3-second video verify to confirm human presence</p>
+                                                                    <p className="text-[9px] text-gray-500 font-mono mt-1 px-4">5-second video verify: Look up, down, then center</p>
                                                                 </div>
                                                                 <button
                                                                     type="button"

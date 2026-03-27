@@ -1,9 +1,10 @@
 import { ReactNode } from 'react';
+import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Gamepad2, Twitter, Instagram, Facebook, Mail } from 'lucide-react';
 
 interface MainLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
   onAuthClick?: () => void;
 }
 
@@ -12,7 +13,7 @@ export default function MainLayout({ children, onAuthClick }: MainLayoutProps) {
     <div className="min-h-dvh flex flex-col bg-gaming-bg text-gaming-text font-sans selection:bg-gaming-accent selection:text-black">
       <Navbar onAuthClick={onAuthClick ? onAuthClick : () => { }} />
       <main className="flex-grow pt-16 w-full">
-        {children}
+        {children || <Outlet />}
       </main>
       <footer className="bg-gaming-card border-t border-gaming-border mt-20 w-full">
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ maxWidth: 'var(--layout-max-width, 1280px)' }}>
